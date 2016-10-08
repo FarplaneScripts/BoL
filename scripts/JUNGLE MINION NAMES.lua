@@ -33,7 +33,7 @@ SRU_Krug					--> Ancient Krug (Big Krug)
 SRU_KrugMini				--> Krug (Small Krug)
 
 Sru_Crab					--> Skuttle Crab (why the fuck is "ru" lowercase? XD)
-SRU_Gromp					-->	Gromp (Gromp)
+SRU_Gromp					--> Gromp (Gromp)
 
 --			Howling Abyss
 HA_AP_Poro					--> Poro
