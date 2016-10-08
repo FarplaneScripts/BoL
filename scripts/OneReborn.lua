@@ -272,8 +272,8 @@ AkaliLoaded = false
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1
-local _SCRIPT_VERSION_MENU = "1"
+local _SCRIPT_VERSION = 1.1
+local _SCRIPT_VERSION_MENU = "1.1"
 local _PATCH = "6.20"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
 local ___GetInventorySlotItem	= rawget(_G, "GetInventorySlotItem")
