@@ -44,7 +44,7 @@ TT_Spiderboss				--> Vilemaw
 TT_NWolf					--> Greater Wolf (Big Wolf)
 TT_NWolf2					--> Wolf (Small Wolf)
 
-TT_NGolem					-->	Golem (Big Golem)
+TT_NGolem					--> Golem (Big Golem)
 TT_NGolem2					--> Golem (Small Golem)
 
 TT_NWraith					--> Wraith (Big Wraith)
