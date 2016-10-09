@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 1
+-- > > > Version 1.2
 
 --_______________________________________________________________________________
 
@@ -192,6 +192,13 @@ Spell Cast Save before buff runs out (example: Riven Q's) - (no champtions suppo
 Total killed minions + jungle minions visual (functions works again check here: [http://puu.sh/rBnop/e68059bb97.jpg])
 Kills | Deaths | Assists visual
 Make a callback on bugsplat and game.isover that opens and edits a file containing match stats? idk
+Auto Feed Poros
+Clone Revealer
+KS Zac Passive (if this is possible)
+Auto Dance after game
+Spell Levels under Spell Cooldowns ...(i'll pus this somewhere ... :s)
+Snaps for Advanced circles to be visible (on screen) even if the source is not.
+Smart Level 2 Level up override based off the situation.
 
 ... yes I know  I need to add predictions, but I hate predictions... so.. Soon(tm)
 
@@ -208,6 +215,8 @@ Separate jungle minions, example: "SRU_Crab[x].[x].[x]", but the only use I can 
 Sprites for skin changer possibly? + animations? idk . . . (not high priority atm)
 Tower Ranges
 Ward Tracker
+Jungle Timers
+Skin Changer for Allies and Enemies
 
 
 
@@ -216,6 +225,7 @@ Ward Tracker
 			[ Rejected ]
 
 Classes within the script.
+Packets.
 
 
 
@@ -240,7 +250,9 @@ Circle Around Killable (and nearly killable) Targets with Q
 Akali E prediction based off movements
 W + R Jump/flee positions (I need to find out how to check if camp is up [and it needs to not interfere with visibility checks (w)])
 Dynamic Range draw setting when fully engaged + smart enemy dmg calc. (based off; my cooldowns + enemy cooldowns + my damage + enemy damage + enemies in range * previous vars + enemy can go invisible (cooldown?) . . . etc [very big project])
-
+Force AA if target has Q and in AA range
+Q + AA Calculation for Minions/Farm mode
+Count R Buff Stacks
 
 
 ======================================
@@ -272,8 +284,8 @@ AkaliLoaded = false
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1.1
-local _SCRIPT_VERSION_MENU = "1.1"
+local _SCRIPT_VERSION = 1.2
+local _SCRIPT_VERSION_MENU = "1.2"
 local _PATCH = "6.20"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
 local ___GetInventorySlotItem	= rawget(_G, "GetInventorySlotItem")
@@ -739,10 +751,12 @@ function GetWard(radius)
 end
 
 function MoveToMouse()
-	if GetDistance(mousePos) then
-		local mouseVec = myHero + (Vector(mousePos) - myHero):normalized() * 300
-		myHero:MoveTo(mouseVec.x, mouseVec.z)
+	if settings.misc.useMouseVector then
+		mouseVec = myHero + (Vector(mousePos) - myHero):normalized() * settings.misc.MouseVector
+	else
+		mouseVec = mousePos
 	end
+	myHero:MoveTo(mouseVec.x, mouseVec.z)
 end
 
 --[[
@@ -925,8 +939,8 @@ end
 ]]
 function OnWndMsg(mouse, key)
 	if mouse == WM_LBUTTONDOWN then
-		if PopUp1 then
-			PopUp1 = false
+		if PopUp then
+			PopUp = false
 		end
 		if settings.targetselector and not myHero.dead then
             local Click = 10
@@ -1182,7 +1196,7 @@ function OnTick()
 	--  Pop Up Menu/Instructions.            (Outdated - Still has Katarina Reborn Text.)
 	if settings.instruct then
 		settings.instruct = false
-		PopUp1 = true
+		PopUp = true
 	end
 	
 	--  Calls for Supported Champions.
@@ -1228,14 +1242,14 @@ function OnTick()
 			end
 			
 			--  W self if #number Enemies around
-			if settings.oSpells.WEnemiesEnable and self.skills.SkillW.ready then
-				if CountEnemyHeroInRange(Akali_W_Range) >= settings.oSpells.WEnemies then
+			if settings.misc.WEnemiesEnable and W_is_Ready then
+				if CountEnemyHeroInRange(Akali_W_Range) >= settings.misc.WEnemies then
 					CastSpell(_W, myHero.x, myHero.z)
 				end
 			end
 			
 			--  Safe W Range (W Max Range if Cursor outside W range)
-			if settings.oSpells.safeWKey then
+			if settings.misc.safeWKey then
 				if GetDistance(mousePos) > 705 then
 					Wcast = myHero + (Vector(mousePos) - myHero):normalized() * 705
 					CastSpell(_W, Wcast.x, Wcast.z)
@@ -1243,18 +1257,18 @@ function OnTick()
 			end
 			
 			--  Auto W Self on Low HP
-			if settings.oSpells.UseWLowHp and self.skills.SkillW.ready then
+			if settings.misc.UseWLowHp and W_is_Ready then
 				for _, target in pairs(GetEnemyHeroes()) do
-					if ValidTarget(target, 740) and myHero.health / myHero.maxHealth <= settings.oSpells.WLowHp / 100 then
+					if ValidTarget(target, 740) and myHero.health / myHero.maxHealth <= settings.misc.WLowHp / 100 then
 						CastSpell(_W, myHero.x, myHero.z)
 					end
 				end
 			end
 			
 			--  Enable R in combo if below %HP
-			if settings.combo.UseRLowHp and self.skills.SkillR.ready and settings.comboactive then
+			if settings.combosettings.rsetting.UseRLowHp and R_is_Ready and settings.comboactive then
 				for _, target in pairs(GetEnemyHeroes()) do
-					if ValidTarget(target, 740) and myHero.health / myHero.maxHealth <= settings.combo.RLowHp / 100 then
+					if ValidTarget(target, 740) and myHero.health / myHero.maxHealth <= settings.combosettings.rsetting.RLowHp / 100 then
 						CastSpell(_R, target.x, target.z)
 					end
 				end
@@ -1427,27 +1441,27 @@ function OnTick()
 			if not KatUlting and not R_is_Ready then
 				KatRCD = true
 			end
-			if settings.misc.Debug then
-				if Q_is_Ready then
-					readytextQ = true
-				else
-					readytextQ = false
-				end
-				if W_is_Ready then
-					readytextW = true
-				else
-					readytextW = false
-				end
-				if E_is_Ready then
-					readytextE = true
-				else
-					readytextE = false
-				end
-				if R_is_Ready then
-					readytextR = true
-				else
-					readytextR = false
-				end
+		end
+		if settings.misc.Debug then
+			if Q_is_Ready then
+				readytextQ = true
+			else
+				readytextQ = false
+			end
+			if W_is_Ready then
+				readytextW = true
+			else
+				readytextW = false
+			end
+			if E_is_Ready then
+				readytextE = true
+			else
+				readytextE = false
+			end
+			if R_is_Ready then
+				readytextR = true
+			else
+				readytextR = false
 			end
 		end
 	end
@@ -1513,7 +1527,7 @@ function OnLoad()
 					settings.combosettings.esetting:addParam("hdelay", "E Humanizer Delay (Seconds)", SCRIPT_PARAM_SLICE, 0, 0, 2, 1)
 				end
 				if AkaliLoaded then
-					settings.combosettings.esetting:addParam("EWaitQ", "Never E if Q is on target", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.esetting:addParam("EWaitQ", "Wait for Q proc before E cast", SCRIPT_PARAM_ONOFF, true)
 				end
 			settings.combosettings:addSubMenu("                    ~ R Settings ~", "rsetting")
 				if SupportedChampion then
@@ -1537,7 +1551,7 @@ function OnLoad()
 					settings.combosettings.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.combosettings.rsetting:addParam("UseR", "Use R in Combo", SCRIPT_PARAM_ONOFF, true) 
 					settings.combosettings.rsetting:addParam("space", "Safe Range:", SCRIPT_PARAM_INFO, "")
-					settings.combosettings.rsetting:addParam("Rdebuff", "Only Ult Outside This Range", SCRIPT_PARAM_SLICE, 530, 1, 720, 0)
+					settings.combosettings.rsetting:addParam("Rdebuff", "Only Ult Outside This Range", SCRIPT_PARAM_SLICE, 370, 1, 720, 0)
 					settings.combosettings.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.combosettings.rsetting:addParam("UseRLowHp", "Ignore Safe Range if % HP", SCRIPT_PARAM_ONOFF, true)
 					settings.combosettings.rsetting:addParam("RLowHp", "    Set % HP", SCRIPT_PARAM_SLICE, 30, 0, 100, 0)
@@ -1588,8 +1602,13 @@ function OnLoad()
 					--settings.misc:addParam("FlashJump", "Flash after ward jump", SCRIPT_PARAM_ONOFF, false)							--  Might add this back... I lost how to use Summoner Spells.
 					--settings.misc:addParam("FlashLength", "Minimum Length for Flash", SCRIPT_PARAM_SLICE, 450, 0, 450, 1)
 				end
+				if AkaliLoaded then
+					settings.misc:addParam("foundwarddistance", "Flee Loaction Snap Distance", SCRIPT_PARAM_SLICE, 200, 50, 500, 0)
+				end
+				settings.misc:addParam("useMouseVector", "Use normalized vector", SCRIPT_PARAM_ONOFF, false)
+				settings.misc:addParam("MouseVector", "normalized vector:", SCRIPT_PARAM_SLICE, 300, 140, 600, 0)
+				settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				if KatarinaLoaded then
-					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.misc:addParam("UseEOverRide", "Do not Cast E on Enemy if my HP is low", SCRIPT_PARAM_ONOFF, false)
 					settings.misc:addParam("EOverRide", "     Set Low HP % to Block Shunpo", SCRIPT_PARAM_SLICE, 30, 1, 100, 0)
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -1618,15 +1637,8 @@ function OnLoad()
 			settings.misc:addParam("info1", "               . . . . Soon (tm)     ;)", SCRIPT_PARAM_INFO, "")
 		settings:addSubMenu("Kill Steal", "killsteal")
 			if SupportedChampion then
-				settings.killsteal:addParam("killswitch", "Enable Kill Steal", SCRIPT_PARAM_ONOFF, true)
 				if KatarinaLoaded then
-					settings.killsteal:addParam("stopRks", "Stop R to Kill Steal", SCRIPT_PARAM_ONOFF, true)
-					settings.killsteal:addParam("wards", "Use WardJump + Q steal", SCRIPT_PARAM_ONOFF, true)
-					settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
-				end
-				settings.killsteal:addParam("stealcamps", "KS Jungle Creeps", SCRIPT_PARAM_ONOFF, true)
-				if KatarinaLoaded then
-					settings.killsteal:addSubMenu("jungleQ", "Q Settings")
+					settings.killsteal:addSubMenu("Jungle KS Q Settings", "jungleQ")
 						settings.killsteal.jungleQ:addParam("enable", "Enable Q KS Jungle", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleQ:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleQ:addParam("dragon", "   Dragon (All Types Supported)", SCRIPT_PARAM_ONOFF, true)
@@ -1652,7 +1664,7 @@ function OnLoad()
 						settings.killsteal.jungleQ:addParam("gromp", "   Gromp", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleQ:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleQ:addParam("others", "   Others", SCRIPT_PARAM_ONOFF, true)
-					settings.killsteal:addSubMenu("jungleW", "W Settings")
+					settings.killsteal:addSubMenu("Jungle KS W Settings", "jungleW")
 						settings.killsteal.jungleW:addParam("enable", "Enable W KS Jungle", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleW:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleW:addParam("dragon", "   Dragon (All Types Supported)", SCRIPT_PARAM_ONOFF, true)
@@ -1678,7 +1690,7 @@ function OnLoad()
 						settings.killsteal.jungleW:addParam("gromp", "   Gromp", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleW:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleW:addParam("others", "   Others", SCRIPT_PARAM_ONOFF, true)
-					settings.killsteal:addSubMenu("jungleE", "E Settings")
+					settings.killsteal:addSubMenu("Jungle KS E Settings", "jungleE")
 						settings.killsteal.jungleE:addParam("enable", "Enable E KS Jungle", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleE:addParam("dragon", "   Dragon (All Types Supported)", SCRIPT_PARAM_ONOFF, true)
@@ -1706,7 +1718,7 @@ function OnLoad()
 						settings.killsteal.jungleE:addParam("others", "   Others", SCRIPT_PARAM_ONOFF, false)
 				end
 				if AkaliLoaded then
-					settings.killsteal:addSubMenu("jungleQ", "Q Settings")
+					settings.killsteal:addSubMenu("Jungle KS Q Settings", "jungleQ")
 						settings.killsteal.jungleQ:addParam("enable", "Enable Q KS Jungle", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleQ:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleQ:addParam("dragon", "   Dragon (All Types Supported)", SCRIPT_PARAM_ONOFF, true)
@@ -1732,7 +1744,7 @@ function OnLoad()
 						settings.killsteal.jungleQ:addParam("gromp", "   Gromp", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleQ:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleQ:addParam("others", "   Others", SCRIPT_PARAM_ONOFF, true)
-					settings.killsteal:addSubMenu("jungleE", "E Settings")
+					settings.killsteal:addSubMenu("Jungle KS E Settings", "jungleE")
 						settings.killsteal.jungleE:addParam("enable", "Enable E KS Jungle", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleE:addParam("dragon", "   Dragon (All Types Supported)", SCRIPT_PARAM_ONOFF, true)
@@ -1758,7 +1770,7 @@ function OnLoad()
 						settings.killsteal.jungleE:addParam("gromp", "   Gromp", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleE:addParam("others", "   Others", SCRIPT_PARAM_ONOFF, true)
-					settings.killsteal:addSubMenu("jungleR", "R Settings")
+					settings.killsteal:addSubMenu("Jungle KS R Settings", "jungleR")
 						settings.killsteal.jungleR:addParam("enable", "Enable R KS Jungle", SCRIPT_PARAM_ONOFF, true)
 						settings.killsteal.jungleR:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleR:addParam("dragon", "   Dragon (All Types Supported)", SCRIPT_PARAM_ONOFF, true)
@@ -1786,6 +1798,14 @@ function OnLoad()
 						settings.killsteal.jungleR:addParam("others", "   Others", SCRIPT_PARAM_ONOFF, false)
 				end
 				settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.killsteal:addParam("infospace", "                   ~ Killsteal ~", SCRIPT_PARAM_INFO, "")
+				settings.killsteal:addParam("killswitch", "Killsteal (Enemies)", SCRIPT_PARAM_ONOFF, true)
+				if KatarinaLoaded then
+					settings.killsteal:addParam("stopRks", "Stop R to Kill Steal", SCRIPT_PARAM_ONOFF, true)
+					settings.killsteal:addParam("wards", "Use WardJump + Q steal", SCRIPT_PARAM_ONOFF, true)
+					settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				end
+				settings.killsteal:addParam("stealcamps", "Killsteal (Jungle)", SCRIPT_PARAM_ONOFF, true)
 			end
 			settings.killsteal:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
 			settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -1868,7 +1888,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.qsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.qsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							178,
@@ -1881,7 +1901,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("particlesline", "Draw Particle Line", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.qsetting:addParam("particlessize", "Q Particle Size", SCRIPT_PARAM_SLICE, 30, 20, 50, 0)
 				settings.draws.qsetting:addParam("particleswidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("particlessnap", "Snap", SCRIPT_PARAM_SLICE, 15, 10, 40, 0)
+				settings.draws.qsetting:addParam("particlessnap", "Snap", SCRIPT_PARAM_SLICE, 25, 10, 40, 0)
 						settings.draws.qsetting:addParam("particlescolor", "Q Particle Color", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -1893,7 +1913,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("size", "Size of Dagger Circle", SCRIPT_PARAM_SLICE, 150, 50, 300, 0)
 				settings.draws.qsetting:addParam("targetwidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("targetsnap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.qsetting:addParam("targetsnap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.qsetting:addParam("QcircleColor", "Targets with Dagger Color", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -1910,7 +1930,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.qsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.qsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							178,
@@ -1923,7 +1943,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("particlesline", "Draw Particle Line", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.qsetting:addParam("particlessize", "Q Particle Size", SCRIPT_PARAM_SLICE, 30, 20, 50, 0)
 				settings.draws.qsetting:addParam("particleswidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("particlessnap", "Snap", SCRIPT_PARAM_SLICE, 15, 10, 40, 0)
+				settings.draws.qsetting:addParam("particlessnap", "Snap", SCRIPT_PARAM_SLICE, 25, 10, 40, 0)
 						settings.draws.qsetting:addParam("particlescolor", "Q Particle Color", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -1935,7 +1955,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("size", "Size of Mota Circle", SCRIPT_PARAM_SLICE, 150, 50, 300, 0)
 				settings.draws.qsetting:addParam("targetwidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("targetsnap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.qsetting:addParam("targetsnap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.qsetting:addParam("QcircleColor", "Targets with Mota Color", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -1950,7 +1970,7 @@ function OnLoad()
 				settings.draws.wsetting:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.wsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.wsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.wsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.wsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.wsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							32,
@@ -1962,7 +1982,7 @@ function OnLoad()
 				settings.draws.wsetting:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.wsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.wsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.wsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.wsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.wsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							32,
@@ -1981,8 +2001,15 @@ function OnLoad()
 				settings.draws.wsetting:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
 				settings.draws.wsetting:addParam("DrawVisi", "Draw Invisibility", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.wsetting:addParam("DrawWSpeed", "Draw W Speed Boost", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.wsetting:addParam("Wspeedcolor", "W Speed Colour", SCRIPT_PARAM_COLOR, {
+						255,
+						109,
+						255,
+						73
+					})
 				settings.draws.wsetting:addParam("DrawWCountdown", "Draw W Shroud Countdown", SCRIPT_PARAM_ONOFF, true)
-					settings.draws.color:addParam("Wcirlcecolor", "Shroud Colour", SCRIPT_PARAM_COLOR, {
+				settings.draws.wsetting:addParam("particles", "Draw W Shroud", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.wsetting:addParam("WCirlceColor", "Shroud Colour", SCRIPT_PARAM_COLOR, {
 						255,
 						0,
 						255,
@@ -1996,7 +2023,7 @@ function OnLoad()
 				settings.draws.esetting:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.esetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.esetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.esetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.esetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							128,
@@ -2007,7 +2034,7 @@ function OnLoad()
 				settings.draws.esetting:addParam("DrawErecudtion", "Draw E Reduction", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.esetting:addParam("Erecudtionwidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.esetting:addParam("Erecudtionsnap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.esetting:addParam("Erecudtionsnap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.esetting:addParam("Eredcolor", "E Reduction Color", SCRIPT_PARAM_COLOR, {
 							255,
 							109,
@@ -2019,7 +2046,7 @@ function OnLoad()
 				settings.draws.esetting:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.esetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.esetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.esetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.esetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							128,
@@ -2035,7 +2062,7 @@ function OnLoad()
 				settings.draws.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.rsetting:addParam("DrawRChannel", "Draw Only if R Channeling", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.rsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.rsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.rsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.rsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -2062,7 +2089,7 @@ function OnLoad()
 				settings.draws.rsetting:addParam("DrawR", "Draw R Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.rsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.rsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 80, 60, 500, 0)
+				settings.draws.rsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
 						settings.draws.rsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -2077,7 +2104,7 @@ function OnLoad()
 			settings.draws.hitbox:addParam("DrawHitBox", "Draw Hit Box", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.hitbox:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws.hitbox:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-			settings.draws.hitbox:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 20, 20, 50, 0)
+			settings.draws.hitbox:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 30, 20, 50, 0)
 					settings.draws.hitbox:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 						200,
 						255,
@@ -2130,10 +2157,11 @@ function OnLoad()
 			settings.draws.aws:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws.aws:addParam("drawname", "Draw Name", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.aws:addParam("drawdistance", "Draw Distance To Enemy", SCRIPT_PARAM_ONOFF, true)
+			settings.draws.aws:addParam("outlines", "Draw Outlines", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.aws:addParam("maxrange", "Max Range", SCRIPT_PARAM_SLICE, 5000, 0, 20000, 0)
 			settings.draws.aws:addParam("Distance", "Line Distance", SCRIPT_PARAM_SLICE, 200, 20, 500, 0)
-			settings.draws.aws:addParam("Thick", "Line Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-			settings.draws.aws:addParam("TSize", "Text Size", SCRIPT_PARAM_SLICE, 20, 1, 40, 0)
+			settings.draws.aws:addParam("Thick", "Line Width", SCRIPT_PARAM_SLICE, 3, 1, 5, 0)
+			settings.draws.aws:addParam("TSize", "Text Size", SCRIPT_PARAM_SLICE, 13, 1, 40, 0)
 			settings.draws.aws:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws.aws:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
 			settings.draws.aws:addParam("info0", "Blacklist:", SCRIPT_PARAM_INFO, "")
@@ -2201,7 +2229,7 @@ function OnLoad()
 		settings:addParam("spacePermaMiddle", "(Lane Clear Key is Jungle Clear Key too)", SCRIPT_PARAM_INFO, "")
 		settings:addParam("spacePermaBottom", "", SCRIPT_PARAM_INFO, "")
 		settings:addParam("instruct", "Click For Instructions", SCRIPT_PARAM_ONOFF, false)
-		settings:addParam("antiAFK", "Anti AFK", SCRIPT_PARAM_ONOFF, true)
+		settings:addParam("antiAFK", "Anti AFK", SCRIPT_PARAM_ONOFF, false)
 		if KatarinaLoaded then
 			settings:addParam("vicpose", "Victory Pose", SCRIPT_PARAM_ONOFF, false)
 		end
@@ -2224,7 +2252,7 @@ function OnLoad()
 			end)
 		end
 		settings:addParam("thepatch", "Patch:", SCRIPT_PARAM_INFO, _PATCH)
-		settings:addParam("farplane", "Katarina Reborn By:", SCRIPT_PARAM_INFO, "Farplane")
+		settings:addParam("farplane", "" .. MyChampion .. " Reborn By:", SCRIPT_PARAM_INFO, "Farplane")
 		if _SKIN_CHANGER then
 			if KatarinaLoaded then
 				settings:addParam("selectedChampionSkin", "Skin Changer", SCRIPT_PARAM_LIST, 1, {
@@ -2616,6 +2644,7 @@ function GetDrawText(target)
 	 DmgTable = {
 		Q2 = getDmg("Q", target, myHero, 2),
 		Q = getDmg("Q", target, myHero),
+		W = 0,
 		E = getDmg("E", target, myHero),
 		R = getDmg("R", target, myHero),
 	}
@@ -3041,7 +3070,7 @@ function harass(target)
 end
 
 function Q_Dynamic_Harass(target)
-	for _, minion in pairs(minionManager(MINION_ENEMY, 1000, player, MINION_SORT_HEALTH_ASC).objects) do
+	for _, minion in pairs(minionManager(MINION_ENEMY, 1000, myHero, MINION_SORT_HEALTH_ASC).objects) do
 		if ValidTarget(minion, 1000) and minion ~= nil and target ~= nil and not minion.dead and not target.dead and minion.visible and target.visible then
 			if GetDistance(myHero, minion) <= Katarina_Q_Range and GetDistance(minion, target) <= Katarina_Q_BounceRange and Q_is_Ready then
 				if settings.harass.noQundertower then
@@ -3551,6 +3580,7 @@ function SpellCast(spell, target)
 					CastSpell(_E, target)
 				end
 			end
+		end
 		if spell == "Rjungle" and target ~= nil and R_is_Ready then
 			if settings.killsteal.jungleR.dragon then
 				if ((target.charName == "SRU_Dragon_Fire") or (target.charName == "SRU_Dragon_Water") or (target.charName == "SRU_Dragon_Air") or (target.charName == "SRU_Dragon_Earth") or (target.charName == "SRU_Dragon_Elder")) then
@@ -3805,7 +3835,8 @@ function OnCreateObj(obj)
 				WBuff = true
 			end
 		end
-		if obj.spellOwner == myHero and obj.name:find("missile") then
+		--if obj and obj.name == "Akali_Base_markOftheAssasin_marker_tar_02.troy" then
+		if obj.spellOwner == myHero and obj.name == "missile" then
 			Gobj = obj
 		end
 	end
@@ -3836,7 +3867,8 @@ function OnDeleteObj(obj)
 				ValidR = false
 			end
 		end
-		if obj.spellOwner == myHero and obj.name and obj.name:find("missile") then
+		--if obj and obj.name == "Akali_Base_markOftheAssasin_marker_tar.troy" then
+		if obj.spellOwner == myHero and obj.name == "missile" then
 			Gobj = nil
 		end
 	end
@@ -3886,8 +3918,6 @@ function OnDraw()
 	end
 	if AkaliLoaded then
 		if settings.fleeKey then
-			local MyHeroPosition = WorldToScreen(myHero.pos)
-			local MyMousePosition = WorldToScreen(mousePos)
 			if GetDistance(mousePos) > 680 then
 				unit = myHero + (Vector(mousePos) - myHero):normalized() * 680
 			else
@@ -3909,7 +3939,7 @@ function OnDraw()
 					end
 				end
 				for _, target in pairs(jungleMinions.objects) do
-					if not target.charName == "S5Test_WardCorpse" then
+					if target.charName ~= "S5Test_WardCorpse" then
 						if GetDistance(target, unit) < 200 and not target.dead and UnitDistance > GetDistance(mousePos, target) then
 							UnitDistance = GetDistance(mousePos, target)
 							UnitValid = target
@@ -3919,21 +3949,25 @@ function OnDraw()
 				if UnitValid then
 					unit = UnitValid
 				end
-				draw:DrawCircle(unit.x, unit.y, unit.z, 50, ARGB(255, 0, 255, 0))
 				LinePos = WorldToScreen(D3DXVECTOR3(unit.x, unit.y, unit.z))
-				DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 2, ARGB(255, 0, 255, 0))
+				VectorOffset = unit + (Vector(myHero) - unit):normalized() * 46
 				if not UnitValid then
+					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 0, 255, 0))
+					DrawCircle2(unit.x, myHero.y, unit.z, 2, 50, 30, ARGB(255, 0, 255, 0))
+					DrawCircle2(unit.x, myHero.y, unit.z, 2, settings.misc.foundwarddistance, 50, ARGB(50, 255, 255, 255))
 					DrawText("Flee Position", 14, LinePos.x - 25, LinePos.y - 60, ARGB(255, 0, 255, 0))
 				else
+					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 255, 255, 0))
+					DrawCircle2(unit.x, myHero.y, unit.z, 2, 50, 30, ARGB(255, 255, 255, 0))
 					DrawText("Location Found", 14, LinePos.x - 26, LinePos.y - 60, ARGB(255, 255, 255, 0))
 				end
 				if GetDistance(mousePos) > 680 then
 					if UnitValid then
-						self:Cast("R", UnitValid)
+						SpellCast("R", UnitValid)
 					end
 				elseif GetDistance(mousePos) < 680 then
 					if UnitValid then
-						self:Cast("R", UnitValid)
+						SpellCast("R", UnitValid)
 					end
 				end
 			end
@@ -3971,7 +4005,7 @@ function OnDraw()
 					end
 				end
 				for _, target in pairs(jungleMinions.objects) do
-					if not target.charName == "S5Test_WardCorpse" then
+					if target.charName ~= "S5Test_WardCorpse" then
 						if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
 							--PrintSpecialText("Detected: MINION_JUNGLE entity")
 							MinionDistance = GetDistance(mousePos, target)
@@ -3988,14 +4022,19 @@ function OnDraw()
 				if WardValid then
 					ward = WardValid
 				end
-				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 10, ARGB(255, 0, 255, 0))
-				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 50, ARGB(50, 255, 255, 255))
 				LinePos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
-				DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 2, ARGB(255, 0, 255, 0))
+				--DrawLine3D(myHero.x, myHero.y, myHero.z, ward.x, myHero.y, ward.z, 2, ARGB(255, 0, 255, 0))
+				--DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 2, ARGB(255, 0, 255, 0))
+				VectorOffset = unit + (Vector(myHero) - unit):normalized() * 46
 				if not WardValid then
+					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 0, 255, 0))
+					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 30, ARGB(255, 0, 255, 0))
+					DrawCircle2(ward.x, myHero.y, ward.z, 2, settings.misc.foundwarddistance, 50, ARGB(50, 255, 255, 255))
 					DrawText("Ward Jump", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 0, 255, 0))
 				else
-					DrawText("Minion Jump", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 0, 255, 0))
+					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 255, 255, 0))
+					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 30, ARGB(255, 255, 255, 0))
+					DrawText("Location Found", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 255, 0))
 				end
 				if GetDistance(mousePos) < 590 then
 					if WardValid then
@@ -4112,7 +4151,7 @@ function OnDraw()
 				end
 			end
 			for _, target in pairs(jungleMinions.objects) do
-				if not target.charName == "S5Test_WardCorpse" then
+				if target.charName ~= "S5Test_WardCorpse" then
 					if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
 						MinionDistance = GetDistance(mousePos, target)
 						WardValid = target
@@ -4206,7 +4245,7 @@ function OnDraw()
 			end
 		end
 		if settings.draws.qsetting.CloseToDeathMinions then
-			for _, minion in pairs(minionManager(MINION_ENEMY, 1000, player, MINION_SORT_HEALTH_ASC).objects) do
+			for _, minion in pairs(minionManager(MINION_ENEMY, 1000, myHero, MINION_SORT_HEALTH_ASC).objects) do
 				if ValidTarget(minion, 1000) and minion ~= nil and not minion.dead and minion.visible then
 					if GetDistance(myHero, minion) <= 1000 then
 						local DMG = getDmg("Q", minion, myHero)
@@ -4225,7 +4264,7 @@ function OnDraw()
 					if ValidTarget(target, 1000) and target ~= nil and not target.dead and target.visible then
 						if Q_is_Ready then
 							if GetDistance(myHero, target) >= Katarina_Q_Range then
-								for _, minion in pairs(minionManager(MINION_ENEMY, 1000, player, MINION_SORT_HEALTH_ASC).objects) do
+								for _, minion in pairs(minionManager(MINION_ENEMY, 1000, myHero, MINION_SORT_HEALTH_ASC).objects) do
 									if ValidTarget(minion, 1000) and minion ~= nil and not minion.dead and minion.visible then
 										if GetDistance(minion, target) <= Katarina_Q_BounceRange then
 											if GetDistance(myHero, minion) <= Katarina_Q_Range then
@@ -4328,25 +4367,25 @@ function OnDraw()
 		local TimeW = WTime()
 		if os.clock() < WAt + TimeW then
 			if settings.draws.wsetting.DrawWSpeed and WBuff then
-				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime() - os.clock()) + myHero.boundingRadius, 50, ARGB(table.unpack(settings.draws.color.Wspeedcolor)))
+				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime() - os.clock()) + myHero.boundingRadius, 50, ARGB(table.unpack(settings.draws.wsetting.Wspeedcolor)))
 			end
 		end
 		if Qup then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Akali_Q_Range, settings.draws.qsetting.snap, ARGB(table.unpack(settings.draws.qsetting.color)))
 		end
 		if Wup then
-			DrawCircle(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, 715, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
+			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, 715, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
 		end
 		if W2up then
 			myPosV = Vector(myHero.x, myHero.z)
 			mousePosV = Vector(mousePos.x, mousePos.z)
 			if GetDistance(myPosV, mousePosV) < 715 - 60 then
-				DrawCircle2(mousePos.x, mousePos.y, mousePos.z, settings.draws.wsetting.width, 420, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))	
+				DrawCircle2(mousePos.x, myHero.y, mousePos.z, settings.draws.wsetting.width, 420, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))	
 			else
 				finalV = myPosV+(mousePosV-myPosV):normalized()* (715 - 60)
 				DrawCircle2(finalV.x, myHero.y, finalV.y, settings.draws.wsetting.width, 420, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.Wcolor2)))
-				if settings.draws.DrawWtext then
-					DrawText3D("Cast W Here", finalV.x - 150, myHero.y, finalV.y + 50, 45, ARGB(table.unpack(settings.draws.color.Wcolor2)))
+				if settings.draws.wsetting.DrawWtext then
+					DrawText3D("Cast W Here", finalV.x - 150, myHero.y, finalV.y + 50, 45, ARGB(table.unpack(settings.draws.wsetting.Wcolor2)))
 				end
 			end
 		end
@@ -4355,6 +4394,9 @@ function OnDraw()
 		end
 		if Rup then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, Akali_R_Range, settings.draws.rsetting.snap, ARGB(table.unpack(settings.draws.rsetting.color)))
+			if settings.draws.rsetting.DrawR2 then
+				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, settings.combosettings.rsetting.Rdebuff, settings.draws.rsetting.snap, ARGB( 50, 255, 255, 255))
+			end
 		end
 		if Gobj then
 			if not myHero.dead then
@@ -4373,9 +4415,9 @@ function OnDraw()
 				end
 			end
 		end
-		if not myHero.dead then
+		if (settings.draws.wsetting.particles or settings.draws.wsetting.DrawWCountdown) and not myHero.dead then
 			if Wobj then
-				if settings.draws.DrawWCountdown then
+				if settings.draws.wsetting.DrawWCountdown then
 					if WBuffShroud then
 						local function roundToFirstDecimal(seconds)
 							return math.ceil(seconds * 10) * 0.1
@@ -4384,14 +4426,14 @@ function OnDraw()
 						DrawText3D(""..roundToFirstDecimal((CurrentWtimer - os.clock())).."", Wobj.x, Wobj.y, Wobj.z, 30, ARGB(255, 255, 255, 255))
 					end
 				end
-				if settings.draws.particles then
-					DrawCircle(Wobj.x, Wobj.y, Wobj.z, 420, ARGB(table.unpack(settings.draws.color.Wcirlcecolor)))
+				if settings.draws.wsetting.particles then
+					DrawCircle2(Wobj.x, Wobj.y + 40, Wobj.z, 2, 420, 40, ARGB(table.unpack(settings.draws.wsetting.WCirlceColor)))
 				end
 			end
 		end
 	end
 	if settings.draws.drawMouse then
-		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 40, 10, ARGB(255, 0, 255, 255))
+		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 40, 25, ARGB(255, 0, 255, 255))
 	end
 	for _, target in pairs(GetEnemyHeroes()) do
 		if ValidTarget(target, 15000) then
@@ -4517,23 +4559,23 @@ function OnDraw()
 	if settings.draws.DrawFPS then
 		DrawFPSHP()
 	end
-	if PopUp1 then
+	if PopUp then
 		local w, h1, h2 = (WINDOW_W*0.50), (WINDOW_H*.15), (WINDOW_H*.9)
 		DrawLine(w, h1/1.05, w, h2/1.97, w/1.75, ARGB(120,205,0,0))
 		DrawLine(w, h1, w, h2/2, w/1.8, ARGB(120,50,0,0))
-		DrawTextA(tostring("Welcome to Katarina Reborn!"), WINDOW_H*.028, (WINDOW_W/2), (WINDOW_H*.18), ARGB(255, 0 , 255, 255),"center","center")
-		DrawTextA(tostring("Hold Spacebar to cast standard Q E W R Combo. (or W first if you are in range)."), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.210), ARGB(255, 255, 255, 255))
+		DrawTextA(tostring("Welcome to One Reborn!"), WINDOW_H*.028, (WINDOW_W/2), (WINDOW_H*.18), ARGB(255, 0 , 255, 255),"center","center")
+		DrawTextA(tostring("Hold Spacebar to cast standard combos"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.210), ARGB(255, 255, 255, 255))
 		DrawTextA(tostring("Hold C (mixed mode) to Harass enemy and get CS!"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.225), ARGB(255, 255, 255, 255))
 		DrawTextA(tostring("Hold G to Ward Jump!"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.240), ARGB(255, 255, 255, 255))
-		DrawTextA(tostring("Hold X to use Hit and Run when an Enemy is Selected with Override."), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.255), ARGB(255, 255, 255, 255))
-		DrawTextA(tostring("Script will automatically try to steal jungle camps by default. (E disabled)"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.270), ARGB(255, 255, 255, 255))
-		DrawTextA(tostring('Reminder: You can disable the Debug Menu (on the left) under "Misc".'), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.285), ARGB(255, 255, 255, 255))
+		DrawTextA(tostring(""), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.255), ARGB(255, 255, 255, 255))
+		DrawTextA(tostring("Script will automatically try to steal jungle camps by default."), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.270), ARGB(255, 255, 255, 255))
+		--DrawTextA(tostring('Reminder: You can disable the Debug Menu (on the left) under "Misc".'), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.285), ARGB(255, 255, 255, 255))
 		--DrawTextA(tostring("Line"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.300), ARGB(255, 255, 255, 255))
-		DrawTextA(tostring("VIP Users unlock:"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.315), ARGB(225, 225, 175, 0))
-		DrawTextA(tostring("  Auto Leveler"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.330), ARGB(255, 255, 255, 255))
-		DrawTextA(tostring("  Skin Changer"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.345), ARGB(255, 255, 255, 255))
-		DrawTextA(tostring("  Debuger"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.360), ARGB(255, 255, 255, 255))
-		DrawTextA(tostring(""), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.375), ARGB(255, 255, 255, 255))
+		DrawTextA(tostring(""), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.315), ARGB(225, 225, 175, 0))
+		DrawTextA(tostring("Please report any bugs!"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.330), ARGB(255, 255, 255, 255))
+		DrawTextA(tostring(""), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.345), ARGB(255, 255, 255, 255))
+		DrawTextA(tostring("Open to Suggestions!"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.360), ARGB(255, 255, 255, 255))
+		DrawTextA(tostring("                           By: Farplane"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.375), ARGB(255, 255, 255, 255))
 		local w, h1, h2 = (WINDOW_W*0.49), (WINDOW_H*.70), (WINDOW_H*.75)
 		DrawLine(w, h1/1.775, w, h2/1.68, w*.11, ARGB(122, 255, 0, 255))
 		--DrawLine(w*.98, h1*.98, w*.98, h2*.98, w*.1*.98, ARGB(205,255,255,255))
@@ -4724,9 +4766,11 @@ function DrawUltimateAwareness(startx, starty, startz, endx, endy, endz, thickne
 	end
 	LeftPosVec = VectorLineStructure + (Vector(startLinePos) - VectorLineStructure):rotated(0, 45 * math.pi / 180, 0):normalized() * 40
 	RightPosVec = VectorLineStructure + (Vector(startLinePos) - VectorLineStructure):rotated(0, 315 * math.pi / 180, 0):normalized() * 40
-	DrawLine3D(startLinePos.x, startLinePos.y, startLinePos.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness + 2, ARGB(255, 0, 0, 0))
-	DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, LeftPosVec.x, LeftPosVec.y, LeftPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
-	DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, RightPosVec.x, RightPosVec.y, RightPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
+	if settings.draws.aws.outlines then
+		DrawLine3D(startLinePos.x, startLinePos.y, startLinePos.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness + 2, ARGB(255, 0, 0, 0))
+		DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, LeftPosVec.x, LeftPosVec.y, LeftPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
+		DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, RightPosVec.x, RightPosVec.y, RightPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
+	end
 	DrawLine3D(startLinePos.x, startLinePos.y, startLinePos.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness, color)
 	DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, LeftPosVec.x, LeftPosVec.y, LeftPosVec.z, thickness, color)
 	DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, RightPosVec.x, RightPosVec.y, RightPosVec.z, thickness, color)
@@ -5979,18 +6023,34 @@ function DrawDebugger()
 		DrawText("".. math.ceil(myHero.health) .. "/" .. math.ceil(myHero.maxHealth), 15, World_x1 - 565, World_y1 + 155, ARGB(255, 255, 255, 255))
 		DrawLine(190, 222, 290, 222, 16, ARGB(255, 0, 0, 0))
 		if not myHero.dead then
-			DrawLine(192, 222, 188+((myHero.health / myHero.maxHealth) * 100), 222, 10, ARGB(255, 0, 255, 0))
+			DrawLine(192, 222, 188 + ((myHero.health / myHero.maxHealth) * 100), 222, 10, ARGB(255, 0, 255, 0))
 		end
 		DrawText(math.ceil((myHero.health / myHero.maxHealth) * 100) .. "%", 15, World_x1 - 370, World_y1 + 155, ARGB(255, 255, 255, 255))
-		DrawText("Mana:", 15, World_x1 - 620, World_y1 + 170, ARGB(255, 0, 255, 255))
-		if myHero.dead then
-			myMana = 0
+		if MyChampion == "Akali" then
+			DrawText("Energy:", 15, World_x1 - 620, World_y1 + 170, ARGB(255, 0, 255, 255))
+			if myHero.dead then
+				myMana = 0
+			else
+				myMana = myHero.mana
+			end
 		else
-			myMana = myHero.mana
+			DrawText("Mana:", 15, World_x1 - 620, World_y1 + 170, ARGB(255, 0, 255, 255))
+			if myHero.dead then
+				myMana = 0
+			else
+				myMana = myHero.mana
+			end
 		end
 		DrawText("" .. math.ceil(myMana) .. "/" .. math.ceil(myHero.maxMana), 15, World_x1 - 565, World_y1 + 170, ARGB(255, 255, 255, 255))
 		DrawLine(190, 237, 290, 237, 16, ARGB(255, 0, 0, 0))
-		DrawText(myMana.. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
+		if MyChampion == "Akali" then
+			if not myHero.dead then
+				DrawLine(192, 237, 188+((myMana / myHero.maxMana) * 100), 237, 10, ARGB(255, 255, 255, 0))
+			end
+			DrawText(math.ceil((myMana / myHero.maxMana) * 100) .. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
+		else
+			DrawText(myMana.. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
+		end
 		DrawText("Current Gold:", 15, World_x1 - 620, World_y1 + 185, ARGB(255, 0, 255, 255))
 		DrawText("" .. math.ceil(myHero.gold), 15, World_x1 - 480, World_y1 + 185, ARGB(255, 255, 213, 0))
 		DrawText("Team:", 15, World_x1 - 620, World_y1 + 200, ARGB(255, 0, 255, 255))
