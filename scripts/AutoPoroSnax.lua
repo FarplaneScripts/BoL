@@ -59,7 +59,7 @@ function OnLoad()
 			0
 		})
 	menu:addParam("space", "", SCRIPT_PARAM_INFO, "")
-	menu:addParam("farplane", "Auto Poro Snax                  By:", SCRIPT_PARAM_INFO, "Farplane")
+	menu:addParam("farplane", "Auto Poro Snax                                 By:", SCRIPT_PARAM_INFO, "Farplane")
 		
 	--  On Load Message
 	print("")
