@@ -17,6 +17,11 @@ Added Draw Settings:
 	Width
 	Snap
 	Colour
+	
+Added vector at Poro Pos
+Changed Default Colour
+Reset Saved Settings
+Added Death Check on Draw
 ]]
 
 --  Checks Map OnLoad
@@ -41,21 +46,21 @@ end
 function OnLoad()
 
 	--  Menu
-	menu = scriptConfig("Auto Poro Snax", "AutoSnax01")
+	menu = scriptConfig("Auto Poro Snax", "AutoSnax02")
 	menu:addParam("enable", "Enabled", SCRIPT_PARAM_ONOFF, true)
 	menu:addParam("space", "", SCRIPT_PARAM_INFO, "")
 	menu:addParam("drawinfo", "Draws:", SCRIPT_PARAM_INFO, "")
 	menu:addParam("circle", "Draw Circle Around Poros", SCRIPT_PARAM_ONOFF, true)
 	menu:addParam("line", "Draw Line to Poros", SCRIPT_PARAM_ONOFF, true)
-	menu:addParam("range", "Range to Draw Poros", SCRIPT_PARAM_SLICE, 1000, 0, 10000, 0)
+	menu:addParam("range", "Range to Draw Poros", SCRIPT_PARAM_SLICE, 1250, 0, 10000, 0)
 	menu:addParam("space", "", SCRIPT_PARAM_INFO, "")
-	menu:addParam("size", "Size", SCRIPT_PARAM_SLICE, 40, 10, 100, 0)
+	menu:addParam("size", "Size", SCRIPT_PARAM_SLICE, 40, 10, 75, 0)
 	menu:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
 	menu:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 15, 10, 75, 0)
 		menu:addParam("colour", "Colour", SCRIPT_PARAM_COLOR, {
 			255,
+			72,
 			255,
-			0,
 			0
 		})
 	menu:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -68,17 +73,24 @@ function OnLoad()
 end
 
 function OnDraw()
-	for _, Poro in pairs(minionManager(MINION_JUNGLE, menu.range, myHero, MINION_SORT_HEALTH_ASC).objects) do
-		if Poro.charName == "HA_AP_Poro" then
-			
-			--  Draw Line to Poro
-			if menu.line then
-				DrawLine3D(myHero.x, myHero.y, myHero.z, Poro.x, Poro.y, Poro.z, menu.width, ARGB(table.unpack(menu.colour)))
-			end
-			
-			-- Draw Circle to Poro
-			if menu.circle then
-				DrawCircle2(Poro.x, Poro.y, Poro.z, menu.width, menu.size, menu.snap, ARGB(table.unpack(menu.colour)))
+	if not myHero.dead then
+		for _, Poro in pairs(minionManager(MINION_JUNGLE, menu.range, myHero, MINION_SORT_HEALTH_ASC).objects) do
+			if Poro.charName == "HA_AP_Poro" then
+				
+				--  Draw Line to Poro
+				if menu.line then
+					if menu.circle then
+						localvector = Poro + (Vector(myHero) - Poro):normalized() * (menu.size - 2)
+					else
+						localvector = Poro
+					end
+					DrawLine3D(myHero.x, myHero.y, myHero.z, localvector.x, Poro.y, localvector.z, menu.width, ARGB(table.unpack(menu.colour)))
+				end
+				
+				-- Draw Circle to Poro
+				if menu.circle then
+					DrawCircle2(Poro.x, Poro.y, Poro.z, menu.width, menu.size, menu.snap, ARGB(table.unpack(menu.colour)))
+				end
 			end
 		end
 	end
