@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 1.2
+-- > > > Version 1.3
 
 --_______________________________________________________________________________
 
@@ -29,6 +29,8 @@ _W_CALCS = false				-- More W Calculation -> Draws
 _LUDENS = false					-- Ludens Echo -> Debug
 _SKIN_CHANGER = true			-- Skin Changer Switch
 _IMMUNE_PRINTS = false			-- Print when Skills are being blocks due to immunities
+
+_Dev_Mode = true
 
 --[[
 			[ Champion Toggles ]
@@ -161,6 +163,13 @@ Akali_Switch = true				-- Disable this to prevent Akali portion of the script fr
 [x] Updated the "printer"
 [x] Fixed Dead Wards Classed as Jungle Minions. [S5Test_WardCorpse]
 
+		10/10/2016 | 9:20PM
+[x] Added Auto Poro-Snax for Howling Abyss
+[x] Separate jungle minions, example: "SRU_Crab"
+[x] Added all Summoner Spells support
+[x] Fixed Auto Ignite
+[x] Auto Cleanse / QSS / Mercurial / Gangplank Oranges / Alistar Ult / Olaf Ult
+
 
 
 
@@ -178,17 +187,15 @@ Akali_Switch = true				-- Disable this to prevent Akali portion of the script fr
 
 Fake Movement clicks (ShowGreenClick() BoL Broken.)
 Fake Attack clicks (ShowRedClick() BoL Broken.)
-Ignite support
-Flash support
 Local "recall" function
 Auto Potion + Scans for potion tick
 Auto QSS / Mercurial / Mikaels / Gangplank Oranges / Alistar Ult / Olaf Ult
 Delay to Auto QSS
-Mastery Badge Usage
+Mastery Badge Usage (After Kill?)
 Draw EndPos Point Waypoint on Minimap
 Override Orbwalk location to mousePos (SAC replaces mousePos with a normalized vector *300)
-MEC support for AOE spells (no champtions support yet . . .)
-Spell Cast Save before buff runs out (example: Riven Q's) - (no champtions support yet . . .)
+MEC support for AOE spells [Currently no champions supported.]
+Spell Cast Save before buff runs out (example: Riven Q's) [Currently no champions supported.]
 Total killed minions + jungle minions visual (functions works again check here: [http://puu.sh/rBnop/e68059bb97.jpg])
 Kills | Deaths | Assists visual
 Make a callback on bugsplat and game.isover that opens and edits a file containing match stats? idk
@@ -196,11 +203,23 @@ Auto Feed Poros
 Clone Revealer
 KS Zac Passive (if this is possible)
 Auto Dance after game
-Spell Levels under Spell Cooldowns ...(i'll pus this somewhere ... :s)
+Spell Levels under Spell Cooldowns ...(i'll put this somewhere ... :s)
 Snaps for Advanced circles to be visible (on screen) even if the source is not.
-Smart Level 2 Level up override based off the situation.
+Smart Level 2 Level up override based off the situation. [TOGGLE]
+Auto interrupt [Currently no champions supported.]
+Anti-Gapcloser [Currently no champions supported.]
+Check for Waypoints to not draw if someone is dead.... [i'm a fucking amateur :P]
+Time to Travel (to the end of Waypoints)
+EXP Range Circle
+ESP Draws
+Smart Ignite
+Auto Mikaels self
+Fix Flash after ward jump toggle.
+Jungle KS TT Enemies.
 
 ... yes I know  I need to add predictions, but I hate predictions... so.. Soon(tm)
+VPrediction
+HPrediction
 
 
 
@@ -211,12 +230,14 @@ Smart Level 2 Level up override based off the situation.
 Possibly take into account DangerPositions with S1mples script . . .
 Possibly fake recall spots near brush? (if it's not warded.)
 All Summoner Spells support.
-Separate jungle minions, example: "SRU_Crab[x].[x].[x]", but the only use I can see of this would be to toggle special spells for Dragon and Baron steal only. (example: Katarina E)
 Sprites for skin changer possibly? + animations? idk . . . (not high priority atm)
 Tower Ranges
 Ward Tracker
 Jungle Timers
 Skin Changer for Allies and Enemies
+SPrediction
+DivinePrediction
+AutoLevel continues to Level up past level 18 (for some featured game modes.)
 
 
 
@@ -226,6 +247,8 @@ Skin Changer for Allies and Enemies
 
 Classes within the script.
 Packets.
+Champion Sprite (waypoint EndPos)
+FHPrediction [spaghetti code Xd]
 
 
 
@@ -238,6 +261,7 @@ Fix Bug with jungle mobs and 'dead' wards.
 Find Summoner Spells again, I need a reference for this though, it has changed since back then.
 Add Q(2) dmg cal to W.
 Add Circle Around Killable (almost) Targets with Q.
+Dynamic Stop R to KS based off Enemies dmg and current health %
 
 
 
@@ -255,6 +279,20 @@ Q + AA Calculation for Minions/Farm mode
 Count R Buff Stacks
 
 
+
+
+
+======================================
+===========[ Known Issues ]===========
+======================================
+
+Script has a high crash rate with Howling Abyss, this issue is currently being investigated.   You can work around this issue by Loading the game without BoL (or without the script) and then injecting (or double F9 with the script ticked).
+"spell particles are not being drawn" - this is because BoL is not fully updated and .spellOwner does not work!
+AutoLevel print text spams chat when leveling up.
+
+
+
+
 ======================================
 ======================================
 ======================================
@@ -266,6 +304,52 @@ Count R Buff Stacks
 --Checks to see what script can load depending on what champion you are playing, do not touch these values.
 KatarinaLoaded = false
 AkaliLoaded = false
+
+local MyChampion = myHero.charName
+local MyUser = GetUser()
+
+--[[
+			 ██▓███   ██▀███   ██▓ ███▄    █ ▄▄▄█████▓▓█████  ██▀███  
+			▓██░  ██▒▓██ ▒ ██▒▓██▒ ██ ▀█   █ ▓  ██▒ ▓▒▓█   ▀ ▓██ ▒ ██▒
+			▓██░ ██▓▒▓██ ░▄█ ▒▒██▒▓██  ▀█ ██▒▒ ▓██░ ▒░▒███   ▓██ ░▄█ ▒
+			▒██▄█▓▒ ▒▒██▀▀█▄  ░██░▓██▒  ▐▌██▒░ ▓██▓ ░ ▒▓█  ▄ ▒██▀▀█▄  
+			▒██▒ ░  ░░██▓ ▒██▒░██░▒██░   ▓██░  ▒██▒ ░ ░▒████▒░██▓ ▒██▒
+			▒▓▒░ ░  ░░ ▒▓ ░▒▓░░▓  ░ ▒░   ▒ ▒   ▒ ░░   ░░ ▒░ ░░ ▒▓ ░▒▓░
+			░▒ ░       ░▒ ░ ▒░ ▒ ░░ ░░   ░ ▒░    ░     ░ ░  ░  ░▒ ░ ▒░
+			░░         ░░   ░  ▒ ░   ░   ░ ░   ░         ░     ░░   ░ 
+						░      ░           ░             ░  ░   ░ 
+]]
+
+function PrintSpecialText(msg)
+	print("<font color='#FF00FF'>[" .. MyChampion .. " Reborn] <font color='#00FF00'>-</font></font><font color='#FFFFFF'> " .. msg .. "</font>")
+end
+
+function PrintLoadedMSG()
+	SupportedChampion = true
+	PrintSpecialText("Loaded <font color='#00FF00'>" .. MyChampion .. "</font>, enjoy the game <font color='#00FFFF'>" .. MyUser .. "</font>!")
+end
+
+if MyChampion == "Katarina" and Katarina_Switch then
+	KatarinaLoaded = true
+	PrintLoadedMSG()
+elseif MyChampion == "Akali" and Akali_Switch then
+	AkaliLoaded = true
+	PrintLoadedMSG()
+else
+	SupportedChampion = false
+	PrintSpecialText("Chamption spells currently not supported: <font color='#00FF00'>" .. MyChampion .. "</font>!")
+	PrintSpecialText("Loading utility settings . . .")
+end
+
+DelayAction(function()
+	print(" ")
+	print("<font color='#00FFFF'> <font color='#FF00FF'><b><u>                       " .. MyChampion .. " Reborn                       </b></u></font><font color='#00FFFF'></font></font>")
+	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> Welcome <b><u><font color='#00FF00'>" .. MyUser .. "</font></b></u> Thank you for your support.  <font color='#00FF00'>GLHF!</font><font color='#00FFFF'></font></font>")
+	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> <font color='#00FF00'>ChangeLog</font> at my GitHub.<font color='#00FFFF'></font></font>")
+	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> Any suggestions/feedback please leave a post on the topic!</font>")
+	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> Please report any crashes!</font>")
+	print(" ")
+end, 13)
 
 --[[
 		 ██▒   █▓ ▄▄▄       ██▀███   ██▓ ▄▄▄       ▄▄▄▄    ██▓    ▓█████   ██████ 
@@ -284,15 +368,13 @@ AkaliLoaded = false
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1.2
-local _SCRIPT_VERSION_MENU = "1.2"
+local _SCRIPT_VERSION = 1.3
+local _SCRIPT_VERSION_MENU = "1.3"
 local _PATCH = "6.20"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
 local ___GetInventorySlotItem	= rawget(_G, "GetInventorySlotItem")
 local cfgpath = LIB_PATH.."Saves\\All_In_One_Reborn.cfg"
 
-local MyChampion = myHero.charName
-local MyUser = GetUser()
 local player = GetMyHero()
 local CurrentMap = GetGame().map.shortName
 
@@ -380,10 +462,6 @@ local PurpleSpawn = {
 --[[
 	AutoLevel start Vars
 ]]
-local OffSetQ = 0
-local OffSetW = 0
-local OffSetE = 0
-local OffSetR = 0
 local level
 local enable = false
 local drawlevelup = false
@@ -396,7 +474,7 @@ local Qwind = 0
 local Wwind = 0
 local Ewind = 0
 local Rwind = 0
-
+	
 --[[
 	Supported ACTIVE items (for now...)
 ]]
@@ -436,7 +514,15 @@ local items = {
 	[3100] = {
 		name = "LichBane",
 		range = 4900
-	}
+	},
+	[3140] = {
+		name = "QuicksilverSash",
+		range = 4900
+		},
+	[3139] = {
+		name = "MercurialScimitar",
+		range = 4900
+		}
 }
 
 --[[
@@ -454,49 +540,6 @@ local Ludens = {
 local enemyMinions = minionManager(MINION_ENEMY, 800, myHero, MINION_SORT_HEALTH_ASC)
 local allyMinions = minionManager(MINION_ALLY, 800, myHero, MINION_SORT_HEALTH_ASC)
 local jungleMinions = minionManager(MINION_JUNGLE, 800, myHero, MINION_SORT_HEALTH_ASC)
-
---[[
-			 ██▓███   ██▀███   ██▓ ███▄    █ ▄▄▄█████▓▓█████  ██▀███  
-			▓██░  ██▒▓██ ▒ ██▒▓██▒ ██ ▀█   █ ▓  ██▒ ▓▒▓█   ▀ ▓██ ▒ ██▒
-			▓██░ ██▓▒▓██ ░▄█ ▒▒██▒▓██  ▀█ ██▒▒ ▓██░ ▒░▒███   ▓██ ░▄█ ▒
-			▒██▄█▓▒ ▒▒██▀▀█▄  ░██░▓██▒  ▐▌██▒░ ▓██▓ ░ ▒▓█  ▄ ▒██▀▀█▄  
-			▒██▒ ░  ░░██▓ ▒██▒░██░▒██░   ▓██░  ▒██▒ ░ ░▒████▒░██▓ ▒██▒
-			▒▓▒░ ░  ░░ ▒▓ ░▒▓░░▓  ░ ▒░   ▒ ▒   ▒ ░░   ░░ ▒░ ░░ ▒▓ ░▒▓░
-			░▒ ░       ░▒ ░ ▒░ ▒ ░░ ░░   ░ ▒░    ░     ░ ░  ░  ░▒ ░ ▒░
-			░░         ░░   ░  ▒ ░   ░   ░ ░   ░         ░     ░░   ░ 
-						░      ░           ░             ░  ░   ░ 
-]]
-
-function PrintSpecialText(msg)
-	print("<font color='#FF00FF'>[" .. MyChampion .. " Reborn] <font color='#00FF00'>-</font></font><font color='#FFFFFF'> " .. msg .. "</font>")
-end
-
-function PrintLoadedMSG()
-	SupportedChampion = true
-	PrintSpecialText("Loaded <font color='#00FF00'>" .. MyChampion .. "</font>, enjoy the game <font color='#00FFFF'>" .. MyUser .. "</font>!")
-end
-
-if MyChampion == "Katarina" and Katarina_Switch then
-	KatarinaLoaded = true
-	PrintLoadedMSG()
-elseif MyChampion == "Akali" and Akali_Switch then
-	AkaliLoaded = true
-	PrintLoadedMSG()
-else
-	SupportedChampion = false
-	PrintSpecialText("Chamption spells currently not supported: <font color='#00FF00'>" .. MyChampion .. "</font>!")
-	PrintSpecialText("Loading utility settings . . .")
-end
-
-DelayAction(function()
-	print(" ")
-	print("<font color='#00FFFF'> <font color='#FF00FF'><b><u>                       " .. MyChampion .. " Reborn                       </b></u></font><font color='#00FFFF'></font></font>")
-	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> Welcome <b><u><font color='#00FF00'>" .. MyUser .. "</font></b></u> Thank you for your support.  <font color='#00FF00'>GLHF!</font><font color='#00FFFF'></font></font>")
-	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> <font color='#00FF00'>ChangeLog</font> at my GitHub.<font color='#00FFFF'></font></font>")
-	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> Any suggestions/feedback please leave a post on the topic!</font>")
-	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> Please report any crashes!</font>")
-	print(" ")
-end, 18)
 
 --[[
 		 ███▄ ▄███▓ ██▓  ██████  ▄████▄       █████▒█    ██  ███▄    █  ▄████▄  ▄▄▄█████▓ ██▓ ▒█████   ███▄    █   ██████ 
@@ -848,6 +891,125 @@ function GetSlotItem(id, unit)
 end
 
 --[[
+	Summoner Spell Slot Finder
+]]
+function FindSummonerSlot(name)
+	if myHero:GetSpellData(SUMMONER_1).name == name then
+		slot = SUMMONER_1
+	elseif myHero:GetSpellData(SUMMONER_2).name == name then
+		slot = SUMMONER_2
+	else
+		slot = nil
+	end
+	return slot
+end
+
+--[[
+	Summoner Spell Data
+]]
+FlashSlot = FindSummonerSlot("SummonerFlash")
+IgniteSlot = FindSummonerSlot("SummonerDot")
+CleanseSlot = FindSummonerSlot("SummonerBoost")
+SmiteSlot = FindSummonerSlot("SummonerSmite")
+TeleportSlot = FindSummonerSlot("SummonerTeleport")
+HealSlot = FindSummonerSlot("SummonerHeal")
+GhostSlot = FindSummonerSlot("SummonerHaste")
+BarrierSlot = FindSummonerSlot("SummonerBarrier")
+ExhaustSlot = FindSummonerSlot("SummonerExhaust")
+MarkSlot = FindSummonerSlot("SummonerSnowball")
+
+if _Dev_Mode then
+	PrintSpecialText("Spell Name (SLOT1): <font color='#FF0000'>" .. myHero:GetSpellData(SUMMONER_1).name .. "</font>")
+	PrintSpecialText("Spell Name (SLOT2): <font color='#FF0000'>" .. myHero:GetSpellData(SUMMONER_2).name .. "</font>")
+	if FlashSlot ~= nil then
+		PrintSpecialText("Found Flash Slot: <font color='#00FFFF'>" .. FlashSlot .. "</font>")
+	end
+	if IgniteSlot ~= nil then
+		PrintSpecialText("Found Ignite Slot: <font color='#00FFFF'>" .. IgniteSlot .. "</font>")
+	end
+	if CleanseSlot ~= nil then
+		PrintSpecialText("Found Cleanse Slot: <font color='#00FFFF'>" .. CleanseSlot .. "</font>")
+	end
+	if SmiteSlot ~= nil then
+		PrintSpecialText("Found Smite Slot: <font color='#00FFFF'>" .. SmiteSlot .. "</font>")
+	end
+	if TeleportSlot ~= nil then
+		PrintSpecialText("Found Teleport Slot: <font color='#00FFFF'>" .. TeleportSlot .. "</font>")
+	end
+	if HealSlot ~= nil then
+		PrintSpecialText("Found Heal Slot: <font color='#00FFFF'>" .. HealSlot .. "</font>")
+	end
+	if GhostSlot ~= nil then
+		PrintSpecialText("Found Ghost Slot: <font color='#00FFFF'>" .. GhostSlot .. "</font>")
+	end
+	if BarrierSlot ~= nil then
+		PrintSpecialText("Found Barrier Slot: <font color='#00FFFF'>" .. BarrierSlot .. "</font>")
+	end
+	if ExhaustSlot ~= nil then
+		PrintSpecialText("Found Exhaust Slot: <font color='#00FFFF'>" .. ExhaustSlot .. "</font>")
+	end
+	if MarkSlot ~= nil then
+		PrintSpecialText("Found Mark Slot: <font color='#00FFFF'>" .. MarkSlot .. "</font>")
+	end
+end
+
+--[[
+	Remove Impairment(s)
+]]
+function RemoveImpaired(Type)
+	impairedHumanizer = settings.misc.impaired.Humanizer
+	--PrintSpecialText("Your Movement Has Been Impaired! Type: <font color='#FF0000'>" .. Type .. "</font>")
+	if MyChampion == "Gangplank" and W_is_Ready then
+		if settings.misc.impaired.gangplank then
+			DelayAction(function()
+				PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>W</font>")
+				CastSpell(_W)
+				return
+			end, impairedHumanizer)
+		end
+	end
+	if MyChampion == "Alistar" and R_is_Ready then
+		if settings.misc.impaired.alistar then
+			DelayAction(function()
+				PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>R</font>")
+				CastSpell(_R)
+				return
+			end, impairedHumanizer)
+		end
+	end
+	if MyChampion == "Olaf" and R_is_Ready then
+		if settings.misc.impaired.olaf then
+			DelayAction(function()
+				PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>R</font>")
+				CastSpell(_R)
+				return
+			end, impairedHumanizer)
+		end
+	end
+	if CleanseSlot ~= nil and myHero:CanUseSpell(CleanseSlot) == READY and settings.misc.impaired.cleanse then
+		DelayAction(function()
+			PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>Cleanse</font>")
+			CastSpell(CleanseSlot)
+			return
+		end, impairedHumanizer)
+	end
+	if CheckItemREADY(3140) and settings.misc.impaired.QSS then
+		DelayAction(function()
+			PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>QSS</font>")
+			CastItem(3140)
+			return
+		end, impairedHumanizer)
+	end
+	if CheckItemREADY(3139) and settings.misc.impaired.Mercurial then
+		DelayAction(function()
+			PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>Mercurial</font>")
+			CastItem(3139)
+			return
+		end, impairedHumanizer)
+	end
+end
+
+--[[
 	Team Finder + Finds if you're in ally spawn + Finds if you're in enemy spawn.
 ]]
 function Find_Team_AllySpawn_EnemySpawn_Switches()
@@ -918,20 +1080,6 @@ function CountEnemyHeroInRange(distance)
 	else
 		return 0
 	end
-end
-
---[[
-	Summoner Spell Slot Finder
-]]
-function FindSummonerSlot(SpellName)
-	if SpellName ~= nil then
-		for slot = 0, 12 do
-			if string.lower(SpellName) == string.lower(myHero:GetSpellData(slot).name) then
-				return slot
-			end
-		end
-	end
-	return nil
 end
 
 --[[
@@ -1192,7 +1340,25 @@ function OnTick()
 			end
 		end
 	end
-
+	
+	--  Auto Ignite
+	if settings.killsteal.ignite then
+		AutoIgnite()
+	end
+	
+	--  Auto Poro-Snax
+	if settings.misc.enablePoro then
+		if not myHero.dead then
+			if myHero:CanUseSpell(ITEM_7) == READY then
+				for _, Poro in pairs(minionManager(MINION_JUNGLE, 300, myHero, MINION_SORT_HEALTH_ASC).objects) do
+					if Poro.charName == "HA_AP_Poro" then
+						CastSpell(ITEM_7)
+					end
+				end
+			end
+		end
+	end
+	
 	--  Pop Up Menu/Instructions.            (Outdated - Still has Katarina Reborn Text.)
 	if settings.instruct then
 		settings.instruct = false
@@ -1479,7 +1645,7 @@ end
 ]]
 
 function OnLoad()
-	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_001")
+	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_003")
 			settings.ts = TargetSelector(TARGET_LESS_CAST, 800, DAMAGE_MAGIC, true)
 			settings.ts.name = "" .. MyChampion
 			settings:addTS(settings.ts)
@@ -1524,7 +1690,7 @@ function OnLoad()
 				end
 				if KatarinaLoaded then
 					settings.combosettings.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
-					settings.combosettings.esetting:addParam("hdelay", "E Humanizer Delay (Seconds)", SCRIPT_PARAM_SLICE, 0, 0, 2, 1)
+					settings.combosettings.esetting:addParam("hdelay", "E Humanizer Delay           Seconds:", SCRIPT_PARAM_SLICE, 0, 0, 2, 1)
 				end
 				if AkaliLoaded then
 					settings.combosettings.esetting:addParam("EWaitQ", "Wait for Q proc before E cast", SCRIPT_PARAM_ONOFF, true)
@@ -1595,17 +1761,57 @@ function OnLoad()
 			settings.harass:addParam("info0", "               Coming Soon (tm)", SCRIPT_PARAM_INFO, "")
 		end
 		settings:addSubMenu("Misc", "misc")
+			settings.misc:addSubMenu("Remove Impairments (Auto QSS)", "impaired")
+				settings.misc.impaired:addParam("Humanizer", "Humanizer                        Seconds:", SCRIPT_PARAM_SLICE, 0, 0, 2, 1)
+				settings.misc.impaired:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.misc.impaired:addParam("info0", "                    ~ Remove ~", SCRIPT_PARAM_INFO, "")
+				settings.misc.impaired:addParam("exhaust", "Exhaust", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("stun", "Stun", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("silence", "Silence", SCRIPT_PARAM_ONOFF, false)
+				settings.misc.impaired:addParam("taunt", "Taunt", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("slow", "Slow", SCRIPT_PARAM_ONOFF, false)
+				settings.misc.impaired:addParam("fear", "Fear", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("snare", "Snare", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("charm", "Charm", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("suppression", "Suppression", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("blind", "Blind", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("fear", "Fear", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("knockup", "Knock Up [Currently Disabled]", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.misc.impaired:addParam("info1", "                       ~ Use ~", SCRIPT_PARAM_INFO, "")
+				if MyChampion == "Gangplank" then
+					settings.misc.impaired:addParam("gangplank", "Gangplank W", SCRIPT_PARAM_ONOFF, true)
+				end
+				if MyChampion == "Alistar" then
+					settings.misc.impaired:addParam("alistar", "Alistar R", SCRIPT_PARAM_ONOFF, true)
+				end
+				if MyChampion == "Olaf" then
+					settings.misc.impaired:addParam("olaf", "Olaf R", SCRIPT_PARAM_ONOFF, true)
+				end
+				settings.misc.impaired:addParam("QSS", "Quicksilver Sash", SCRIPT_PARAM_ONOFF, true)
+				settings.misc.impaired:addParam("Mercurial", "Mercurial Scimitar", SCRIPT_PARAM_ONOFF, true)
+				if CleanseSlot ~= nil then
+					settings.misc.impaired:addParam("cleanse", "Cleanse", SCRIPT_PARAM_ONOFF, true)
+				end
+				settings.misc.impaired:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.misc.impaired:addParam("info3", "                     ~ Note ~", SCRIPT_PARAM_INFO, "")
+				settings.misc.impaired:addParam("info4", "             Script will prioritise:", SCRIPT_PARAM_INFO, "")
+				settings.misc.impaired:addParam("info5", "           Spells -> Cleanse -> Items", SCRIPT_PARAM_INFO, "")
 			if ((SupportedChampion) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
 				if ((KatarinaLoaded) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.misc:addParam("space", "Ward Jump:", SCRIPT_PARAM_INFO, "")
 					settings.misc:addParam("foundwarddistance", "Found Ward Snap Distance", SCRIPT_PARAM_SLICE, 200, 50, 500, 0)
-					--settings.misc:addParam("FlashJump", "Flash after ward jump", SCRIPT_PARAM_ONOFF, false)							--  Might add this back... I lost how to use Summoner Spells.
+					--settings.misc:addParam("FlashJump", "Flash after ward jump", SCRIPT_PARAM_ONOFF, false)
 					--settings.misc:addParam("FlashLength", "Minimum Length for Flash", SCRIPT_PARAM_SLICE, 450, 0, 450, 1)
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				end
 				if AkaliLoaded then
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.misc:addParam("foundwarddistance", "Flee Loaction Snap Distance", SCRIPT_PARAM_SLICE, 200, 50, 500, 0)
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				end
-				settings.misc:addParam("useMouseVector", "Use normalized vector", SCRIPT_PARAM_ONOFF, false)
+				settings.misc:addParam("useMouseVector", "Use normalized vector to mousePos", SCRIPT_PARAM_ONOFF, false)
 				settings.misc:addParam("MouseVector", "normalized vector:", SCRIPT_PARAM_SLICE, 300, 140, 600, 0)
 				settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				if KatarinaLoaded then
@@ -1634,7 +1840,9 @@ function OnLoad()
 			settings.misc:addParam("MovementMark", "Enable Fake Movement Markers", SCRIPT_PARAM_ONOFF, true)
 			settings.misc:addParam("AttackMark", "Enable Fake Attack Markers", SCRIPT_PARAM_ONOFF, true)
 			settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
-			settings.misc:addParam("info1", "               . . . . Soon (tm)     ;)", SCRIPT_PARAM_INFO, "")
+			if GetGame().map.shortName == "howlingAbyss" then
+				settings.misc:addParam("enablePoro", "Enable Auto Poro-Snax", SCRIPT_PARAM_ONOFF, true)
+			end
 		settings:addSubMenu("Kill Steal", "killsteal")
 			if SupportedChampion then
 				if KatarinaLoaded then
@@ -1798,15 +2006,17 @@ function OnLoad()
 						settings.killsteal.jungleR:addParam("others", "   Others", SCRIPT_PARAM_ONOFF, false)
 				end
 				settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
-				settings.killsteal:addParam("infospace", "                   ~ Killsteal ~", SCRIPT_PARAM_INFO, "")
-				settings.killsteal:addParam("killswitch", "Killsteal (Enemies)", SCRIPT_PARAM_ONOFF, true)
+				settings.killsteal:addParam("infospace", "                   ~ Kill Steal ~", SCRIPT_PARAM_INFO, "")
+				settings.killsteal:addParam("killswitch", "Kill Steal (Enemies)", SCRIPT_PARAM_ONOFF, true)
 				if KatarinaLoaded then
 					settings.killsteal:addParam("stopRks", "Stop R to Kill Steal", SCRIPT_PARAM_ONOFF, true)
-					settings.killsteal:addParam("wards", "Use WardJump + Q steal", SCRIPT_PARAM_ONOFF, true)
+					settings.killsteal:addParam("wards", "Use WardJump + Q Kill Steal", SCRIPT_PARAM_ONOFF, true)
 					settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				end
-				settings.killsteal:addParam("stealcamps", "Killsteal (Jungle)", SCRIPT_PARAM_ONOFF, true)
+				settings.killsteal:addParam("stealcamps", "Kill Steal (Jungle)", SCRIPT_PARAM_ONOFF, true)
 			end
+			settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.killsteal:addParam("ignite", "Kill Steal Ignite (Smart Ignite soon(tm))", SCRIPT_PARAM_ONOFF, true)
 			settings.killsteal:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
 			settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.killsteal:addParam("info1", "Script Takes Kills Automatically With:", SCRIPT_PARAM_INFO, "")
@@ -1877,7 +2087,7 @@ function OnLoad()
 				[6] = "R-E-Q-W"
 			})
 			settings.autolvl:addParam("space", "", SCRIPT_PARAM_INFO, "")
-			settings.autolvl:addParam("PrintText", "Print Levelup Text in Chat", SCRIPT_PARAM_ONOFF, false)
+			settings.autolvl:addParam("PrintText", "Print Levelup Text in Chat", SCRIPT_PARAM_ONOFF, true)
 			settings.autolvl:addParam("DrawText", "Draw Levelup Text (On Champion)", SCRIPT_PARAM_ONOFF, true)
 			settings.autolvl:addParam("DrawTextSlider", "Time of Levelup Text (Seconds)", SCRIPT_PARAM_SLICE, 3, 1, 5, 0)
 			Sequence()
@@ -2169,6 +2379,21 @@ function OnLoad()
 				settings.draws.aws:addParam("blacklist" .. Enemy.charName, "Ignore " .. Enemy.charName, SCRIPT_PARAM_ONOFF, false)
 			end
 			settings.draws.aws:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
+			if GetGame().map.shortName == "howlingAbyss" then
+				settings.draws:addSubMenu("Auto Poro-Snax Settings", "autoPoro")
+					settings.draws.autoPoro:addParam("circle", "Draw Circle Around Poros", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.autoPoro:addParam("line", "Draw Line to Poros", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.autoPoro:addParam("range", "Range to Draw Poros", SCRIPT_PARAM_SLICE, 1250, 0, 10000, 0)
+					settings.draws.autoPoro:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.draws.autoPoro:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+					settings.draws.autoPoro:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 15, 10, 75, 0)
+						settings.draws.autoPoro:addParam("colour", "Colour", SCRIPT_PARAM_COLOR, {
+							255,
+							72,
+							255,
+							0
+						})
+			end
 			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws:addParam("DrawPing", "Draw Ping", SCRIPT_PARAM_ONOFF, true)
 			settings.draws:addParam("DrawFPS", "Draw FPS", SCRIPT_PARAM_ONOFF, true)
@@ -3253,17 +3478,15 @@ end
 --		  ░   ▒    ░░░ ░ ░   ░      ░ ░ ░ ▒         ▒ ░░ ░   ░    ░   ░ ░  ▒ ░  ░         ░   
 --		      ░  ░   ░                  ░ ░         ░        ░          ░  ░              ░  ░
 
---[[function Katarina:AutoIgnite()
-	if self.igniteFound then
-		if myHero:CanUseSpell(self.summonerSpells.ignite) == READY then
-			for i, target in pairs(GetEnemyHeroes()) do
-				if ValidTarget(target, 600) and target.health <= getDmg('IGNITE', target, myHero) then
-					CastSpell(self.summonerSpells.ignite, target)
-				end
+function AutoIgnite()
+	if IgniteSlot ~= nil and myHero:CanUseSpell(IgniteSlot) == READY then
+		for _, target in pairs(GetEnemyHeroes()) do
+			if ValidTarget(target, 600) and target.health <= getDmg('IGNITE', target, myHero) then
+				CastSpell(IgniteSlot, target)
 			end
 		end
 	end
-end]]
+end
 
 -- THIS IS BROKEN/CHANGED FUCKIN HELL LOL								SOON(TM)
 
@@ -3409,7 +3632,7 @@ function SpellCast(spell, target)
 				end
 			end
 			if settings.killsteal.jungleQ.others then
-				if target.charName ~= "SRU_Dragon_Fire" and target.charName ~= "SRU_Dragon_Water" and target.charName ~= "SRU_Dragon_Air" and target.charName ~= "SRU_Dragon_Earth" and target.charName ~= "SRU_Dragon_Elder" and target.charName ~= "SRU_Baron" and target.charName ~= "SRU_RiftHerald" and target.charName ~= "SRU_Blue" and target.charName ~= "SRU_BlueMini" and target.charName ~= "SRU_BlueMini2" and target.charName ~= "SRU_Red" and target.charName ~= "SRU_RedMini" and target.charName ~= "SRU_Murkwolf" and target.charName ~= "SRU_MurkwolfMini" and target.charName ~= "SRU_Razorbeak" and target.charName ~= "SRU_RazorbeakMini" and target.charName ~= "SRU_Krug" and target.charName ~= "SRU_KrugMini" and target.charName ~= "Sru_Crab" and target.charName ~= "SRU_Gromp" and target.charName ~= "S5Test_WardCorpse" then
+				if target.charName ~= "SRU_Dragon_Fire" and target.charName ~= "SRU_Dragon_Water" and target.charName ~= "SRU_Dragon_Air" and target.charName ~= "SRU_Dragon_Earth" and target.charName ~= "SRU_Dragon_Elder" and target.charName ~= "SRU_Baron" and target.charName ~= "SRU_RiftHerald" and target.charName ~= "SRU_Blue" and target.charName ~= "SRU_BlueMini" and target.charName ~= "SRU_BlueMini2" and target.charName ~= "SRU_Red" and target.charName ~= "SRU_RedMini" and target.charName ~= "SRU_Murkwolf" and target.charName ~= "SRU_MurkwolfMini" and target.charName ~= "SRU_Razorbeak" and target.charName ~= "SRU_RazorbeakMini" and target.charName ~= "SRU_Krug" and target.charName ~= "SRU_KrugMini" and target.charName ~= "Sru_Crab" and target.charName ~= "SRU_Gromp" and target.charName ~= "S5Test_WardCorpse" and target.charName ~= "HA_AP_Poro" then
 					PrintSpecialText("Q CAST <font color='#FFFF00'>=</font> New Minion Found: <font color='#00FFFF'>" .. target.charName .. "</font>   | HP: <font color='#00FF00'>" .. target.health .. "</font>")
 					CastSpell(_Q, target)
 				end
@@ -3492,7 +3715,7 @@ function SpellCast(spell, target)
 				end
 			end
 			if settings.killsteal.jungleW.others then
-				if target.charName ~= "SRU_Dragon_Fire" and target.charName ~= "SRU_Dragon_Water" and target.charName ~= "SRU_Dragon_Air" and target.charName ~= "SRU_Dragon_Earth" and target.charName ~= "SRU_Dragon_Elder" and target.charName ~= "SRU_Baron" and target.charName ~= "SRU_RiftHerald" and target.charName ~= "SRU_Blue" and target.charName ~= "SRU_BlueMini" and target.charName ~= "SRU_BlueMini2" and target.charName ~= "SRU_Red" and target.charName ~= "SRU_RedMini" and target.charName ~= "SRU_Murkwolf" and target.charName ~= "SRU_MurkwolfMini" and target.charName ~= "SRU_Razorbeak" and target.charName ~= "SRU_RazorbeakMini" and target.charName ~= "SRU_Krug" and target.charName ~= "SRU_KrugMini" and target.charName ~= "Sru_Crab" and target.charName ~= "SRU_Gromp" and target.charName ~= "S5Test_WardCorpse" then
+				if target.charName ~= "SRU_Dragon_Fire" and target.charName ~= "SRU_Dragon_Water" and target.charName ~= "SRU_Dragon_Air" and target.charName ~= "SRU_Dragon_Earth" and target.charName ~= "SRU_Dragon_Elder" and target.charName ~= "SRU_Baron" and target.charName ~= "SRU_RiftHerald" and target.charName ~= "SRU_Blue" and target.charName ~= "SRU_BlueMini" and target.charName ~= "SRU_BlueMini2" and target.charName ~= "SRU_Red" and target.charName ~= "SRU_RedMini" and target.charName ~= "SRU_Murkwolf" and target.charName ~= "SRU_MurkwolfMini" and target.charName ~= "SRU_Razorbeak" and target.charName ~= "SRU_RazorbeakMini" and target.charName ~= "SRU_Krug" and target.charName ~= "SRU_KrugMini" and target.charName ~= "Sru_Crab" and target.charName ~= "SRU_Gromp" and target.charName ~= "S5Test_WardCorpse" and target.charName ~= "HA_AP_Poro" then
 					PrintSpecialText("W CAST <font color='#FFFF00'>=</font> New Minion Found: <font color='#00FFFF'>" .. target.charName .. "</font>   | HP: <font color='#00FF00'>" .. target.health .. "</font>")
 					CastSpell(_W, target)
 				end
@@ -3575,7 +3798,7 @@ function SpellCast(spell, target)
 				end
 			end
 			if settings.killsteal.jungleE.others then
-				if target.charName ~= "SRU_Dragon_Fire" and target.charName ~= "SRU_Dragon_Water" and target.charName ~= "SRU_Dragon_Air" and target.charName ~= "SRU_Dragon_Earth" and target.charName ~= "SRU_Dragon_Elder" and target.charName ~= "SRU_Baron" and target.charName ~= "SRU_RiftHerald" and target.charName ~= "SRU_Blue" and target.charName ~= "SRU_BlueMini" and target.charName ~= "SRU_BlueMini2" and target.charName ~= "SRU_Red" and target.charName ~= "SRU_RedMini" and target.charName ~= "SRU_Murkwolf" and target.charName ~= "SRU_MurkwolfMini" and target.charName ~= "SRU_Razorbeak" and target.charName ~= "SRU_RazorbeakMini" and target.charName ~= "SRU_Krug" and target.charName ~= "SRU_KrugMini" and target.charName ~= "Sru_Crab" and target.charName ~= "SRU_Gromp" and target.charName ~= "S5Test_WardCorpse" then
+				if target.charName ~= "SRU_Dragon_Fire" and target.charName ~= "SRU_Dragon_Water" and target.charName ~= "SRU_Dragon_Air" and target.charName ~= "SRU_Dragon_Earth" and target.charName ~= "SRU_Dragon_Elder" and target.charName ~= "SRU_Baron" and target.charName ~= "SRU_RiftHerald" and target.charName ~= "SRU_Blue" and target.charName ~= "SRU_BlueMini" and target.charName ~= "SRU_BlueMini2" and target.charName ~= "SRU_Red" and target.charName ~= "SRU_RedMini" and target.charName ~= "SRU_Murkwolf" and target.charName ~= "SRU_MurkwolfMini" and target.charName ~= "SRU_Razorbeak" and target.charName ~= "SRU_RazorbeakMini" and target.charName ~= "SRU_Krug" and target.charName ~= "SRU_KrugMini" and target.charName ~= "Sru_Crab" and target.charName ~= "SRU_Gromp" and target.charName ~= "S5Test_WardCorpse" and target.charName ~= "HA_AP_Poro" then
 					PrintSpecialText("E CAST <font color='#FFFF00'>=</font> New Minion Found: <font color='#00FFFF'>" .. target.charName .. "</font>   | HP: <font color='#00FF00'>" .. target.health .. "</font>")
 					CastSpell(_E, target)
 				end
@@ -3658,7 +3881,7 @@ function SpellCast(spell, target)
 				end
 			end
 			if settings.killsteal.jungleR.others then
-				if target.charName ~= "SRU_Dragon_Fire" and target.charName ~= "SRU_Dragon_Water" and target.charName ~= "SRU_Dragon_Air" and target.charName ~= "SRU_Dragon_Earth" and target.charName ~= "SRU_Dragon_Elder" and target.charName ~= "SRU_Baron" and target.charName ~= "SRU_RiftHerald" and target.charName ~= "SRU_Blue" and target.charName ~= "SRU_BlueMini" and target.charName ~= "SRU_BlueMini2" and target.charName ~= "SRU_Red" and target.charName ~= "SRU_RedMini" and target.charName ~= "SRU_Murkwolf" and target.charName ~= "SRU_MurkwolfMini" and target.charName ~= "SRU_Razorbeak" and target.charName ~= "SRU_RazorbeakMini" and target.charName ~= "SRU_Krug" and target.charName ~= "SRU_KrugMini" and target.charName ~= "Sru_Crab" and target.charName ~= "SRU_Gromp" and target.charName ~= "S5Test_WardCorpse" then
+				if target.charName ~= "SRU_Dragon_Fire" and target.charName ~= "SRU_Dragon_Water" and target.charName ~= "SRU_Dragon_Air" and target.charName ~= "SRU_Dragon_Earth" and target.charName ~= "SRU_Dragon_Elder" and target.charName ~= "SRU_Baron" and target.charName ~= "SRU_RiftHerald" and target.charName ~= "SRU_Blue" and target.charName ~= "SRU_BlueMini" and target.charName ~= "SRU_BlueMini2" and target.charName ~= "SRU_Red" and target.charName ~= "SRU_RedMini" and target.charName ~= "SRU_Murkwolf" and target.charName ~= "SRU_MurkwolfMini" and target.charName ~= "SRU_Razorbeak" and target.charName ~= "SRU_RazorbeakMini" and target.charName ~= "SRU_Krug" and target.charName ~= "SRU_KrugMini" and target.charName ~= "Sru_Crab" and target.charName ~= "SRU_Gromp" and target.charName ~= "S5Test_WardCorpse" and target.charName ~= "HA_AP_Poro" then
 					PrintSpecialText("R CAST <font color='#FFFF00'>=</font> New Minion Found: <font color='#00FFFF'>" .. target.charName .. "</font>   | HP: <font color='#00FF00'>" .. target.health .. "</font>")
 					CastSpell(_R, target)
 				end
@@ -3721,13 +3944,54 @@ function OnProcessSpell(unit, buff)
 	end
 end
 
-function OnApplyBuff(source, target, buff)
-	if source == myHero and target and buff.name == "katarinaqmark" then
-		TargetsWithQ[target.networkID] = true
-		Katarina_WaitQ = false
-	end
-	if source == myHero and buff.name == "AkaliMota" then
-		TargetsWithQ[target.networkID] = true
+function OnApplyBuff(entity, source, buff)
+	if source and source.isMe then
+		if entity == myHero then
+			if buff.name == "katarinaqmark" then
+				TargetsWithQ[target.networkID] = true
+				Katarina_WaitQ = false
+			end
+			if buff.name == "AkaliMota" then
+				TargetsWithQ[target.networkID] = true
+			end
+		end
+		if entity.type == myHero.type then
+			--PrintSpecialText("<font color='#00FFFF'>Buff Type: </font>" .. buff.type)
+			if buff.name == "SummonerExhaust" and settings.misc.impaired.exhaust then
+				RemoveImpaired("Exhaust")
+			end
+			if buff.type == 5 and settings.misc.impaired.stun then
+				RemoveImpaired("Stun")
+			end
+			if buff.type == 7 and settings.misc.impaired.silence then
+				RemoveImpaired("Silence")
+			end
+			if buff.type == 8 and settings.misc.impaired.taunt then
+				RemoveImpaired("Taunt")
+			end
+			if buff.type == 10 and settings.misc.impaired.slow then
+				RemoveImpaired("Slow")
+			end
+			if buff.type == 11 and settings.misc.impaired.snare then
+				RemoveImpaired("Snare")
+			end
+			if buff.type == 21 and settings.misc.impaired.charm then
+				RemoveImpaired("Charm")
+			end
+			if buff.type == 24 and settings.misc.impaired.suppression then
+				RemoveImpaired("Suppression")
+			end
+			if buff.type == 25 and settings.misc.impaired.blind then
+				RemoveImpaired("Blind")
+			end
+			if buff.type == 28 and settings.misc.impaired.fear then
+				RemoveImpaired("Fear")
+			end
+			if buff.type == 29 and settings.misc.impaired.knockup then
+				PrintSpecialText("You have been knocked up!")
+				--RemoveImpaired("KnockUp")
+			end
+		end
 	end
 end
 
@@ -3916,6 +4180,31 @@ function OnDraw()
 			end
 		end
 	end
+	if GetGame().map.shortName == "howlingAbyss" then
+		if settings.misc.enablePoro then
+			if not myHero.dead then
+				for _, Poro in pairs(minionManager(MINION_JUNGLE, settings.draws.autoPoro.range, myHero, MINION_SORT_HEALTH_ASC).objects) do
+					if Poro.charName == "HA_AP_Poro" then
+						
+						--  Draw Line to Poro
+						if settings.draws.autoPoro.line then
+							if settings.draws.autoPoro.circle then
+								PoroVector = Poro + (Vector(myHero) - Poro):normalized() * (Poro.boundingRadius - 2)
+							else
+								PoroVector = Poro
+							end
+							DrawLine3D(myHero.x, myHero.y, myHero.z, PoroVector.x, Poro.y, PoroVector.z, settings.draws.autoPoro.width, ARGB(table.unpack(settings.draws.autoPoro.colour)))
+						end
+						
+						-- Draw Circle to Poro
+						if settings.draws.autoPoro.circle then
+							DrawCircle2(Poro.x, Poro.y, Poro.z, settings.draws.autoPoro.width, Poro.boundingRadius, settings.draws.autoPoro.snap, ARGB(table.unpack(settings.draws.autoPoro.colour)))
+						end
+					end
+				end
+			end
+		end
+	end
 	if AkaliLoaded then
 		if settings.fleeKey then
 			if GetDistance(mousePos) > 680 then
@@ -3940,9 +4229,11 @@ function OnDraw()
 				end
 				for _, target in pairs(jungleMinions.objects) do
 					if target.charName ~= "S5Test_WardCorpse" then
-						if GetDistance(target, unit) < 200 and not target.dead and UnitDistance > GetDistance(mousePos, target) then
-							UnitDistance = GetDistance(mousePos, target)
-							UnitValid = target
+						if target.charName ~= "HA_AP_Poro" then
+							if GetDistance(target, unit) < 200 and not target.dead and UnitDistance > GetDistance(mousePos, target) then
+								UnitDistance = GetDistance(mousePos, target)
+								UnitValid = target
+							end
 						end
 					end
 				end
@@ -4006,10 +4297,11 @@ function OnDraw()
 				end
 				for _, target in pairs(jungleMinions.objects) do
 					if target.charName ~= "S5Test_WardCorpse" then
-						if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
-							--PrintSpecialText("Detected: MINION_JUNGLE entity")
-							MinionDistance = GetDistance(mousePos, target)
-							WardValid = target
+						if target.charName ~= "HA_AP_Poro" then
+							if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
+								MinionDistance = GetDistance(mousePos, target)
+								WardValid = target
+							end
 						end
 					end
 				end
@@ -4025,15 +4317,15 @@ function OnDraw()
 				LinePos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
 				--DrawLine3D(myHero.x, myHero.y, myHero.z, ward.x, myHero.y, ward.z, 2, ARGB(255, 0, 255, 0))
 				--DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 2, ARGB(255, 0, 255, 0))
-				VectorOffset = unit + (Vector(myHero) - unit):normalized() * 46
+				VectorOffset = ward + (Vector(myHero) - ward):normalized() * 46
 				if not WardValid then
 					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 0, 255, 0))
-					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 30, ARGB(255, 0, 255, 0))
-					DrawCircle2(ward.x, myHero.y, ward.z, 2, settings.misc.foundwarddistance, 50, ARGB(50, 255, 255, 255))
+					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 40, ARGB(255, 0, 255, 0))
+					DrawCircle2(ward.x, myHero.y, ward.z, 2, settings.misc.foundwarddistance, 70, ARGB(50, 255, 255, 255))
 					DrawText("Ward Jump", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 0, 255, 0))
 				else
 					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 255, 255, 0))
-					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 30, ARGB(255, 255, 255, 0))
+					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 40, ARGB(255, 255, 255, 0))
 					DrawText("Location Found", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 255, 0))
 				end
 				if GetDistance(mousePos) < 590 then
@@ -4152,9 +4444,11 @@ function OnDraw()
 			end
 			for _, target in pairs(jungleMinions.objects) do
 				if target.charName ~= "S5Test_WardCorpse" then
-					if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
-						MinionDistance = GetDistance(mousePos, target)
-						WardValid = target
+					if target.charName ~= "HA_AP_Poro" then
+						if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
+							MinionDistance = GetDistance(mousePos, target)
+							WardValid = target
+						end
 					end
 				end
 			end
@@ -4237,7 +4531,7 @@ function OnDraw()
 		--	DrawText3D("" .. roundToFirstDecimal(TheUltTimer), myHero.x + 203, myHero.y, myHero.z + 97, 30, ARGB(255, 0, 0, 0), true)
 		--	DrawText3D("" .. roundToFirstDecimal(TheUltTimer), myHero.x + 200, myHero.y, myHero.z + 100, 30, ARGB(255, 255, 0, 0), true)
 			DrawText("" .. LastUltPosText, 20, UltPos.x - 45, UltPos.y, ARGB(255, 0, 255, 0))
-			DrawCircle2(UltX, UltY, UltZ, 2, 100, 35, ARGB(255, 0, 255, 0))
+			DrawCircle2(UltX, UltY, UltZ, 2, 100, 60, ARGB(255, 0, 255, 0))
 		end
 		if os.clock() < EAt + ETime() then
 			if settings.draws.esetting.DrawErecudtion and EBuff then
@@ -4250,9 +4544,9 @@ function OnDraw()
 					if GetDistance(myHero, minion) <= 1000 then
 						local DMG = getDmg("Q", minion, myHero)
 						if DMG > minion.health then
-							DrawCircle2(minion.x, minion.y, minion.z, 2, 25, 15, ARGB(255, 0, 255, 0))
+							DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 30, ARGB(255, 0, 255, 0))
 						elseif DMG + 150 > minion.health then
-							DrawCircle2(minion.x, minion.y, minion.z, 2, 25, 15, ARGB(255, 255, 120, 0))
+							DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 30, ARGB(255, 255, 120, 0))
 						end
 					end
 				end
@@ -4270,19 +4564,19 @@ function OnDraw()
 											if GetDistance(myHero, minion) <= Katarina_Q_Range then
 												DrawLine3D(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 2, ARGB(255, 255, 255, 0))
 												DrawLine3D(minion.x, minion.y, minion.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
-												DrawCircle2(minion.x, minion.y, minion.z, 2, 50, 20, ARGB(255, 255, 255, 0))
-												DrawCircle2(target.x, target.y, target.z, 2, 50, 20, ARGB(255, 0, 255, 0))
+												DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 40, ARGB(255, 255, 255, 0))
+												DrawCircle2(target.x, target.y, target.z, 2, minion.boundingRadius, 40, ARGB(255, 0, 255, 0))
 											elseif GetDistance(myHero, minion) >= Katarina_Q_Range and GetDistance(myHero, minion) <= Katarina_Q_Range + Katarina_Q_BounceRange then
-												DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 20, ARGB(100, 255, 255, 0))
+												DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 80, ARGB(100, 255, 255, 0))
 											end
 										elseif GetDistance(minion, target) >= Katarina_Q_BounceRange and GetDistance(minion, target) <= 500 then
-											DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 20, ARGB(100, 255, 0, 0))
+											DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 80, ARGB(100, 255, 0, 0))
 										end
 									end
 								end
 							else
 								DrawLine3D(myHero.x, myHero.y, myHero.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
-								DrawCircle2(target.x, target.y, target.z, 2, 50, 20, ARGB(255, 0, 255, 0))
+								DrawCircle2(target.x, target.y, target.z, 2, target.boundingRadius, 40, ARGB(255, 0, 255, 0))
 							end
 						end
 					end
@@ -5149,25 +5443,33 @@ end
 --		                                                              ░   
 
 function AutoLevel()
-	if player.level > 18 then
+	if myHero.level > 18 then
 		return
 	end
-    local QLevel, WLevel, ELevel, RLevel = player:GetSpellData(_Q).level + OffSetQ, player:GetSpellData(_W).level + OffSetW, player:GetSpellData(_E).level + OffSetE, player:GetSpellData(_R).level + OffSetR
-    if QLevel + WLevel + ELevel + RLevel < player.level then
+    local QLevel = myHero:GetSpellData(_Q).level
+	local WLevel = myHero:GetSpellData(_W).level
+	local ELevel = myHero:GetSpellData(_E).level
+	local RLevel = myHero:GetSpellData(_R).level
+	if (QLevel + WLevel + ELevel + RLevel) == myHero.level then
+		PrintFlag = true
+	end
+    if (QLevel + WLevel + ELevel + RLevel) < myHero.level then
         local SpellSlot = { SPELL_1, SPELL_2, SPELL_3, SPELL_4, }
         local level = { 0, 0, 0, 0 }
-        for i = 1, player.level, 1 do
+        for i = 1, myHero.level, 1 do
             level[AbilitySequence[i]] = level[AbilitySequence[i]] + 1
         end
         for i, SkillSet in ipairs({ QLevel, WLevel, ELevel, RLevel }) do
             if SkillSet < level[i] then
 				LevelSpell(SpellSlot[i])
-				PrintLevelUpText = true
+				if PrintFlag then
+					PrintLevelUpText = true
+				end
 				DrawLevelUp = true
 				if myHero:GetSpellData(SpellSlot[i]).level == 0 then
 					LevelText = "available!"
 				else
-					LevelText = "at level " .. myHero:GetSpellData(SpellSlot[i]).level + 1 .. "!"
+					LevelText = "at level <font color='#00FFFF'>" .. myHero:GetSpellData(SpellSlot[i]).level + 1 .. "</font>!"
 				end
 				if SpellSlot[i] == SPELL_1 then
 					SpellText = "Q"
@@ -5179,10 +5481,11 @@ function AutoLevel()
 					SpellText = "R"
 				end
 				if PrintLevelUpText then
+					PrintFlag = false
 					if settings.autolvl.PrintText then
-						print("<font color='#00FF00'>[Katarina Reborn] <font color='#FFFF00'>-</font><font color='#FFFFFF'> Spell " .. "<font color='#00FFFF'>(" .. SpellText .. ") <font color='#FFFF00'>-</font></font> is now " .. LevelText .. "</font>")
+						PrintLevelUpText = false
+						PrintSpecialText("Spell " .. "(<font color='#00FFFF'>" .. SpellText .. "</font>) <font color='#FFFF00'>-</font> is now " .. LevelText)
 					end
-					PrintLevelUpText = false
 				end
 				if settings.autolvl.DrawText then
 					DelayAction(function()
@@ -5193,727 +5496,115 @@ function AutoLevel()
         end
     end
 end
-
+		
 function Sequence()
 	if settings.autolvl.sequenceSpells2 == 1 and settings.autolvl.sequenceSpells1 == 1 then AbilitySequence = {
-		1,
-		2,
-		3,
-		1,
-		1,
-		4,
-		1,
-		2,
-		1,
-		2,
-		4,
-		2,
-		2,
-		3,
-		3,
-		4,
-		3,
-		3,
+		1,2,3,1,1,4,1,2,1,2,4,2,2,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 1 and settings.autolvl.sequenceSpells1 == 2 then AbilitySequence = {
-		1,
-		3,
-		2,
-		1,
-		1,
-		4,
-		1,
-		2,
-		1,
-		2,
-		4,
-		2,
-		2,
-		3,
-		3,
-		4,
-		3,
-		3,
+		1,3,2,1,1,4,1,2,1,2,4,2,2,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 1 and settings.autolvl.sequenceSpells1 == 3 then AbilitySequence = {
-		2,
-		1,
-		3,
-		1,
-		1,
-		4,
-		1,
-		2,
-		1,
-		2,
-		4,
-		2,
-		2,
-		3,
-		3,
-		4,
-		3,
-		3,
+		2,1,3,1,1,4,1,2,1,2,4,2,2,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 1 and settings.autolvl.sequenceSpells1 == 4 then AbilitySequence = {
-		2,
-		3,
-		1,
-		1,
-		1,
-		4,
-		1,
-		2,
-		1,
-		2,
-		4,
-		2,
-		2,
-		3,
-		3,
-		4,
-		3,
-		3,
+		2,3,1,1,1,4,1,2,1,2,4,2,2,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 1 and settings.autolvl.sequenceSpells1 == 5 then AbilitySequence = {
-		3,
-		2,
-		1,
-		1,
-		1,
-		4,
-		1,
-		2,
-		1,
-		2,
-		4,
-		2,
-		2,
-		3,
-		3,
-		4,
-		3,
-		3,
+		3,2,1,1,1,4,1,2,1,2,4,2,2,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 1 and settings.autolvl.sequenceSpells1 == 6 then AbilitySequence = {
-		3,
-		1,
-		2,
-		1,
-		1,
-		4,
-		1,
-		2,
-		1,
-		2,
-		4,
-		2,
-		2,
-		3,
-		3,
-		4,
-		3,
-		3,
+		3,1,2,1,1,4,1,2,1,2,4,2,2,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 2 and settings.autolvl.sequenceSpells1 == 1 then AbilitySequence = {
-		1,
-		2,
-		3,
-		1,
-		1,
-		4,
-		1,
-		3,
-		1,
-		3,
-		4,
-		3,
-		3,
-		2,
-		2,
-		4,
-		2,
-		2,
+		1,2,3,1,1,4,1,3,1,3,4,3,3,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 2 and settings.autolvl.sequenceSpells1 == 2 then AbilitySequence = {
-		1,
-		3,
-		2,
-		1,
-		1,
-		4,
-		1,
-		3,
-		1,
-		3,
-		4,
-		3,
-		3,
-		2,
-		2,
-		4,
-		2,
-		2,
+		1,3,2,1,1,4,1,3,1,3,4,3,3,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 2 and settings.autolvl.sequenceSpells1 == 3 then AbilitySequence = {
-		2,
-		1,
-		3,
-		1,
-		1,
-		4,
-		1,
-		3,
-		1,
-		3,
-		4,
-		3,
-		3,
-		2,
-		2,
-		4,
-		2,
-		2,
+		2,1,3,1,1,4,1,3,1,3,4,3,3,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 2 and settings.autolvl.sequenceSpells1 == 4 then AbilitySequence = {
-		2,
-		3,
-		1,
-		1,
-		1,
-		4,
-		1,
-		3,
-		1,
-		3,
-		4,
-		3,
-		3,
-		2,
-		2,
-		4,
-		2,
-		2,
+		2,3,1,1,1,4,1,3,1,3,4,3,3,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 2 and settings.autolvl.sequenceSpells1 == 5 then AbilitySequence = {
-		3,
-		2,
-		1,
-		1,
-		1,
-		4,
-		1,
-		3,
-		1,
-		3,
-		4,
-		3,
-		3,
-		2,
-		2,
-		4,
-		2,
-		2,
+		3,2,1,1,1,4,1,3,1,3,4,3,3,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 2 and settings.autolvl.sequenceSpells1 == 6 then AbilitySequence = {
-		3,
-		1,
-		2,
-		1,
-		1,
-		4,
-		1,
-		3,
-		1,
-		3,
-		4,
-		3,
-		3,
-		2,
-		2,
-		4,
-		2,
-		2,
+		3,1,2,1,1,4,1,3,1,3,4,3,3,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 3 and settings.autolvl.sequenceSpells1 == 1 then AbilitySequence = {
-		1,
-		2,
-		3,
-		2,
-		2,
-		4,
-		2,
-		1,
-		2,
-		1,
-		4,
-		1,
-		1,
-		3,
-		3,
-		4,
-		3,
-		3,
+		1,2,3,2,2,4,2,1,2,1,4,1,1,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 3 and settings.autolvl.sequenceSpells1 == 2 then AbilitySequence = {
-		1,
-		3,
-		2,
-		2,
-		2,
-		4,
-		2,
-		1,
-		2,
-		1,
-		4,
-		1,
-		1,
-		3,
-		3,
-		4,
-		3,
-		3,
+		1,3,2,2,2,4,2,1,2,1,4,1,1,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 3 and settings.autolvl.sequenceSpells1 == 3 then AbilitySequence = {
-		2,
-		1,
-		3,
-		2,
-		2,
-		4,
-		2,
-		1,
-		2,
-		1,
-		4,
-		1,
-		1,
-		3,
-		3,
-		4,
-		3,
-		3,
+		2,1,3,2,2,4,2,1,2,1,4,1,1,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 3 and settings.autolvl.sequenceSpells1 == 4 then AbilitySequence = {
-		2,
-		3,
-		1,
-		2,
-		2,
-		4,
-		2,
-		1,
-		2,
-		1,
-		4,
-		1,
-		1,
-		3,
-		3,
-		4,
-		3,
-		3,
+		2,3,1,2,2,4,2,1,2,1,4,1,1,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 3 and settings.autolvl.sequenceSpells1 == 5 then AbilitySequence = {
-		3,
-		2,
-		1,
-		2,
-		2,
-		4,
-		2,
-		1,
-		2,
-		1,
-		4,
-		1,
-		1,
-		3,
-		3,
-		4,
-		3,
-		3,
+		3,2,1,2,2,4,2,1,2,1,4,1,1,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 3 and settings.autolvl.sequenceSpells1 == 6 then AbilitySequence = {
-		3,
-		1,
-		2,
-		2,
-		2,
-		4,
-		2,
-		1,
-		2,
-		1,
-		4,
-		1,
-		1,
-		3,
-		3,
-		4,
-		3,
-		3,
+		3,1,2,2,2,4,2,1,2,1,4,1,1,3,3,4,3,3
 	}
 	elseif settings.autolvl.sequenceSpells2 == 4 and settings.autolvl.sequenceSpells1 == 1 then AbilitySequence = {
-		1,
-		2,
-		3,
-		2,
-		2,
-		4,
-		2,
-		3,
-		2,
-		3,
-		4,
-		3,
-		3,
-		1,
-		1,
-		4,
-		1,
-		1,
+		1,2,3,2,2,4,2,3,2,3,4,3,3,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 4 and settings.autolvl.sequenceSpells1 == 2 then AbilitySequence = {
-		1,
-		3,
-		2,
-		2,
-		2,
-		4,
-		2,
-		3,
-		2,
-		3,
-		4,
-		3,
-		3,
-		1,
-		1,
-		4,
-		1,
-		1,
+		1,3,2,2,2,4,2,3,2,3,4,3,3,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 4 and settings.autolvl.sequenceSpells1 == 3 then AbilitySequence = {
-		2,
-		1,
-		3,
-		2,
-		2,
-		4,
-		2,
-		3,
-		2,
-		3,
-		4,
-		3,
-		3,
-		1,
-		1,
-		4,
-		1,
-		1,
+		2,1,3,2,2,4,2,3,2,3,4,3,3,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 4 and settings.autolvl.sequenceSpells1 == 4 then AbilitySequence = {
-		2,
-		3,
-		1,
-		2,
-		2,
-		4,
-		2,
-		3,
-		2,
-		3,
-		4,
-		3,
-		3,
-		1,
-		1,
-		4,
-		1,
-		1,
+		2,3,1,2,2,4,2,3,2,3,4,3,3,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 4 and settings.autolvl.sequenceSpells1 == 5 then AbilitySequence = {
-		3,
-		2,
-		1,
-		2,
-		2,
-		4,
-		2,
-		3,
-		2,
-		3,
-		4,
-		3,
-		3,
-		1,
-		1,
-		4,
-		1,
-		1,
+		3,2,1,2,2,4,2,3,2,3,4,3,3,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 4 and settings.autolvl.sequenceSpells1 == 6 then AbilitySequence = {
-		3,
-		1,
-		2,
-		2,
-		2,
-		4,
-		2,
-		3,
-		2,
-		3,
-		4,
-		3,
-		3,
-		1,
-		1,
-		4,
-		1,
-		1,
+		3,1,2,2,2,4,2,3,2,3,4,3,3,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 5 and settings.autolvl.sequenceSpells1 == 1 then AbilitySequence = {
-		1,
-		2,
-		3,
-		3,
-		3,
-		4,
-		3,
-		2,
-		3,
-		2,
-		4,
-		2,
-		2,
-		1,
-		1,
-		4,
-		1,
-		1,
+		1,2,3,3,3,4,3,2,3,2,4,2,2,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 5 and settings.autolvl.sequenceSpells1 == 2 then AbilitySequence = {
-		1,
-		3,
-		2,
-		3,
-		3,
-		4,
-		3,
-		2,
-		3,
-		2,
-		4,
-		2,
-		2,
-		1,
-		1,
-		4,
-		1,
-		1,
+		1,3,2,3,3,4,3,2,3,2,4,2,2,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 5 and settings.autolvl.sequenceSpells1 == 3 then AbilitySequence = {
-		2,
-		1,
-		3,
-		3,
-		3,
-		4,
-		3,
-		2,
-		3,
-		2,
-		4,
-		2,
-		2,
-		1,
-		1,
-		4,
-		1,
-		1,
+		2,1,3,3,3,4,3,2,3,2,4,2,2,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 5 and settings.autolvl.sequenceSpells1 == 4 then AbilitySequence = {
-		2,
-		3,
-		1,
-		3,
-		3,
-		4,
-		3,
-		2,
-		3,
-		2,
-		4,
-		2,
-		2,
-		1,
-		1,
-		4,
-		1,
-		1,
+		2,3,1,3,3,4,3,2,3,2,4,2,2,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 5 and settings.autolvl.sequenceSpells1 == 5 then AbilitySequence = {
-		3,
-		2,
-		1,
-		3,
-		3,
-		4,
-		3,
-		2,
-		3,
-		2,
-		4,
-		2,
-		2,
-		1,
-		1,
-		4,
-		1,
-		1,
+		3,2,1,3,3,4,3,2,3,2,4,2,2,1,1,4,1,1
 	}
 	elseif settings.autolvl.sequenceSpells2 == 5 and settings.autolvl.sequenceSpells1 == 6 then AbilitySequence = {
-		3,
-		1,
-		2,
-		3,
-		3,
-		4,
-		3,
-		2,
-		3,
-		2,
-		4,
-		2,
-		2,
-		1,
-		1,
-		4,
-		1,
-		1,
+		3,1,2,3,3,4,3,2,3,2,4,2,2,1,1,4,1,1
 	}
-	elseif settings.autolvl.sequenceSpells2 == 6 and settngs.autolvl.sequenceSpells1 == 1 then AbilitySequence = {
-		1,
-		2,
-		3,
-		3,
-		3,
-		4,
-		3,
-		1,
-		3,
-		1,
-		4,
-		1,
-		1,
-		2,
-		2,
-		4,
-		2,
-		2,
+	elseif settings.autolvl.sequenceSpells2 == 6 and settings.autolvl.sequenceSpells1 == 1 then AbilitySequence = {
+		1,2,3,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 6 and settings.autolvl.sequenceSpells1 == 2 then AbilitySequence = {
-		1,
-		3,
-		2,
-		3,
-		3,
-		4,
-		3,
-		1,
-		3,
-		1,
-		4,
-		1,
-		1,
-		2,
-		2,
-		4,
-		2,
-		2,
+		1,3,2,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 6 and settings.autolvl.sequenceSpells1 == 3 then AbilitySequence = {
-		2,
-		1,
-		3,
-		3,
-		3,
-		4,
-		3,
-		1,
-		3,
-		1,
-		4,
-		1,
-		1,
-		2,
-		2,
-		4,
-		2,
-		2,
+		2,1,3,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 6 and settings.autolvl.sequenceSpells1 == 4 then AbilitySequence = {
-		2,
-		3,
-		1,
-		3,
-		3,
-		4,
-		3,
-		1,
-		3,
-		1,
-		4,
-		1,
-		1,
-		2,
-		2,
-		4,
-		2,
-		2,
+		2,3,1,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 6 and settings.autolvl.sequenceSpells1 == 5 then AbilitySequence = {
-		3,
-		2,
-		2,
-		3,
-		3,
-		4,
-		3,
-		1,
-		3,
-		1,
-		4,
-		1,
-		1,
-		2,
-		2,
-		4,
-		2,
-		2,
+		3,2,2,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 6 and settings.autolvl.sequenceSpells1 == 6 then AbilitySequence = {
-		3,
-		1,
-		2,
-		3,
-		3,
-		4,
-		3,
-		1,
-		3,
-		1,
-		4,
-		1,
-		1,
-		2,
-		2,
-		4,
-		2,
-		2,
+		3,1,2,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
 	}
 	end
 end
