@@ -22,6 +22,8 @@ Added vector at Poro Pos
 Changed Default Colour
 Reset Saved Settings
 Added Death Check on Draw
+
+Fixed the Toggle... whoops..
 ]]
 
 --  Checks Map OnLoad
@@ -32,11 +34,13 @@ end
 function OnTick()
 
 	--  Casts Poro Snax
-	if not myHero.dead then
-		if myHero:CanUseSpell(ITEM_7) == READY then
-			for _, Poro in pairs(minionManager(MINION_JUNGLE, 300, myHero, MINION_SORT_HEALTH_ASC).objects) do
-				if Poro.charName == "HA_AP_Poro" then
-					CastSpell(ITEM_7)
+	if menu.enable then
+		if not myHero.dead then
+			if myHero:CanUseSpell(ITEM_7) == READY then
+				for _, Poro in pairs(minionManager(MINION_JUNGLE, 300, myHero, MINION_SORT_HEALTH_ASC).objects) do
+					if Poro.charName == "HA_AP_Poro" then
+						CastSpell(ITEM_7)
+					end
 				end
 			end
 		end
@@ -73,23 +77,25 @@ function OnLoad()
 end
 
 function OnDraw()
-	if not myHero.dead then
-		for _, Poro in pairs(minionManager(MINION_JUNGLE, menu.range, myHero, MINION_SORT_HEALTH_ASC).objects) do
-			if Poro.charName == "HA_AP_Poro" then
-				
-				--  Draw Line to Poro
-				if menu.line then
-					if menu.circle then
-						localvector = Poro + (Vector(myHero) - Poro):normalized() * (menu.size - 2)
-					else
-						localvector = Poro
+	if menu.enable then
+		if not myHero.dead then
+			for _, Poro in pairs(minionManager(MINION_JUNGLE, menu.range, myHero, MINION_SORT_HEALTH_ASC).objects) do
+				if Poro.charName == "HA_AP_Poro" then
+					
+					--  Draw Line to Poro
+					if menu.line then
+						if menu.circle then
+							localvector = Poro + (Vector(myHero) - Poro):normalized() * (menu.size - 2)
+						else
+							localvector = Poro
+						end
+						DrawLine3D(myHero.x, myHero.y, myHero.z, localvector.x, Poro.y, localvector.z, menu.width, ARGB(table.unpack(menu.colour)))
 					end
-					DrawLine3D(myHero.x, myHero.y, myHero.z, localvector.x, Poro.y, localvector.z, menu.width, ARGB(table.unpack(menu.colour)))
-				end
-				
-				-- Draw Circle to Poro
-				if menu.circle then
-					DrawCircle2(Poro.x, Poro.y, Poro.z, menu.width, menu.size, menu.snap, ARGB(table.unpack(menu.colour)))
+					
+					-- Draw Circle to Poro
+					if menu.circle then
+						DrawCircle2(Poro.x, Poro.y, Poro.z, menu.width, menu.size, menu.snap, ARGB(table.unpack(menu.colour)))
+					end
 				end
 			end
 		end
