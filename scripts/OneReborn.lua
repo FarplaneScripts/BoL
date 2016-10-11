@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 1.3
+-- > > > Version 1.4
 
 --_______________________________________________________________________________
 
@@ -26,11 +26,10 @@ Set to turn OFF = " false "
 
 _AUTO_UPDATE = true				-- Automatic Updates Switch
 _W_CALCS = false				-- More W Calculation -> Draws
-_LUDENS = false					-- Ludens Echo -> Debug
 _SKIN_CHANGER = true			-- Skin Changer Switch
 _IMMUNE_PRINTS = false			-- Print when Skills are being blocks due to immunities
 
-_Dev_Mode = true
+_Dev_Mode = false				-- Developer mode
 
 --[[
 			[ Champion Toggles ]
@@ -169,6 +168,17 @@ Akali_Switch = true				-- Disable this to prevent Akali portion of the script fr
 [x] Added all Summoner Spells support
 [x] Fixed Auto Ignite
 [x] Auto Cleanse / QSS / Mercurial / Gangplank Oranges / Alistar Ult / Olaf Ult
+[x] Delay [Humanizer(?)] to Auto QSS
+
+		11/10/2016 | 11:02PM
+[x] Updated Printer
+[x] Added Dev Mode [Spells, Summoner Spells, Items]
+[x] Draw for Auto Level while in spawn [while toggled]
+[x] Added Mastery Emote on: {Kills, Assists, Both}
+[x] Updated Blue Base and Purple Base Locations [Based off what Map you're on]
+[x] Added Awareness Draw From HitBox
+[x] Added Poro Draw From HitBox
+[x] Waypoints filter through dead units.. [forgot to add this at the time..]
 
 
 
@@ -189,8 +199,6 @@ Fake Movement clicks (ShowGreenClick() BoL Broken.)
 Fake Attack clicks (ShowRedClick() BoL Broken.)
 Local "recall" function
 Auto Potion + Scans for potion tick
-Auto QSS / Mercurial / Mikaels / Gangplank Oranges / Alistar Ult / Olaf Ult
-Delay to Auto QSS
 Mastery Badge Usage (After Kill?)
 Draw EndPos Point Waypoint on Minimap
 Override Orbwalk location to mousePos (SAC replaces mousePos with a normalized vector *300)
@@ -199,7 +207,6 @@ Spell Cast Save before buff runs out (example: Riven Q's) [Currently no champion
 Total killed minions + jungle minions visual (functions works again check here: [http://puu.sh/rBnop/e68059bb97.jpg])
 Kills | Deaths | Assists visual
 Make a callback on bugsplat and game.isover that opens and edits a file containing match stats? idk
-Auto Feed Poros
 Clone Revealer
 KS Zac Passive (if this is possible)
 Auto Dance after game
@@ -208,14 +215,17 @@ Snaps for Advanced circles to be visible (on screen) even if the source is not.
 Smart Level 2 Level up override based off the situation. [TOGGLE]
 Auto interrupt [Currently no champions supported.]
 Anti-Gapcloser [Currently no champions supported.]
-Check for Waypoints to not draw if someone is dead.... [i'm a fucking amateur :P]
 Time to Travel (to the end of Waypoints)
 EXP Range Circle
-ESP Draws
+ESP Draws {2D, 3D, 2D Frame, 3D Frame, Circle}
 Smart Ignite
 Auto Mikaels self
 Fix Flash after ward jump toggle.
 Jungle KS TT Enemies.
+ThunderLords support
+Base Locations for Map
+Jungle Mobs for Map
+Use Poro BoundingBox to find how many cookies they've eaten!
 
 ... yes I know  I need to add predictions, but I hate predictions... so.. Soon(tm)
 VPrediction
@@ -235,9 +245,10 @@ Tower Ranges
 Ward Tracker
 Jungle Timers
 Skin Changer for Allies and Enemies
+Random Delay [Humanizer(?)] to Auto Impairments
+Mastery Emote on Death?
 SPrediction
 DivinePrediction
-AutoLevel continues to Level up past level 18 (for some featured game modes.)
 
 
 
@@ -248,7 +259,7 @@ AutoLevel continues to Level up past level 18 (for some featured game modes.)
 Classes within the script.
 Packets.
 Champion Sprite (waypoint EndPos)
-FHPrediction [spaghetti code Xd]
+FHPrediction [spaghetti code Xd {I actually just cannot be bothered, some1 else code this for me and np..}]
 
 
 
@@ -257,10 +268,7 @@ FHPrediction [spaghetti code Xd]
 			[ Katarina ]
 			
 Don't ks toggle if enemy in spawn.
-Fix Bug with jungle mobs and 'dead' wards.
-Find Summoner Spells again, I need a reference for this though, it has changed since back then.
-Add Q(2) dmg cal to W.
-Add Circle Around Killable (almost) Targets with Q.
+Add Q(2) dmg calc to W.
 Dynamic Stop R to KS based off Enemies dmg and current health %
 
 
@@ -368,8 +376,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1.3
-local _SCRIPT_VERSION_MENU = "1.3"
+local _SCRIPT_VERSION = 1.4
+local _SCRIPT_VERSION_MENU = "1.4"
 local _PATCH = "6.20"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
 local ___GetInventorySlotItem	= rawget(_G, "GetInventorySlotItem")
@@ -380,7 +388,7 @@ local CurrentMap = GetGame().map.shortName
 
 local lastTimeTickCalled = 0
 local ScriptHasUpdated = false
-local FeetDrawing = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
+local OnLoadOnScreenPos = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
 
 local MYAUTOATTACK = false
 
@@ -448,16 +456,61 @@ local LastWardObj = nil
 --[[
 	Spawn Center co-ords (Size of both spawns is 1000)
 ]]
-local BlueSpawn = {
-	x = 408,
-	y = 95,
-	z = 420
-}
-local PurpleSpawn = {
-	x = 14300,
-	y = 91,
-	z = 14450
-}
+if GetGame().map.shortName == "summonerRift" then
+	SpawnRange = 1000
+	BlueSpawn = {
+		x = 408,
+		y = 95,
+		z = 420
+	}
+	PurpleSpawn = {
+		x = 14300,
+		y = 91,
+		z = 14450
+	}
+elseif GetGame().map.shortName == "howlingAbyss" then
+	SpawnRange = 1000
+	BlueSpawn = {
+		x = 890,
+		y = -131,
+		z = 1020
+	}
+	PurpleSpawn = {
+		x = 11900,
+		y = -132,
+		z = 11650
+	}
+elseif GetGame().map.shortName == "twistedTreeline" then
+	SpawnRange = 2000
+	BlueSpawn = {
+		x = -100,
+		y = 155,
+		z = 7300
+	}
+	PurpleSpawn = {
+		x = 15450,
+		y = 155,
+		z = 7300
+	}
+--[[elseif GetGame().map.shortName == "Dominion" then
+	SpawnRange = 2000
+	BlueSpawn = {
+		x = XXXX,
+		y = YYYY,
+		z = ZZZZ
+	}
+	PurpleSpawn = {
+		x = XXXX,
+		y = YYYY,
+		z = ZZZZ
+	}]]
+end
+
+--[[
+	Kill/Assists Vars
+]]
+local lastKills = myHero.kills
+local lastAssists = myHero.assists
 
 --[[
 	AutoLevel start Vars
@@ -522,6 +575,10 @@ local items = {
 	[3139] = {
 		name = "MercurialScimitar",
 		range = 4900
+		},
+	[3222] = {
+		name = "ItemMorellosBane",
+		range = 810
 		}
 }
 
@@ -918,7 +975,26 @@ BarrierSlot = FindSummonerSlot("SummonerBarrier")
 ExhaustSlot = FindSummonerSlot("SummonerExhaust")
 MarkSlot = FindSummonerSlot("SummonerSnowball")
 
-if _Dev_Mode then
+--[[
+	Dev Mode Summoner Slot Display
+]]
+function SlotDevMode(slot)
+	if slot == 4 then
+		SlotMulti = 30
+	elseif slot == 5 then
+		SlotMulti = 15
+	end
+	DrawText("Slot [" .. slot .. "]", 15, 700, 200 - SlotMulti, ARGB(255, 255, 255, 255))
+	DrawText("< " .. myHero:GetSpellData(slot).name .. " >", 15, 750, 200 - SlotMulti, ARGB(255, 0, 255, 255))
+	DrawText("Ready:", 15, 900, 200 - SlotMulti, ARGB(255, 255, 255, 255))
+	if myHero:CanUseSpell(slot) == READY then
+		DrawText("true", 15, 950, 200 - SlotMulti, ARGB(255, 0, 255, 0))
+	else
+		DrawText("false", 15, 950, 200 - SlotMulti, ARGB(255, 255, 0, 0))
+	end
+end
+
+--[[if _Dev_Mode then
 	PrintSpecialText("Spell Name (SLOT1): <font color='#FF0000'>" .. myHero:GetSpellData(SUMMONER_1).name .. "</font>")
 	PrintSpecialText("Spell Name (SLOT2): <font color='#FF0000'>" .. myHero:GetSpellData(SUMMONER_2).name .. "</font>")
 	if FlashSlot ~= nil then
@@ -951,7 +1027,7 @@ if _Dev_Mode then
 	if MarkSlot ~= nil then
 		PrintSpecialText("Found Mark Slot: <font color='#00FFFF'>" .. MarkSlot .. "</font>")
 	end
-end
+end]]
 
 --[[
 	Remove Impairment(s)
@@ -1014,23 +1090,23 @@ end
 ]]
 function Find_Team_AllySpawn_EnemySpawn_Switches()
 	if myHero.team == 100 then
-		if GetDistance(myHero, BlueSpawn) < 1000 then
+		if GetDistance(myHero, BlueSpawn) < SpawnRange then
 			Inside_Spawn = true
 		else
 			Inside_Spawn = false
 		end
-		if GetDistance(myHero, PurpleSpawn) < 1000 then
+		if GetDistance(myHero, PurpleSpawn) < SpawnRange then
 			Inside_EnemySpawn = true
 		else
 			Inside_EnemySpawn = false
 		end
 	elseif myHero.team == 200 then
-		if GetDistance(myHero, PurpleSpawn) < 1000 then
+		if GetDistance(myHero, PurpleSpawn) < SpawnRange then
 			Inside_Spawn = true
 		else
 			Inside_Spawn = false
 		end
-		if GetDistance(myHero, BlueSpawn) < 1000 then
+		if GetDistance(myHero, BlueSpawn) < SpawnRange then
 			Inside_EnemySpawn = true
 		else
 			Inside_EnemySpawn = false
@@ -1608,27 +1684,29 @@ function OnTick()
 				KatRCD = true
 			end
 		end
-		if settings.misc.Debug then
-			if Q_is_Ready then
-				readytextQ = true
-			else
-				readytextQ = false
-			end
-			if W_is_Ready then
-				readytextW = true
-			else
-				readytextW = false
-			end
-			if E_is_Ready then
-				readytextE = true
-			else
-				readytextE = false
-			end
-			if R_is_Ready then
-				readytextR = true
-			else
-				readytextR = false
-			end
+	end
+	
+	--  Debug Vars
+	if settings.misc.Debug then
+		if Q_is_Ready then
+			readytextQ = true
+		else
+			readytextQ = false
+		end
+		if W_is_Ready then
+			readytextW = true
+		else
+			readytextW = false
+		end
+		if E_is_Ready then
+			readytextE = true
+		else
+			readytextE = false
+		end
+		if R_is_Ready then
+			readytextR = true
+		else
+			readytextR = false
 		end
 	end
 end
@@ -1698,7 +1776,7 @@ function OnLoad()
 			settings.combosettings:addSubMenu("                    ~ R Settings ~", "rsetting")
 				if SupportedChampion then
 					settings.combosettings.rsetting:addParam("CastR", "Use R in Combo", SCRIPT_PARAM_ONOFF, true)
-				elseif SupportedChampion then
+				elseif not SupportedChampion then
 					settings.combosettings.rsetting:addParam("info0", "No Supported R settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 				end
 				if KatarinaLoaded then
@@ -1834,12 +1912,17 @@ function OnLoad()
 				settings.misc:addParam("UseZLowHp", "Use Zhonyas on Low HP", SCRIPT_PARAM_ONOFF, true)
 				settings.misc:addParam("ZLowHp", "     Set Low HP % to use Zhonyas", SCRIPT_PARAM_SLICE, 20, 1, 100, 0)
 				settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
-				settings.misc:addParam("Debug", "Debugger", SCRIPT_PARAM_ONOFF, false)
-				settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			end
+			settings.misc:addParam("Debug", "Debugger", SCRIPT_PARAM_ONOFF, false)
+			settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.misc:addParam("MovementMark", "Enable Fake Movement Markers", SCRIPT_PARAM_ONOFF, true)
 			settings.misc:addParam("AttackMark", "Enable Fake Attack Markers", SCRIPT_PARAM_ONOFF, true)
 			settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.misc:addParam("masteryemote", "Mastery Emote on:", SCRIPT_PARAM_LIST, 1, {
+						[1] = "Kills",
+						[2] = "Assists",
+						[3] = "Both"
+					})
 			if GetGame().map.shortName == "howlingAbyss" then
 				settings.misc:addParam("enablePoro", "Enable Auto Poro-Snax", SCRIPT_PARAM_ONOFF, true)
 			end
@@ -2173,6 +2256,8 @@ function OnLoad()
 							0
 						})
 			end
+		else
+			settings.draws.qsetting:addParam("info0", "No Supported Q settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 		end
 		settings.draws:addSubMenu("W Settings", "wsetting")
 		if SupportedChampion then
@@ -2226,6 +2311,8 @@ function OnLoad()
 						255
 					})
 			end
+		else
+			settings.draws.wsetting:addParam("info0", "No Supported W settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 		end
 		settings.draws:addSubMenu("E Settings", "esetting")
 		if SupportedChampion then
@@ -2264,6 +2351,8 @@ function OnLoad()
 							128
 						})
 			end
+		else
+			settings.draws.esetting:addParam("info0", "No Supported E settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 		end
 		settings.draws:addSubMenu("R Settings", "rsetting")
 		if SupportedChampion then
@@ -2309,12 +2398,14 @@ function OnLoad()
 				settings.draws.rsetting:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
 				settings.draws.rsetting:addParam("DrawR2", "Draw R Safe Range", SCRIPT_PARAM_ONOFF, true)
 			end
+		else
+			settings.draws.rsetting:addParam("info0", "No Supported R settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 		end
 		settings.draws:addSubMenu("Hit Box Settings", "hitbox")
 			settings.draws.hitbox:addParam("DrawHitBox", "Draw Hit Box", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.hitbox:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws.hitbox:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-			settings.draws.hitbox:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 30, 20, 50, 0)
+			settings.draws.hitbox:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 36, 20, 50, 0)
 					settings.draws.hitbox:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 						200,
 						255,
@@ -2365,6 +2456,7 @@ function OnLoad()
 		settings.draws:addSubMenu("Awareness Settings", "aws")
 			settings.draws.aws:addParam("Toggle", "Toggle ON/OFF", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.aws:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.draws.aws:addParam("fromhitbox", "Draw from HitBox instead", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.aws:addParam("drawname", "Draw Name", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.aws:addParam("drawdistance", "Draw Distance To Enemy", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.aws:addParam("outlines", "Draw Outlines", SCRIPT_PARAM_ONOFF, true)
@@ -2383,10 +2475,11 @@ function OnLoad()
 				settings.draws:addSubMenu("Auto Poro-Snax Settings", "autoPoro")
 					settings.draws.autoPoro:addParam("circle", "Draw Circle Around Poros", SCRIPT_PARAM_ONOFF, true)
 					settings.draws.autoPoro:addParam("line", "Draw Line to Poros", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.autoPoro:addParam("fromhitbox", "Draw from HitBox instead", SCRIPT_PARAM_ONOFF, true)
 					settings.draws.autoPoro:addParam("range", "Range to Draw Poros", SCRIPT_PARAM_SLICE, 1250, 0, 10000, 0)
 					settings.draws.autoPoro:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.draws.autoPoro:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-					settings.draws.autoPoro:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 15, 10, 75, 0)
+					settings.draws.autoPoro:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 30, 10, 75, 0)
 						settings.draws.autoPoro:addParam("colour", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							72,
@@ -3540,8 +3633,7 @@ function SpellCast(spell, target)
 			if spell == "R" and target ~= nil and R_is_Ready and GetDistance(myHero, target) <= Katarina_R_Range then
 				CastSpell(_R, target)
 			end
-		end
-		if AkaliLoaded then
+		elseif AkaliLoaded then
 			if spell == "Q" and target ~= nil and Q_is_Ready then
 				CastSpell(_Q, target)
 			end
@@ -3553,6 +3645,31 @@ function SpellCast(spell, target)
 			end
 			if spell == "R" and target ~= nil and R_is_Ready then
 				CastSpell(_R, target)
+			end
+		else
+			if spell == "Q" and target ~= nil and Q_is_Ready then
+				CastSpell(_Q, target)
+			end
+			if spell == "W" and target ~= nil and W_is_Ready then
+				CastSpell(_W, target)
+			end
+			if spell == "E" and target ~= nil and E_is_Ready then
+				CastSpell(_E, target)
+			end
+			if spell == "R" and target ~= nil and R_is_Ready then
+				CastSpell(_R, target)
+			end
+			if spell == "Q" and target == nil and Q_is_Ready then
+				CastSpell(_Q)
+			end
+			if spell == "W" and target == nil and W_is_Ready then
+				CastSpell(_W)
+			end
+			if spell == "E" and target == nil and E_is_Ready then
+				CastSpell(_E)
+			end
+			if spell == "R" and target == nil and R_is_Ready then
+				CastSpell(_R)
 			end
 		end
 		if spell == "Qjungle" and target ~= nil and Q_is_Ready then
@@ -3905,6 +4022,40 @@ end
 --		    ░ ░   ░      ░   ░      ░  ░░ ░                     ░  
 --		               ░                ░
 
+function OnAnimation(unit, animation)
+	if KatarinaLoaded then
+		if unit.isMe then
+			if animation ~= "Run" then
+				--PrintSpecialText("Unit: " .. unit .. "  |  Animation: " .. animation)
+			end
+			if animation == "spell4" then
+				PrintSpecialText("OnAnimation Detected Katarina R Cast")
+			end
+		end
+	end
+	if unit.team ~= myHero.team and unit.type == myHero.type and animation == "Death" then
+		if settings.misc.masteryemote == 1 then
+			if myHero.kills ~= lastKills then
+				SendChat("/masterybadge")
+				lastKills = myHero.kills
+			end
+		end
+		if settings.misc.masteryemote == 2 then
+			if myHero.assists ~= lastAssists then
+				SendChat("/masterybadge")
+				lastAssists = myHero.assists
+			end
+		end
+		if settings.misc.masteryemote == 3 then
+			if ((myHero.assists ~= lastAssists) or (myHero.assists ~= lastAssists)) then
+				SendChat("/masterybadge")
+				lastKills = myHero.kills
+				lastAssists = myHero.assists
+			end
+		end
+    end
+end
+
 function OnProcessAttack(unit, attack)
 	if unit.isMe and attack ~= nil then
 		if attack.name:lower():find("attack") then
@@ -4108,6 +4259,10 @@ function OnCreateObj(obj)
 		LastWardObj = obj
 		LastWard = os.clock()
 	end
+	if obj.name == "SRU_Order_nexus_swirlies.troy" or obj.name == "SRU_Chaos_nexus_swirlies.troy" then
+		GameHasEndedPos = obj
+		GameHasEnded = false
+	end
 end
 
 function OnDeleteObj(obj)
@@ -4137,7 +4292,6 @@ function OnDeleteObj(obj)
 		end
 	end
 	if obj.name == "SRU_Order_nexus_swirlies.troy" or obj.name == "SRU_Chaos_nexus_swirlies.troy" then
-		GameHasEndedPos = obj
 		GameHasEnded = true
 	end
 end
@@ -4162,49 +4316,170 @@ function ETime()
 end
 
 function OnDraw()
+
+	--  Draws When Script has Updated
 	if ScriptHasUpdated then
 		DrawText3D("> > Script Successfully Updated, please reload by pressing F9 twice!!", myHero.x - 50, myHero.y, myHero.z + 50, 30, ARGB(255, 0, 255, 0), true)
 	end
-	if GameHasEnded then
-		if myHero.team == 100 then
-			if GetDistance(GameHasEndedPos, PurpleSpawn) < 3000 then
-				DrawText3D("PURPLE TEAM NEXUS..  |  YOU WIN!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 0, 255, 0), true)
+	
+	--  Dev mode
+	if _Dev_Mode then
+		
+		--  Ludens Echo Draws
+		DrawText("Luden's Echo Stacks: " .. Ludens.stacks .. "/100", 15, 250, 250, ARGB(255, 0, 255, 255))
+		DrawText("Ready: " .. Ludens.readytext, 15, 250, 265, ARGB(255, 255, 0, 255))
+		
+		--  Draws Base
+		DrawCircle2(BlueSpawn.x, BlueSpawn.y, BlueSpawn.z, 2, SpawnRange, 200, ARGB(255, 0, 180, 255))
+		DrawLine3D(myHero.x, myHero.y, myHero.z, BlueSpawn.x, myHero.y, BlueSpawn.z, 2, ARGB(255, 0, 180, 255))
+		DrawCircle2(PurpleSpawn.x, PurpleSpawn.y, PurpleSpawn.z, 2, SpawnRange, 200, ARGB(255, 255, 0, 255))
+		DrawLine3D(myHero.x, myHero.y, myHero.z, PurpleSpawn.x, myHero.y, PurpleSpawn.z, 2, ARGB(255, 255, 0, 255))
+		
+		--  Draws Slots
+		DrawText(".charName:", 25, 700, 85, ARGB(255, 255, 255, 255))
+		DrawText("" .. MyChampion, 25, 820, 85, ARGB(255, 255, 255, 0))
+		DrawText("Slot [0]", 15, 700, 110, ARGB(255, 255, 255, 255))
+		DrawText("< " .. myHero:GetSpellData(_Q).name .. " >", 15, 750, 110, ARGB(255, 0, 255, 255))
+		DrawText("Ready:", 15, 900, 110, ARGB(255, 255, 255, 255))
+		if myHero:CanUseSpell(_Q) == READY then
+			DrawText("true", 15, 950, 110, ARGB(255, 0, 255, 0))
+		else
+			DrawText("false", 15, 950, 110, ARGB(255, 255, 0, 0))
+		end
+		DrawText("Slot [1]", 15, 700, 125, ARGB(255, 255, 255, 255))
+		DrawText("< " .. myHero:GetSpellData(_W).name .. " >", 15, 750, 125, ARGB(255, 0, 255, 255))
+		DrawText("Ready:", 15, 900, 125, ARGB(255, 255, 255, 255))
+		if myHero:CanUseSpell(_W) == READY then
+			DrawText("true", 15, 950, 125, ARGB(255, 0, 255, 0))
+		else
+			DrawText("false", 15, 950, 125, ARGB(255, 255, 0, 0))
+		end
+		DrawText("Slot [2]", 15, 700, 140, ARGB(255, 255, 255, 255))
+		DrawText("< " .. myHero:GetSpellData(_E).name .. " >", 15, 750, 140, ARGB(255, 0, 255, 255))
+		DrawText("Ready:", 15, 900, 140, ARGB(255, 255, 255, 255))
+		if myHero:CanUseSpell(_E) == READY then
+			DrawText("true", 15, 950, 140, ARGB(255, 0, 255, 0))
+		else
+			DrawText("false", 15, 950, 140, ARGB(255, 255, 0, 0))
+		end
+		DrawText("Slot [3]", 15, 700, 155, ARGB(255, 255, 255, 255))
+		DrawText("< " .. myHero:GetSpellData(_R).name .. " >", 15, 750, 155, ARGB(255, 0, 255, 255))
+		DrawText("Ready:", 15, 900, 155, ARGB(255, 255, 255, 255))
+		if myHero:CanUseSpell(_R) == READY then
+			DrawText("true", 15, 950, 155, ARGB(255, 0, 255, 0))
+		else
+			DrawText("false", 15, 950, 155, ARGB(255, 255, 0, 0))
+		end
+		if FlashSlot ~= nil then
+			SlotDevMode(FlashSlot)
+		end
+		if IgniteSlot ~= nil then
+			SlotDevMode(IgniteSlot)
+		end
+		if CleanseSlot ~= nil then
+			SlotDevMode(CleanseSlot)
+		end
+		if SmiteSlot ~= nil then
+			SlotDevMode(SmiteSlot)
+		end
+		if TeleportSlot ~= nil then
+			SlotDevMode(TeleportSlot)
+		end
+		if HealSlot ~= nil then
+			SlotDevMode(HealSlot)
+		end
+		if GhostSlot ~= nil then
+			SlotDevMode(GhostSlot)
+		end
+		if BarrierSlot ~= nil then
+			SlotDevMode(BarrierSlot)
+		end
+		if ExhaustSlot ~= nil then
+			SlotDevMode(ExhaustSlot)
+		end
+		if MarkSlot ~= nil then
+			SlotDevMode(MarkSlot)
+		end
+		devmulti = 0
+		if devmulti > 0 then
+			devmulti = 0
+		end
+		for slot = ITEM_1, ITEM_7 do
+			DrawText("Slot [" .. slot .. "]", 15, 700, 200 + devmulti, ARGB(255, 255, 255, 255))
+			DrawText("< " .. myHero:GetSpellData(slot).name .. " >", 15, 750, 200 + devmulti, ARGB(255, 0, 255, 255))
+			DrawText("Ready:", 15, 900, 200 + devmulti, ARGB(255, 255, 255, 255))
+			if myHero:CanUseSpell(slot) == READY then
+				DrawText("true", 15, 950, 200 + devmulti, ARGB(255, 0, 255, 0))
 			else
-				DrawText3D("BLUE TEAM NEXUS..  |  YOU LOSE!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 255, 0, 0), true)
+				DrawText("false", 15, 950, 200 + devmulti, ARGB(255, 255, 0, 0))
+			end
+			devmulti = devmulti + 15
+		end
+	end
+	
+	--  Testing when game is over..... :/
+	if GameHasEnded then
+		DrawText("GAME OVER", 15, 400, 400, ARGB(255, 255, 0, 0))
+		if myHero.team == 100 then
+			if GetDistance(GameHasEndedPos, PurpleSpawn) < 4000 then
+				DrawText("PURPLE TEAM NEXUS..  |  YOU WIN!", 15, 400, 415, ARGB(255, 0, 255, 0))
+				--DrawText3D("PURPLE TEAM NEXUS..  |  YOU WIN!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 0, 255, 0), true)
+				SendChat("/dance")
+			else
+				DrawText("BLUE TEAM NEXUS..  |  YOU LOSE!", 15, 400, 415, ARGB(255, 255, 0, 0))
+				--DrawText3D("BLUE TEAM NEXUS..  |  YOU LOSE!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 255, 0, 0), true)
+				SendChat("/dance")
 			end
 		elseif myHero.team == 200 then
-			if GetDistance(GameHasEndedPos, BlueSpawn) < 3000 then
-				DrawText3D("BLUE TEAM NEXUS..  |  YOU WIN!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 0, 255, 0), true)
+			if GetDistance(GameHasEndedPos, BlueSpawn) < 4000 then
+				DrawText("BLUE TEAM NEXUS..  |  YOU WIN!", 15, 400, 415, ARGB(255, 0, 255, 0))
+				--DrawText3D("BLUE TEAM NEXUS..  |  YOU WIN!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 0, 255, 0), true)
+				SendChat("/dance")
 			else
-				DrawText3D("PURPLE TEAM NEXUS..  |  YOU LOSE!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 255, 0, 0), true)
+				DrawText("PURPLE TEAM NEXUS..  |  YOU LOSE!", 15, 400, 415, ARGB(255, 255, 0, 0))
+				--DrawText3D("PURPLE TEAM NEXUS..  |  YOU LOSE!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 255, 0, 0), true)
+				SendChat("/dance")
 			end
 		end
 	end
+	
+	-- Auto Poro function
 	if GetGame().map.shortName == "howlingAbyss" then
 		if settings.misc.enablePoro then
 			if not myHero.dead then
 				for _, Poro in pairs(minionManager(MINION_JUNGLE, settings.draws.autoPoro.range, myHero, MINION_SORT_HEALTH_ASC).objects) do
 					if Poro.charName == "HA_AP_Poro" then
+						local PoroWorldToScreen = WorldToScreen(D3DXVECTOR3(Poro.x, Poro.y, Poro.z))
 						
 						--  Draw Line to Poro
 						if settings.draws.autoPoro.line then
+							if settings.draws.autoPoro.fromhitbox then
+								MyVector = myHero + (Vector(Poro) - myHero):normalized() * (myHero.boundingRadius - 5)
+							else
+								MyVector = myHero
+							end
 							if settings.draws.autoPoro.circle then
-								PoroVector = Poro + (Vector(myHero) - Poro):normalized() * (Poro.boundingRadius - 2)
+								PoroVector = Poro + (Vector(myHero) - Poro):normalized() * (Poro.boundingRadius / 2 - 5)
 							else
 								PoroVector = Poro
 							end
-							DrawLine3D(myHero.x, myHero.y, myHero.z, PoroVector.x, Poro.y, PoroVector.z, settings.draws.autoPoro.width, ARGB(table.unpack(settings.draws.autoPoro.colour)))
+							DrawLine3D(MyVector.x, MyVector.y, MyVector.z, PoroVector.x, Poro.y, PoroVector.z, settings.draws.autoPoro.width, ARGB(table.unpack(settings.draws.autoPoro.colour)))
 						end
 						
 						-- Draw Circle to Poro
 						if settings.draws.autoPoro.circle then
-							DrawCircle2(Poro.x, Poro.y, Poro.z, settings.draws.autoPoro.width, Poro.boundingRadius, settings.draws.autoPoro.snap, ARGB(table.unpack(settings.draws.autoPoro.colour)))
+							DrawText("Size: " .. Poro.boundingRadius, 14, PoroWorldToScreen.x, PoroWorldToScreen.y, ARGB(255, 0, 255, 0))
+							DrawCircle2(Poro.x, Poro.y, Poro.z, settings.draws.autoPoro.width, Poro.boundingRadius / 2, settings.draws.autoPoro.snap, ARGB(table.unpack(settings.draws.autoPoro.colour)))
 						end
 					end
 				end
 			end
 		end
 	end
+	
+	--[[
+		Flee Position [Akali ONLY]
+	]]
 	if AkaliLoaded then
 		if settings.fleeKey then
 			if GetDistance(mousePos) > 680 then
@@ -4265,16 +4540,20 @@ function OnDraw()
 			MoveToMouse()
 		end
 	end
+	
+	--[[
+		Ward Jump [Katarina, Jax, LeeSin ONLY]
+	]]
 	if ((KatarinaLoaded) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
 		if settings.wardJump then
-			local MyHeroPosition = WorldToScreen(myHero.pos)
-			local MyMousePosition = WorldToScreen(mousePos)
+			--local MyHeroPosition = WorldToScreen(myHero.pos)
+			--local MyMousePosition = WorldToScreen(mousePos)
 			if GetDistance(mousePos) > 590 then
 				ward = myHero + (Vector(mousePos) - myHero):normalized() * 590
 			else
 				ward = myHero + (Vector(mousePos) - myHero)
 			end
-			if E_is_Ready then
+			if ((MyChampion == "Katarina" and E_is_Ready) or (MyChampion == "Jax" and Q_is_Ready) or (MyChampion == "LeeSin" and W_is_Ready)) then
 				WardValid = false
 				MinionDistance = 9999
 				for _, target in pairs(GetAllyHeroes()) do
@@ -4289,18 +4568,20 @@ function OnDraw()
 						WardValid = target
 					end
 				end
-				for _, target in pairs(enemyMinions.objects) do
-					if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
-						MinionDistance = GetDistance(mousePos, target)
-						WardValid = target
+				if MyChampion ~= "LeeSin" then
+					for _, target in pairs(enemyMinions.objects) do
+						if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
+							MinionDistance = GetDistance(mousePos, target)
+							WardValid = target
+						end
 					end
-				end
-				for _, target in pairs(jungleMinions.objects) do
-					if target.charName ~= "S5Test_WardCorpse" then
-						if target.charName ~= "HA_AP_Poro" then
-							if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
-								MinionDistance = GetDistance(mousePos, target)
-								WardValid = target
+					for _, target in pairs(jungleMinions.objects) do
+						if target.charName ~= "S5Test_WardCorpse" then
+							if target.charName ~= "HA_AP_Poro" then
+								if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
+									MinionDistance = GetDistance(mousePos, target)
+									WardValid = target
+								end
 							end
 						end
 					end
@@ -4330,7 +4611,15 @@ function OnDraw()
 				end
 				if GetDistance(mousePos) < 590 then
 					if WardValid then
-						SpellCast("E", WardValid)
+						if MyChampion == "Katarina" then
+							SpellCast("E", WardValid)
+						end
+						if MyChampion == "Jax" then
+							SpellCast("Q", WardValid)
+						end
+						if MyChampion == "LeeSin" then
+							SpellCast("W", WardValid)
+						end
 					else
 						PlaceWard(ward.x, ward.z)
 					end
@@ -4349,7 +4638,15 @@ function OnDraw()
 						end
 					end]]
 					if WardValid then
-						SpellCast("E", WardValid)
+						if MyChampion == "Katarina" then
+							SpellCast("E", WardValid)
+						end
+						if MyChampion == "Jax" then
+							SpellCast("Q", WardValid)
+						end
+						if MyChampion == "LeeSin" then
+							SpellCast("W", WardValid)
+						end
 					else
 						PlaceWard(ward.x, ward.z)
 					end
@@ -4403,7 +4700,13 @@ function OnDraw()
 			MoveToMouse()
 		end
 	end
+	
+	--[[
+		Special Katarina Settings
+	]]
 	if KatarinaLoaded then
+		
+		--  Hit and Run Draws and Function
 		if settings.hitandrun then
 			if selectedTar and selectedTar.visible and not myHero.dead then
 				MyHeroPosition = WorldToScreen(selectedTar.pos)
@@ -4506,6 +4809,8 @@ function OnDraw()
 				end
 			end
 		end
+		
+		-- Draw Last Ult Pos (Draws Loaded Pos is Last Ult Pos is nil)
 		if settings.draws.rsetting.ultposZone then
 			DrawText("Visible Enemies in R Range: " .. CountEnemyHeroInRange(Katarina_R_Range), 20, 200, 200, ARGB(255, 0, 255, 0))
 			UltPos = WorldToScreen(D3DXVECTOR3(UltX, UltY, UltZ))
@@ -4533,11 +4838,15 @@ function OnDraw()
 			DrawText("" .. LastUltPosText, 20, UltPos.x - 45, UltPos.y, ARGB(255, 0, 255, 0))
 			DrawCircle2(UltX, UltY, UltZ, 2, 100, 60, ARGB(255, 0, 255, 0))
 		end
+		
+		-- Draw E Buff Time Circle (When the circle reaches your HitBox the <buff> is gone)
 		if os.clock() < EAt + ETime() then
 			if settings.draws.esetting.DrawErecudtion and EBuff then
 				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.Erecudtionwidth, myHero.ms * (EAt + ETime() - os.clock()) + myHero.boundingRadius, settings.draws.esetting.Erecudtionsnap, ARGB(table.unpack(settings.draws.esetting.Eredcolor)))
 			end
 		end
+		
+		--  Draw Minions that are close to Death
 		if settings.draws.qsetting.CloseToDeathMinions then
 			for _, minion in pairs(minionManager(MINION_ENEMY, 1000, myHero, MINION_SORT_HEALTH_ASC).objects) do
 				if ValidTarget(minion, 1000) and minion ~= nil and not minion.dead and minion.visible then
@@ -4552,6 +4861,8 @@ function OnDraw()
 				end
 			end
 		end
+		
+		--  Draw Dynamic Q Minion Bounce to target
 		if settings.harass.DynamicQMinionBounce then
 			if settings.draws.qsetting.DynamicQMinionBounce then
 				for _, target in pairs(GetEnemyHeroes()) do
@@ -4583,9 +4894,13 @@ function OnDraw()
 				end
 			end
 		end
+		
+		--  Draw Q Range
 		if Qup and not KatUlting then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Katarina_Q_Range, settings.draws.qsetting.snap, ARGB(table.unpack(settings.draws.qsetting.color)))
 		end
+		
+		--  Draw W Range (and W Pos Calc based off Movement)
 		if Wup and not KatUlting then
 			if settings.combosettings.wsetting.CalcWPos then
 				if myHero.hasMovePath and myHero.pathCount >= 2 then
@@ -4607,12 +4922,18 @@ function OnDraw()
 				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, Katarina_W_Range + 10, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
 			end
 		end
+		
+		--  Draw E Range
 		if Eup and not KatUlting then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Katarina_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
 		end
+		
+		--  Draw R Range
 		if DrawRCircle then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, Katarina_R_Range, settings.draws.rsetting.snap, ARGB(table.unpack(settings.draws.rsetting.color)))
 		end
+		
+		--  Draw Q Obj Mid Air
 		if Gobj then
 			if not myHero.dead then
 				if not KatUlting then
@@ -4632,6 +4953,8 @@ function OnDraw()
 				end
 			end
 		end
+		
+		--  Draw Targets with Q
 		if settings.draws.qsetting.Qcircle then
 			for _, target in pairs(GetEnemyHeroes()) do
 				if target.visible and not target.dead and TargetsWithQ[target.networkID] ~= nil then
@@ -4639,6 +4962,8 @@ function OnDraw()
 				end
 			end
 		end
+		
+		--  E Block % if under HP
 		if EUnderPercentage and not myHero.dead then
 			DrawText("Blocking E Casts on Enemies.", 35, 350, 25, ARGB(255, 255, 255, 0))
 			DrawText("Your HP is below:", 25, 370, 60, ARGB(255, 0, 255, 0))
@@ -4647,7 +4972,13 @@ function OnDraw()
 			DrawText("" .. math.ceil(myHero.health / myHero.maxHealth * 100) .. "%", 25, 555, 80, ARGB(255, 255, 0, 0))
 		end
 	end
+	
+	--[[
+		Special Akali Settings
+	]]
 	if AkaliLoaded then
+		
+		--  Draw W Visibilty
 		if settings.draws.wsetting.DrawVisi then
 			local VisibleSelfvec = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
 			if not myHero.dead then
@@ -4658,18 +4989,26 @@ function OnDraw()
 				end
 			end
 		end
+		
+		-- Draw W Buff Time Circle (When the circle reaches your HitBox the <buff> is gone)
 		local TimeW = WTime()
 		if os.clock() < WAt + TimeW then
 			if settings.draws.wsetting.DrawWSpeed and WBuff then
 				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime() - os.clock()) + myHero.boundingRadius, 50, ARGB(table.unpack(settings.draws.wsetting.Wspeedcolor)))
 			end
 		end
+		
+		--  Q Range Draw
 		if Qup then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Akali_Q_Range, settings.draws.qsetting.snap, ARGB(table.unpack(settings.draws.qsetting.color)))
 		end
+		
+		--  W Range Draw
 		if Wup then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, 715, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
 		end
+		
+		--  W Shourd Radius Draw
 		if W2up then
 			myPosV = Vector(myHero.x, myHero.z)
 			mousePosV = Vector(mousePos.x, mousePos.z)
@@ -4683,15 +5022,21 @@ function OnDraw()
 				end
 			end
 		end
+		
+		--  E Range Draw
 		if Eup then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Akali_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
 		end
+		
+		--  R Range Draw
 		if Rup then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, Akali_R_Range, settings.draws.rsetting.snap, ARGB(table.unpack(settings.draws.rsetting.color)))
 			if settings.draws.rsetting.DrawR2 then
 				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, settings.combosettings.rsetting.Rdebuff, settings.draws.rsetting.snap, ARGB( 50, 255, 255, 255))
 			end
 		end
+		
+		--  Draw Q Obj Mid Air [Mota - Mark of the Assasin]
 		if Gobj then
 			if not myHero.dead then
 				if settings.draws.qsetting.particles then
@@ -4702,6 +5047,8 @@ function OnDraw()
 				end
 			end
 		end
+		
+		--  Draw Targets with Q
 		if settings.draws.qsetting.Qcircle then
 			for _, target in pairs(GetEnemyHeroes()) do
 				if target.visible and not target.dead and TargetsWithQ[target.networkID] ~= nil then
@@ -4709,6 +5056,8 @@ function OnDraw()
 				end
 			end
 		end
+		
+		-- Draw W Obj and W Timer
 		if (settings.draws.wsetting.particles or settings.draws.wsetting.DrawWCountdown) and not myHero.dead then
 			if Wobj then
 				if settings.draws.wsetting.DrawWCountdown then
@@ -4726,9 +5075,13 @@ function OnDraw()
 			end
 		end
 	end
+	
+	--  Draw Mouse Pos (in World [3D])
 	if settings.draws.drawMouse then
-		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 40, 25, ARGB(255, 0, 255, 255))
+		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 30, 20000, ARGB(255, 0, 255, 255))
 	end
+	
+	-- Draw DMG indicator (On Bar Pos)
 	for _, target in pairs(GetEnemyHeroes()) do
 		if ValidTarget(target, 15000) then
 			if target.visible and not target.dead and settings.draws.executeIndicator then
@@ -4739,6 +5092,8 @@ function OnDraw()
 			end
 		end
 	end
+	
+	-- Draw Killable Enemies Text (Enemy Pos)
 	if settings.draws.drawkillable then
 		for i, target in pairs(GetEnemyHeroes()) do
 			if ValidTarget(target) then
@@ -4753,6 +5108,8 @@ function OnDraw()
 			end
 		end
 	end
+	
+	--  Draw Override Target Information
 	if selectedTar and selectedTar.visible and not selectedTar.dead and not myHero.dead then
 		local function roundToFirstDecimal(seconds)
 			return math.ceil(seconds * 10) * 0.1
@@ -4775,9 +5132,13 @@ function OnDraw()
 		end
 		DrawTriangle(selectedTar, ARGB(255, 255, 255, 0), 2, selectedTar.boundingRadius, 20, 3, 0, 80)
 	end
+	
+	--  Draw HitBox Range
 	if settings.draws.hitbox.DrawHitBox and not myHero.dead then
 		DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.hitbox.width, myHero.boundingRadius, settings.draws.hitbox.snap, ARGB(table.unpack(settings.draws.hitbox.color)))
 	end
+	
+	--  Draw Awareness Settings
 	if settings.draws.aws.Toggle and not myHero.dead then
 		for _, Enemy in pairs(GetEnemyHeroes()) do
 			if GetDistance(myHero, Enemy) < settings.draws.aws.maxrange and Enemy and Enemy.valid and Enemy.visible and not Enemy.dead and not settings.draws.aws["blacklist" .. Enemy.charName] then
@@ -4797,62 +5158,78 @@ function OnDraw()
 			end
 		end
 	end
-	if settings.draws.pcs.MyClicks and not myHero.dead then
+	
+	--  Draw My Waypoints
+	if settings.draws.pcs.MyClicks then
 		if myHero.hasMovePath and myHero.pathCount >= 2 then
-			local IndexPath = myHero:GetPath(myHero.pathIndex)
-			if IndexPath then
-				if GetDistance(myHero, myHero.endPath) > 30 then
-					if myHero.endPath then
-						if settings.draws.pcs.names then
-							DrawText3D("".. MyChampion .."", myHero.endPath.x, myHero.endPath.y, myHero.endPath.z - 42, 15, ARGB(table.unpack(settings.draws.pcs.MyColor)), true)
+			if not myHero.dead then
+				local IndexPath = myHero:GetPath(myHero.pathIndex)
+				if IndexPath then
+					if GetDistance(myHero, myHero.endPath) > 30 then
+						if myHero.endPath then
+							if settings.draws.pcs.names then
+								DrawText3D("".. MyChampion .."", myHero.endPath.x, myHero.endPath.y, myHero.endPath.z - 42, 15, ARGB(table.unpack(settings.draws.pcs.MyColor)), true)
+							end
+							DrawEndPos(myHero, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
 						end
-						DrawEndPos(myHero, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
 					end
+					if settings.draws.pcs.outlines then
+						DrawLine3D(myHero.x, myHero.y, myHero.z, IndexPath.x, IndexPath.y, IndexPath.z, settings.draws.pcs.MyThick + 2, ARGB(255, 0, 0, 0))
+					end
+					DrawLine3D(myHero.x, myHero.y, myHero.z, IndexPath.x, IndexPath.y, IndexPath.z, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
 				end
-				if settings.draws.pcs.outlines then
-					DrawLine3D(myHero.x, myHero.y, myHero.z, IndexPath.x, IndexPath.y, IndexPath.z, settings.draws.pcs.MyThick + 2, ARGB(255, 0, 0, 0))
-				end
-				DrawLine3D(myHero.x, myHero.y, myHero.z, IndexPath.x, IndexPath.y, IndexPath.z, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
-			end
-			for i=myHero.pathIndex, myHero.pathCount-1 do
-				local Path = myHero:GetPath(i)
-				local Path2 = myHero:GetPath(i + 1)
-				if settings.draws.pcs.outlines then
-					DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick + 2, ARGB(255, 0, 0, 0))
-				end
-				if not settings.draws.pcs.over1 then
-					DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick, ARGB(255, 255, 0, 0))
-				else
-					DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
+				for i=myHero.pathIndex, myHero.pathCount-1 do
+					local Path = myHero:GetPath(i)
+					local Path2 = myHero:GetPath(i + 1)
+					if settings.draws.pcs.outlines then
+						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick + 2, ARGB(255, 0, 0, 0))
+					end
+					if not settings.draws.pcs.over1 then
+						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick, ARGB(255, 255, 0, 0))
+					else
+						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
+					end
 				end
 			end
 		end
 	end
+	
+	--  Draw Ally Waypoints
 	if settings.draws.pcs.AllyClicks then
 		DrawOtherPathing(GetAllyHeroes(), settings.draws.pcs.AllyThick, ARGB(table.unpack(settings.draws.pcs.AllyColor)))
 	end
+	
+	--  Draw Enemy Waypoints
 	if settings.draws.pcs.EnemyClicks then
 		DrawOtherPathing(GetEnemyHeroes(), settings.draws.pcs.EnemyThick, ARGB(table.unpack(settings.draws.pcs.EnemyColor)))
 	end
-	if _LUDENS then
-		DrawText("Luden's Echo Stacks: "..Ludens.stacks.."/100", 15, 250, 250, ARGB(255, 0, 255, 255))
-		DrawText("Ready: "..Ludens.readytext, 15, 250, 265, ARGB(255, 255, 0, 255))
-	end
+	
+	--  Draw My Spell Cooldowns
 	if settings.draws.DrawMySpellCooldowns then
 		DrawMyCooldown()
 	end
+	
+	--  Draw Ally Spell Cooldowns
 	if settings.draws.DrawAllySpellCooldowns then
 		DrawEntityCooldown(GetAllyHeroes())
 	end
+	
+	--  Draw Enemy Spell Cooldowns
 	if settings.draws.DrawEnemySpellCooldowns then
 		DrawEntityCooldown(GetEnemyHeroes())
 	end
+	
+	--  Draw Ping
 	if settings.draws.DrawPing then
 		DrawPingHP()
 	end
+	
+	--  Draw Frames Per Second
 	if settings.draws.DrawFPS then
 		DrawFPSHP()
 	end
+	
+	--  Draw First Launch Pop Up / instructions.
 	if PopUp then
 		local w, h1, h2 = (WINDOW_W*0.50), (WINDOW_H*.15), (WINDOW_H*.9)
 		DrawLine(w, h1/1.05, w, h2/1.97, w/1.75, ARGB(120,205,0,0))
@@ -4876,11 +5253,24 @@ function OnDraw()
 		DrawRectangleButton(WINDOW_W*0.467, WINDOW_H/2.375, WINDOW_W*.047, WINDOW_H*.041, ARGB(255,0,255,255))
 		DrawTextA(tostring("OK"), WINDOW_H*.02, (WINDOW_W/2)*.98, (WINDOW_H/2.375), ARGB(255,0, 0, 0),"center","center")
 	end
+	
+	--  Position to Draw for text under champions [Auto Level]
+	local ScreenDrawMyHeroFrom3D = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
+	
+	--  Auto Level Disable while in Spawn Text (Under Champion)
+	if settings.autolvl.Disablelvl and Inside_Spawn then
+		DrawText("Auto Level Disabled while in Spawn!", 20, ScreenDrawMyHeroFrom3D.x - 136, ScreenDrawMyHeroFrom3D.y + 51, ARGB(BlinkMultiplier(1), 0, 0, 0))
+		DrawText("Auto Level Disabled while in Spawn!", 20, ScreenDrawMyHeroFrom3D.x - 137, ScreenDrawMyHeroFrom3D.y + 50, ARGB(BlinkMultiplier(1), 255, 255, 255))
+		--DrawText3D("Auto Level Disabled while in Spawn!", myHero.x + 2, myHero.y, myHero.z - 82, 20, ARGB(BlinkMultiplier(1), 0, 0, 0), true)
+		--DrawText3D("Auto Level Disabled while in Spawn!", myHero.x, myHero.y, myHero.z - 80, 20, ARGB(BlinkMultiplier(1), 255, 255, 255), true)
+	end
+
+	--  Draw Text On Level Up (Under Champion)
 	if settings.autolvl.DrawText and SpellText ~= nil and DrawLevelUp then
-		--DrawText("Leveled:", 20, FeetDrawing.x - 30, FeetDrawing.y + 50, ARGB(255, 255, 255, 255))
-		--DrawText("" .. SpellText .. "", 30, FeetDrawing.x - 10, FeetDrawing.y + 65, ARGB(255, 0, 255, 255))
-		DrawText3D("Leveled:", myHero.x, myHero.y, myHero.z - 50, 20, ARGB(255, 255, 255, 255), true)
-		DrawText3D("" .. SpellText .. "", myHero.x, myHero.y, myHero.z - 75, 20, ARGB(255, 0, 255, 255), true)
+		DrawText("Leveled:", 20, ScreenDrawMyHeroFrom3D.x - 30, ScreenDrawMyHeroFrom3D.y + 50, ARGB(255, 255, 255, 255))
+		DrawText("" .. SpellText .. "", 20, ScreenDrawMyHeroFrom3D.x - 10, ScreenDrawMyHeroFrom3D.y + 65, ARGB(255, 0, 255, 0))
+		--DrawText3D("Leveled2:", myHero.x, myHero.y, myHero.z - 50, 20, ARGB(255, 255, 0, 0), true)
+		--DrawText3D("" .. SpellText .. "", myHero.x, myHero.y, myHero.z - 75, 20, ARGB(255, 255, 0, 0), true)
 	end
 	
 	--  Debugger Switch (it's too clunky and messy to put here aylmao)
@@ -4930,9 +5320,9 @@ function Round(number)
 	end
 end
 
-function BlinkMultiplier(var)
-	Base = ((var + var) * (os.clock() % var))
-	Algorithm = (var / 2) > (Base / (var + var)) and Base or var - (Base - var)
+function BlinkMultiplier(Multiplier)
+	Base = ((Multiplier + Multiplier) * (os.clock() % Multiplier))
+	Algorithm = (Multiplier / 2) > (Base / (Multiplier + Multiplier)) and Base or Multiplier - (Base - Multiplier)
 	Alpha = ((Algorithm * 150) + 100)
 	return Alpha
 end
@@ -5054,18 +5444,23 @@ function DrawUltimateAwareness(startx, starty, startz, endx, endy, endz, thickne
 		y = endy,
 		z = endz
 	}
+	if settings.draws.aws.fromhitbox then
+		startLinePosStructure = startLinePos + (Vector(endLinePos) - startLinePos):normalized() * (myHero.boundingRadius - 5)
+	else
+		startLinePosStructure = startLinePos
+	end
 	VectorLineStructure = startLinePos + (Vector(endLinePos) - startLinePos):normalized() * settings.draws.aws.Distance
-	if GetDistance(startLinePos, endLinePos) < settings.draws.aws.Distance then
+	if GetDistance(startLinePosStructure, endLinePos) < settings.draws.aws.Distance then
 		VectorLineStructure = endLinePos
 	end
 	LeftPosVec = VectorLineStructure + (Vector(startLinePos) - VectorLineStructure):rotated(0, 45 * math.pi / 180, 0):normalized() * 40
 	RightPosVec = VectorLineStructure + (Vector(startLinePos) - VectorLineStructure):rotated(0, 315 * math.pi / 180, 0):normalized() * 40
 	if settings.draws.aws.outlines then
-		DrawLine3D(startLinePos.x, startLinePos.y, startLinePos.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness + 2, ARGB(255, 0, 0, 0))
+		DrawLine3D(startLinePosStructure.x, startLinePosStructure.y, startLinePosStructure.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness + 2, ARGB(255, 0, 0, 0))
 		DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, LeftPosVec.x, LeftPosVec.y, LeftPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
 		DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, RightPosVec.x, RightPosVec.y, RightPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
 	end
-	DrawLine3D(startLinePos.x, startLinePos.y, startLinePos.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness, color)
+	DrawLine3D(startLinePosStructure.x, startLinePosStructure.y, startLinePosStructure.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness, color)
 	DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, LeftPosVec.x, LeftPosVec.y, LeftPosVec.z, thickness, color)
 	DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, RightPosVec.x, RightPosVec.y, RightPosVec.z, thickness, color)
 	if settings.draws.aws.drawname then
@@ -5082,31 +5477,33 @@ function DrawOtherPathing(HeroType, Thickness, Color)
 			return
 		end
 		if hero.hasMovePath and hero.pathCount >= 2 then
-			local IndexPath = hero:GetPath(hero.pathIndex)
-			if IndexPath then
-				if GetDistance(hero, hero.endPath) > 30 then
-					if hero.endPath then
-						if settings.draws.pcs.names then
-							DrawText3D(""..hero.charName.."", hero.endPath.x, hero.endPath.y, hero.endPath.z - 42, 15, Color, true)
+			if not hero.dead then
+				local IndexPath = hero:GetPath(hero.pathIndex)
+				if IndexPath then
+					if GetDistance(hero, hero.endPath) > 30 then
+						if hero.endPath then
+							if settings.draws.pcs.names then
+								DrawText3D(""..hero.charName.."", hero.endPath.x, hero.endPath.y, hero.endPath.z - 42, 15, Color, true)
+							end
+							DrawEndPos(hero, Thickness, Color)
 						end
-						DrawEndPos(hero, Thickness, Color)
 					end
+					if settings.draws.pcs.outlines then
+						DrawLine3D(hero.x, hero.y, hero.z, IndexPath.x, IndexPath.y, IndexPath.z, Thickness + 2, ARGB(255, 0, 0, 0))
+					end
+					DrawLine3D(hero.x, hero.y, hero.z, IndexPath.x, IndexPath.y, IndexPath.z, Thickness, Color)
 				end
-				if settings.draws.pcs.outlines then
-					DrawLine3D(hero.x, hero.y, hero.z, IndexPath.x, IndexPath.y, IndexPath.z, Thickness + 2, ARGB(255, 0, 0, 0))
-				end
-				DrawLine3D(hero.x, hero.y, hero.z, IndexPath.x, IndexPath.y, IndexPath.z, Thickness, Color)
-			end
-			for i = hero.pathIndex, hero.pathCount - 1 do
-				local Path = hero:GetPath(i)
-				local Path2 = hero:GetPath(i + 1)
-				if settings.draws.pcs.outlines then
-					DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness + 2, ARGB(255, 0, 0, 0))
-				end
-				if not settings.draws.pcs.over1 then
-					DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness, ARGB(255, 255, 255, 255))
-				else
-					DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness, Color)
+				for i = hero.pathIndex, hero.pathCount - 1 do
+					local Path = hero:GetPath(i)
+					local Path2 = hero:GetPath(i + 1)
+					if settings.draws.pcs.outlines then
+						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness + 2, ARGB(255, 0, 0, 0))
+					end
+					if not settings.draws.pcs.over1 then
+						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness, ARGB(255, 255, 255, 255))
+					else
+						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness, Color)
+					end
 				end
 			end
 		end
@@ -5484,7 +5881,7 @@ function AutoLevel()
 					PrintFlag = false
 					if settings.autolvl.PrintText then
 						PrintLevelUpText = false
-						PrintSpecialText("Spell " .. "(<font color='#00FFFF'>" .. SpellText .. "</font>) <font color='#FFFF00'>-</font> is now " .. LevelText)
+						PrintSpecialText("Spell " .. "(<font color='#00FF00'>" .. SpellText .. "</font>) <font color='#FFFF00'>-</font> is now " .. LevelText)
 					end
 				end
 				if settings.autolvl.DrawText then
@@ -5740,7 +6137,12 @@ function DrawDebugger()
 			end
 			DrawText(math.ceil((myMana / myHero.maxMana) * 100) .. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
 		else
-			DrawText(myMana.. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
+			if not MyChampion == "Katarina" then
+				if not myHero.dead then
+					DrawLine(192, 237, 188+((myMana / myHero.maxMana) * 100), 237, 10, ARGB(255, 0, 180, 255))
+				end
+				DrawText(math.ceil((myMana / myHero.maxMana) * 100) .. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
+			end
 		end
 		DrawText("Current Gold:", 15, World_x1 - 620, World_y1 + 185, ARGB(255, 0, 255, 255))
 		DrawText("" .. math.ceil(myHero.gold), 15, World_x1 - 480, World_y1 + 185, ARGB(255, 255, 213, 0))
