@@ -1,0 +1,1 @@
+print("MAP NAME: "..GetGame().map.shortName)
