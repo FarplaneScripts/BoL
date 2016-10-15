@@ -201,6 +201,7 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Added Block for Katarina E is Enemy is in spawn! [Toggle]
 [x] Fixed AutoLevel print text spams chat when leveling up.
 [x] Fixed AutoLevel bug with the Sequence().
+[x] Added ESP 2D Box, 2D Frame, Circle, Advanced Circle
 
 
 
