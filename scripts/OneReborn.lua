@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 1.4
+-- > > > Version 1.5
 
 --_______________________________________________________________________________
 
@@ -38,6 +38,7 @@ Enable or Diable supported champions here:
 ]]--
 Katarina_Switch = true			-- Disable this to prevent Katarina portion of the script from loading.
 Akali_Switch = true				-- Disable this to prevent Akali portion of the script from loading.
+Draven_Switch = true			-- Disable this to prevent Draven portion of the script from loading.
 
 --[[
 ======================================
@@ -180,6 +181,27 @@ Akali_Switch = true				-- Disable this to prevent Akali portion of the script fr
 [x] Added Poro Draw From HitBox
 [x] Waypoints filter through dead units.. [forgot to add this at the time..]
 
+		13/10/2016 | 11:21PM
+[x] Waypoints filter through visible units..
+[x] Added Nasus wither special spell for impairment remover [Auto QSS ~etc]
+[x] Reset user settings
+[x] Snaps for Advanced circles to be visible (on screen) even if the source is not.
+[x] Up to 25% Performance increase!
+[x] Full Map + MiniMap Hack
+[x] Fixed Error with Advanced Circle Draws on Waypoints
+
+		16/10/2016 | 3:43AM
+[x] Added Draven Support. (BETA)
+[x] Option for Debug in Impairments Remover
+[x] Normalize vector to reset at myHero on Map Hack
+[x] Fixed Katarina Harass Toggles Bug (Wouldn't Cast Q if only Cast Q was Toggled - Placement error)
+[x] Updated Q Bounce with Arc Draws!
+[x] Added option to draw new [arcs] or old [circles]
+[x] Reset user settings
+[x] Added Block for Katarina E is Enemy is in spawn! [Toggle]
+[x] Fixed AutoLevel print text spams chat when leveling up.
+[x] Fixed AutoLevel bug with the Sequence().
+
 
 
 
@@ -204,14 +226,13 @@ Draw EndPos Point Waypoint on Minimap
 Override Orbwalk location to mousePos (SAC replaces mousePos with a normalized vector *300)
 MEC support for AOE spells [Currently no champions supported.]
 Spell Cast Save before buff runs out (example: Riven Q's) [Currently no champions supported.]
-Total killed minions + jungle minions visual (functions works again check here: [http://puu.sh/rBnop/e68059bb97.jpg])
+Total killed minions + jungle minions visual (functions works again check here: [ http://puu.sh/rBnop/e68059bb97.jpg ])
 Kills | Deaths | Assists visual
 Make a callback on bugsplat and game.isover that opens and edits a file containing match stats? idk
 Clone Revealer
 KS Zac Passive (if this is possible)
 Auto Dance after game
 Spell Levels under Spell Cooldowns ...(i'll put this somewhere ... :s)
-Snaps for Advanced circles to be visible (on screen) even if the source is not.
 Smart Level 2 Level up override based off the situation. [TOGGLE]
 Auto interrupt [Currently no champions supported.]
 Anti-Gapcloser [Currently no champions supported.]
@@ -226,6 +247,15 @@ ThunderLords support
 Base Locations for Map
 Jungle Mobs for Map
 Use Poro BoundingBox to find how many cookies they've eaten!
+Blue Trinket Ward Jump Support
+Auto Smite
+Connected circles outline profile border
+Auto Turn around for Trynd W and Cass R
+Enemy Click from mid lane Alert
+First Level up Alert
+
+EXTRA ASSISTANT!
+Continue SAC walking to mouse if PolyMorphed
 
 ... yes I know  I need to add predictions, but I hate predictions... so.. Soon(tm)
 VPrediction
@@ -296,7 +326,6 @@ Count R Buff Stacks
 
 Script has a high crash rate with Howling Abyss, this issue is currently being investigated.   You can work around this issue by Loading the game without BoL (or without the script) and then injecting (or double F9 with the script ticked).
 "spell particles are not being drawn" - this is because BoL is not fully updated and .spellOwner does not work!
-AutoLevel print text spams chat when leveling up.
 
 
 
@@ -312,6 +341,7 @@ AutoLevel print text spams chat when leveling up.
 --Checks to see what script can load depending on what champion you are playing, do not touch these values.
 KatarinaLoaded = false
 AkaliLoaded = false
+DravenLoaded = false
 
 local MyChampion = myHero.charName
 local MyUser = GetUser()
@@ -342,6 +372,9 @@ if MyChampion == "Katarina" and Katarina_Switch then
 	PrintLoadedMSG()
 elseif MyChampion == "Akali" and Akali_Switch then
 	AkaliLoaded = true
+	PrintLoadedMSG()
+elseif MyChampion == "Draven" and Draven_Switch then
+	DravenLoaded = true
 	PrintLoadedMSG()
 else
 	SupportedChampion = false
@@ -376,9 +409,10 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1.4
-local _SCRIPT_VERSION_MENU = "1.4"
+local _SCRIPT_VERSION = 1.5
+local _SCRIPT_VERSION_MENU = "1.5"
 local _PATCH = "6.20"
+local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
 local ___GetInventorySlotItem	= rawget(_G, "GetInventorySlotItem")
 local cfgpath = LIB_PATH.."Saves\\All_In_One_Reborn.cfg"
@@ -420,10 +454,10 @@ local EAt = 0
 local EBuff = false
 local KatRCD = false
 
-local Katarina_Q_Range = 700
+local Katarina_Q_Range = 680
 local Katarina_Q_BounceRange = 200
-local Katarina_W_Range = 400
-local Katarina_E_Range = 720
+local Katarina_W_Range = 390
+local Katarina_E_Range = 700
 local Katarina_R_Range = 590
 
 --[[
@@ -443,6 +477,48 @@ local Akali_E_Range = 320
 local Akali_R_Range = 740
 
 --[[
+	Special Singed Vars
+]]
+local PoisonStarted = false
+local PoisonEnded = false
+
+--[[
+	Special Draven Vars
+]]
+local Axefound = false
+local CollectAxe = false
+local InsideAxeZone = false
+
+local AxesInAir = 0
+local LastAxe = 0
+
+local ActiveAxes = {}
+
+local AxeLandingDistance = 60
+local LastAxeTimer3 = 0
+local axechecker = false
+local axechecker2 = false
+
+Axes = {
+	stacks = 0,
+	readytext = "False"
+}
+
+--[[
+	Special MiniMap Hack Vars
+]]
+local MissingMulti = 0
+local enemies = {}
+local MissingSince = {}
+local MissingTime = {}
+local TotalDistance = 0
+
+enemies = GetEnemyHeroes()
+for i, enemy in ipairs(enemies) do
+	MissingSince[i] = -1
+end
+
+--[[
 Anti-AFK
 ]]
 local AFKClock = os.clock()
@@ -452,6 +528,15 @@ local AFKClock = os.clock()
 ]]
 local LastWard = os.clock()
 local LastWardObj = nil
+
+--[[
+	Enemy Ward Vars
+]]
+local tRange = 865
+local wards = {}
+local wardNumber = 70
+local VisionWards = {}
+local SightWards = {}
 
 --[[
 	Spawn Center co-ords (Size of both spawns is 1000)
@@ -614,6 +699,7 @@ local jungleMinions = minionManager(MINION_JUNGLE, 800, myHero, MINION_SORT_HEAL
 	Movement and Attack Switches.
 ]]
 function DisableMove()
+	MovementEnabled = false
 	if _G.Reborn_Loaded or _G.Reborn_Initialised or _G.AutoCarry ~= nil then
 		if _G.AutoCarry.MyHero then
 			_G.AutoCarry.MyHero:MovementEnabled(false)
@@ -637,6 +723,7 @@ function DisableMove()
 end
 
 function EnableMove()
+	MovementEnabled = true
 	if _G.Reborn_Loaded or _G.Reborn_Initialised or _G.AutoCarry ~= nil then
 		if _G.AutoCarry.MyHero then
 			_G.AutoCarry.MyHero:MovementEnabled(true)
@@ -660,6 +747,7 @@ function EnableMove()
 end
 
 function DisableAttacks()
+	AttacksEnabled = false
 	if _G.Reborn_Loaded or _G.Reborn_Initialised or _G.AutoCarry ~= nil then
 		if _G.AutoCarry.MyHero then
 			_G.AutoCarry.MyHero:AttacksEnabled(false)
@@ -683,6 +771,7 @@ function DisableAttacks()
 end
 
 function EnableAttacks()
+	AttacksEnabled = true
 	if _G.Reborn_Loaded or _G.Reborn_Initialised or _G.AutoCarry ~= nil then
 		if _G.AutoCarry.MyHero then
 			_G.AutoCarry.MyHero:AttacksEnabled(true)
@@ -994,40 +1083,46 @@ function SlotDevMode(slot)
 	end
 end
 
---[[if _Dev_Mode then
-	PrintSpecialText("Spell Name (SLOT1): <font color='#FF0000'>" .. myHero:GetSpellData(SUMMONER_1).name .. "</font>")
-	PrintSpecialText("Spell Name (SLOT2): <font color='#FF0000'>" .. myHero:GetSpellData(SUMMONER_2).name .. "</font>")
-	if FlashSlot ~= nil then
-		PrintSpecialText("Found Flash Slot: <font color='#00FFFF'>" .. FlashSlot .. "</font>")
+--[[
+	Check unit in spawn
+]]
+function CheckEntitySpawn(unit)
+	if unit.team == 100 then
+		if GetDistance(entity, BlueSpawn) < SpawnRange then
+			return true
+		else
+			return false
+		end
+	elseif unit.team == 200 then
+		if GetDistance(entity, PurpleSpawn) < SpawnRange then
+			return true
+		else
+			return false
+		end
 	end
-	if IgniteSlot ~= nil then
-		PrintSpecialText("Found Ignite Slot: <font color='#00FFFF'>" .. IgniteSlot .. "</font>")
+end
+--[[
+	MiniMap X Y Axis
+]]
+MiniMapRatio = nil
+function GetMinimapRatio()
+    if MiniMapRatio then
+		return MiniMapRatio
 	end
-	if CleanseSlot ~= nil then
-		PrintSpecialText("Found Cleanse Slot: <font color='#00FFFF'>" .. CleanseSlot .. "</font>")
-	end
-	if SmiteSlot ~= nil then
-		PrintSpecialText("Found Smite Slot: <font color='#00FFFF'>" .. SmiteSlot .. "</font>")
-	end
-	if TeleportSlot ~= nil then
-		PrintSpecialText("Found Teleport Slot: <font color='#00FFFF'>" .. TeleportSlot .. "</font>")
-	end
-	if HealSlot ~= nil then
-		PrintSpecialText("Found Heal Slot: <font color='#00FFFF'>" .. HealSlot .. "</font>")
-	end
-	if GhostSlot ~= nil then
-		PrintSpecialText("Found Ghost Slot: <font color='#00FFFF'>" .. GhostSlot .. "</font>")
-	end
-	if BarrierSlot ~= nil then
-		PrintSpecialText("Found Barrier Slot: <font color='#00FFFF'>" .. BarrierSlot .. "</font>")
-	end
-	if ExhaustSlot ~= nil then
-		PrintSpecialText("Found Exhaust Slot: <font color='#00FFFF'>" .. ExhaustSlot .. "</font>")
-	end
-	if MarkSlot ~= nil then
-		PrintSpecialText("Found Mark Slot: <font color='#00FFFF'>" .. MarkSlot .. "</font>")
-	end
-end]]
+    local Width = 1
+    local Height = 1
+    local gameSettings = GetGameSettings()
+    if gameSettings and gameSettings.General and gameSettings.General.Width and gameSettings.General.Height then
+        Width = gameSettings.General.Width
+        Height = gameSettings.General.Height
+        local hudSettings = ReadIni(GAME_PATH .. "DATA\\menu\\hud\\hud" .. Width .. "x" .. Height .. ".ini")
+        if hudSettings and hudSettings.Globals and hudSettings.Globals.MinimapScale then
+            MiniMapRatio = (Height / 1080) * hudSettings.Globals.MinimapScale
+        else
+            MiniMapRatio = (Height / 1080)
+        end
+    end
+end
 
 --[[
 	Remove Impairment(s)
@@ -1038,7 +1133,9 @@ function RemoveImpaired(Type)
 	if MyChampion == "Gangplank" and W_is_Ready then
 		if settings.misc.impaired.gangplank then
 			DelayAction(function()
-				PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>W</font>")
+				if settings.misc.impaired.debug then
+					PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>W</font>")
+				end
 				CastSpell(_W)
 				return
 			end, impairedHumanizer)
@@ -1047,7 +1144,9 @@ function RemoveImpaired(Type)
 	if MyChampion == "Alistar" and R_is_Ready then
 		if settings.misc.impaired.alistar then
 			DelayAction(function()
-				PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>R</font>")
+				if settings.misc.impaired.debug then
+					PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>R</font>")
+				end
 				CastSpell(_R)
 				return
 			end, impairedHumanizer)
@@ -1056,7 +1155,9 @@ function RemoveImpaired(Type)
 	if MyChampion == "Olaf" and R_is_Ready then
 		if settings.misc.impaired.olaf then
 			DelayAction(function()
-				PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>R</font>")
+				if settings.misc.impaired.debug then
+					PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>R</font>")
+				end
 				CastSpell(_R)
 				return
 			end, impairedHumanizer)
@@ -1064,53 +1165,30 @@ function RemoveImpaired(Type)
 	end
 	if CleanseSlot ~= nil and myHero:CanUseSpell(CleanseSlot) == READY and settings.misc.impaired.cleanse then
 		DelayAction(function()
-			PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>Cleanse</font>")
+			if settings.misc.impaired.debug then
+				PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>Cleanse</font>")
+			end
 			CastSpell(CleanseSlot)
 			return
 		end, impairedHumanizer)
 	end
 	if CheckItemREADY(3140) and settings.misc.impaired.QSS then
 		DelayAction(function()
-			PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>QSS</font>")
+			if settings.misc.impaired.debug then
+				PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>QSS</font>")
+			end
 			CastItem(3140)
 			return
 		end, impairedHumanizer)
 	end
 	if CheckItemREADY(3139) and settings.misc.impaired.Mercurial then
 		DelayAction(function()
-			PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>Mercurial</font>")
+			if settings.misc.impaired.debug then
+				PrintSpecialText("impairment detected! (<font color='#FF0000'>" .. Type .. "</font>) - Casting <font color='#00FF00'>Mercurial</font>")
+			end
 			CastItem(3139)
 			return
 		end, impairedHumanizer)
-	end
-end
-
---[[
-	Team Finder + Finds if you're in ally spawn + Finds if you're in enemy spawn.
-]]
-function Find_Team_AllySpawn_EnemySpawn_Switches()
-	if myHero.team == 100 then
-		if GetDistance(myHero, BlueSpawn) < SpawnRange then
-			Inside_Spawn = true
-		else
-			Inside_Spawn = false
-		end
-		if GetDistance(myHero, PurpleSpawn) < SpawnRange then
-			Inside_EnemySpawn = true
-		else
-			Inside_EnemySpawn = false
-		end
-	elseif myHero.team == 200 then
-		if GetDistance(myHero, PurpleSpawn) < SpawnRange then
-			Inside_Spawn = true
-		else
-			Inside_Spawn = false
-		end
-		if GetDistance(myHero, BlueSpawn) < SpawnRange then
-			Inside_EnemySpawn = true
-		else
-			Inside_EnemySpawn = false
-		end
 	end
 end
 
@@ -1140,21 +1218,83 @@ function FindTarget()
 end
 
 --[[
-	Count Enemies in <number> range
+	Count Entities in <number> range
 ]]
-function CountEnemyHeroInRange(distance)
+function CountHeroInRange(distance, entity)
 	if not myHero.dead then
-		local Enemies = 0
-		for _, enemy in pairs(GetEnemyHeroes()) do
-			if GetDistance(enemy, myHero) < distance then
-				if not enemy.dead and enemy.visible then
-					Enemies = Enemies + 1
+		local Units = 0
+		for _, unit in pairs(entity) do
+			if GetDistance(unit, myHero) < distance then
+				if not unit.dead and unit.visible then
+					Units = Units + 1
 				end
 			end
 		end
-		return Enemies
+		return Units
 	else
 		return 0
+	end
+end
+
+--[[
+	Returns #items in set table
+]]
+function tablelength(entity)
+	local count = 0
+	for _ in pairs(entity) do
+		count = count + 1
+	end
+	return count
+end
+
+--[[
+	Catches Dravens Axes Function
+]]
+function DoCatchAxe()
+	if AxeLanding then
+		for _, AxePosition in ipairs(ActiveAxes) do
+			if (math.abs(myHero.x - AxePosition.x) <= 900 and math.abs(myHero.z - AxePosition.z) <= 900) and not (AxePosition.x <= 55 and AxePosition.y <= 55) then
+				if SAC then
+					if GetDistance(AxePosition) <= 50 and InsideAxeZone then
+						MovementOverride = true
+						_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
+					else
+						MovementOverride = false
+						_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(AxePosition)
+					end
+				elseif SxOrb then
+					if GetDistance(AxePosition) <= 50 then 
+						MovementOverride = true
+						_G.SxOrb:ForcePoint(nil)
+					else
+						MovementOverride = false
+						_G.SxOrb:ForcePoint(AxePosition.x, AxePosition.z)
+					end
+				end
+			else
+				MovementOverride = true
+				if SAC then
+					_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
+				elseif SxOrb then
+					_G.SxOrb:ForcePoint(nil)
+				end
+			end
+		end
+	else
+		MovementOverride = true
+		if SAC then
+			if _G.AutoCarry.Orbwalker then
+				_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
+			end
+		elseif SxOrb then
+			_G.SxOrb:ForcePoint(nil)
+		end
+	end
+end
+
+function DoCatchAxe2()
+	for _, AxePosition in ipairs(ActiveAxes) do
+		myHero:MoveTo(ActiveAxes.x, ActiveAxes.z)
 	end
 end
 
@@ -1203,12 +1343,14 @@ end
 
 function OnTick()
 	--  Check if Katarina is Ulting, this is most important and needs to the the first check.  idc what u say lol
-	if KatUlting then
-		DisableMove()
-		DisableAttacks()
-	elseif not KatUlting then
-		EnableMove()
-		EnableAttacks()
+	if KatarinaLoaded then
+		if KatUlting then
+			DisableMove()
+			DisableAttacks()
+		elseif not KatUlting then
+			EnableMove()
+			EnableAttacks()
+		end
 	end
 	
 	--  Custom PermaShow Settings
@@ -1303,9 +1445,31 @@ function OnTick()
 	jungleMinions:update()
 	allyMinions:update()
 
-	-- Find If We Are InSpawn or InEnemySpawn
-	Find_Team_AllySpawn_EnemySpawn_Switches()
-
+	--  Find If We Are InSpawn or InEnemySpawn
+	if myHero.team == 100 then
+		if GetDistance(myHero, BlueSpawn) < SpawnRange then
+			Inside_Spawn = true
+		else
+			Inside_Spawn = false
+		end
+		if GetDistance(myHero, PurpleSpawn) < SpawnRange then
+			Inside_EnemySpawn = true
+		else
+			Inside_EnemySpawn = false
+		end
+	elseif myHero.team == 200 then
+		if GetDistance(myHero, PurpleSpawn) < SpawnRange then
+			Inside_Spawn = true
+		else
+			Inside_Spawn = false
+		end
+		if GetDistance(myHero, BlueSpawn) < SpawnRange then
+			Inside_EnemySpawn = true
+		else
+			Inside_EnemySpawn = false
+		end
+	end
+	
 	--  Check what spells are ready.
 	if myHero:CanUseSpell(_Q) == READY then
 		Q_is_Ready = true
@@ -1386,6 +1550,7 @@ function OnTick()
 	end
 	
 	--  If Toggle in Settings is enabled then Activate AutoLeveler
+	Sequence()
 	if settings.autolvl.LVLEnable then
 		if settings.autolvl.Disablelvl then
 			if not Inside_Spawn then
@@ -1434,13 +1599,28 @@ function OnTick()
 			end
 		end
 	end
+
+	--  MIA Timers (MiniMap Hack)
+	for i, enemy in ipairs(enemies) do
+		if not enemy.visible and not enemy.dead then
+			if MissingSince[i] ~= -1 then
+				if MissingSince[i] == nil then
+					MissingSince[i] = GetTickCount()
+				end
+				MissingTime[i] = (GetTickCount() - MissingSince[i]) / 1000
+			end
+		else
+			MissingSince[i] = nil
+			MissingTime[i] = 0
+		end
+	end
 	
 	--  Pop Up Menu/Instructions.            (Outdated - Still has Katarina Reborn Text.)
 	if settings.instruct then
 		settings.instruct = false
 		PopUp = true
 	end
-	
+
 	--  Calls for Supported Champions.
 	if SupportedChampion then
 		
@@ -1458,7 +1638,95 @@ function OnTick()
 		if settings.clearKey then
 			MainClearLane()
 		end
-	
+		
+	--[[
+		Special Draven OnTick
+	]]
+		if DravenLoaded then
+			if tablelength(ActiveAxes) > 0 then
+				AxeLanding = true
+			else
+				AxeLanding = false
+			end
+			if AxesInAir < 0 then
+				AxesInAir = 0
+			end
+			if myHero.dead then
+				AxesInAir = 0
+			end
+			if AxesInAir == 3 and os.clock() - LastAxe >= 1.5 then
+				AxesInAir = AxesInAir - 1
+			end
+			if Axes.stacks == 1 then
+				LastAxeTimer = os.clock()
+				axechecker = true
+			end
+			if axechecker then
+				if Axes.stacks == 0 then
+					LastAxeTimer2 = os.clock()
+					axechecker2 = true
+				end
+			end
+			if axechecker2 then
+				LastAxeTimer3 = (LastAxeTimer2 - LastAxeTimer)
+				axechecker1 = false
+				axechecker2 = false
+			end
+			if settings.combosettings.wsetting.ComboW then
+				if myHero.mana / myHero.maxMana >= settings.combosettings.wsetting.manaW / 100 then
+					if tablelength(ActiveAxes) >= 1 then
+						if AxeLanding then
+							if InsideAxeZone then
+								if AAobj and AxeLanding then
+									if GetDistance(myHero, AAobj) < 100 then
+										CastSpell(_W)
+									end
+								end
+							end
+						end
+					end
+					--if tablelength(ActiveAxes) == 2 then
+					--end
+				end
+			end
+			if settings.combosettings.qsetting.autocatch == 1 then
+				MovementOverride = true
+			elseif settings.combosettings.qsetting.autocatch == 2 then
+				DoCatchAxe()
+			elseif settings.combosettings.qsetting.autocatch == 3 and settings.combosettings.qsetting.axeholdkey then
+				DoCatchAxe2()
+			end
+			if AxeLanding then
+				for _, Zone in ipairs(ActiveAxes) do
+					if GetDistance(myHero, Zone) < myHero.boundingRadius + 50 then
+						InsideAxeZone = true
+					else
+						InsideAxeZone = false
+					end
+				end
+			else
+				InsideAxeZone = false
+			end
+			if InsideAxeZone then
+				if settings.combosettings.qsetting.disablemovements then
+					DisableMove()
+				end
+			end
+			if settings.combosettings.qsetting.disableattacks then
+				if tablelength(ActiveAxes) == 2 then
+					for _, Zone in ipairs(ActiveAxes) do
+						if GetDistance(myHero, Zone) > myHero.boundingRadius + 50 then
+							local AttackSpeed = 0.679 * myHero.attackSpeed
+							if AttackSpeed >= settings.combosettings.qsetting.disableattacksspeed then
+								DisableAttacks()
+							end
+						elseif GetDistance(myHero, Zone) < myHero.boundingRadius + 50 then
+							EnableAttacks()
+						end
+					end
+				end
+			end
+		end
 	--[[
 		Special OnTick for Akali ONLY
 	]]
@@ -1485,7 +1753,7 @@ function OnTick()
 			
 			--  W self if #number Enemies around
 			if settings.misc.WEnemiesEnable and W_is_Ready then
-				if CountEnemyHeroInRange(Akali_W_Range) >= settings.misc.WEnemies then
+				if CountHeroInRange(Akali_W_Range, GetEnemyHeroes()) >= settings.misc.WEnemies then
 					CastSpell(_W, myHero.x, myHero.z)
 				end
 			end
@@ -1550,21 +1818,19 @@ function OnTick()
 			
 			--  Auto Harass Q Settings.
 			if Q_is_Ready then
-				if settings.harass.harassq then
-					for _, target in pairs(GetEnemyHeroes()) do
-						if settings.harass.harassqToggle then
-							if GetDistance(target, myHero) < Katarina_Q_Range then
-								if settings.harass.noQundertower then
-									if not UnderTurret(myHero) then
-										SpellCast("Q", target)
-									end
-								elseif not settings.harass.noQundertower then
+				for _, target in pairs(GetEnemyHeroes()) do
+					if settings.harass.harassqToggle then
+						if GetDistance(target, myHero) < Katarina_Q_Range then
+							if settings.harass.noQundertower then
+								if not UnderTurret(myHero) then
 									SpellCast("Q", target)
 								end
-							elseif GetDistance(target, myHero) >= Katarina_Q_Range then
-								if settings.harass.DynamicQMinionBounce then
-									Q_Dynamic_Harass(target)
-								end
+							elseif not settings.harass.noQundertower then
+								SpellCast("Q", target)
+							end
+						elseif GetDistance(target, myHero) >= Katarina_Q_Range then
+							if settings.harass.DynamicQMinionBounce then
+								Q_Dynamic_Harass(target)
 							end
 						end
 					end
@@ -1593,7 +1859,7 @@ function OnTick()
 				--  Sometimes the Script cannot detect when you stop casting R, this code checks your current position and checks to see how far away you are
 				--  from where the script detected your start ULT position and if you're too far away from that position, you've obviously not ulting anymore..
 				if settings.combosettings.rsetting.usemanualR then
-					DistanceVar = 30
+					DistanceVar = myHero.boundingRadius * 1.5
 					if (UltX - DistanceVar > myHero.x or UltX + DistanceVar < myHero.x) and (UltZ - DistanceVar > myHero.z or UltZ + DistanceVar < myHero.z) then
 						print(" ")
 						PrintSpecialText("Detecting R while outside the <font color='#00FF00'>UltPos Zone!</font>")
@@ -1638,18 +1904,6 @@ function OnTick()
 					end
 				end
 				
-				--  Checks for SAC, then overrides the orbwalk location to mouse position (good to prevent invalid movements), but this does not work, there must be a check with SAC!, S1mple pls help D:
-				if _G.Reborn_Loaded and _G.AutoCarry and _G.AutoCarry.Orbwalker then
-					if settings.orbWalk.SACMovementSettingToggle then
-						if GetDistance(mousePos) then
-							local MouseTargetLoction = myHero + (Vector(mousePos) - myHero)
-							_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(MouseTargetLoction)					-- Need to add randomizer to this when it works...
-						end
-					else
-						_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
-					end
-				end
-				
 				-- Hit and Run Switch, if we are not ulting and setting is toggled.
 				if settings.hitandrun then
 					MoveToMouse()
@@ -1672,7 +1926,7 @@ function OnTick()
 
 			--  Stop R if no Enemies in R range
 			if settings.combosettings.rsetting.stopultnorange then
-				if CountEnemyHeroInRange(Katarina_R_Range) == 0 then
+				if CountHeroInRange(Katarina_R_Range, GetEnemyHeroes()) == 0 then
 					if KatUlting then
 						KatUlting = false
 					end
@@ -1723,7 +1977,7 @@ end
 ]]
 
 function OnLoad()
-	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_003")
+	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_006")
 			settings.ts = TargetSelector(TARGET_LESS_CAST, 800, DAMAGE_MAGIC, true)
 			settings.ts.name = "" .. MyChampion
 			settings:addTS(settings.ts)
@@ -1741,6 +1995,20 @@ function OnLoad()
 				elseif not SupportedChampion then
 					settings.combosettings.qsetting:addParam("info0", "No Supported Q settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 				end
+				if DravenLoaded then
+					settings.combosettings.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.combosettings.qsetting:addParam("autocatch", "Auto Catching:", SCRIPT_PARAM_LIST, 2, {
+						[1] = "Off",
+						[2] = "On",
+						[3] = "Hold Key"
+					})
+					settings.combosettings.qsetting:addParam("axeholdkey", "Axe Hold Key:", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("X"))
+					settings.combosettings.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.combosettings.qsetting:addParam("disablemovements", "Disable Movement inside Catch Zone", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.qsetting:addParam("info0", "Disable Attacks if outside Catch Zone and", SCRIPT_PARAM_INFO, "")
+					settings.combosettings.qsetting:addParam("disableattacks", "Draven has 2 Axes, if Above Attackspeed", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.qsetting:addParam("disableattacksspeed", "                                 Attackspeed:", SCRIPT_PARAM_SLICE, 1.5, 1, 2.5, 1)
+				end
 				if KatarinaLoaded then
 					settings.combosettings.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.combosettings.qsetting:addParam("procQ", "Detonate Q Mark", SCRIPT_PARAM_ONOFF, false)
@@ -1754,6 +2022,9 @@ function OnLoad()
 					end
 				elseif not SupportedChampion then
 					settings.combosettings.wsetting:addParam("info0", "No Supported W settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
+				end
+				if DravenLoaded then
+					settings.combosettings.wsetting:addParam("manaW", " ....if Mana Above %:", SCRIPT_PARAM_SLICE, 40, 0, 100, 0)
 				end
 				if KatarinaLoaded then
 					settings.combosettings.wsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -1771,7 +2042,7 @@ function OnLoad()
 					settings.combosettings.esetting:addParam("hdelay", "E Humanizer Delay           Seconds:", SCRIPT_PARAM_SLICE, 0, 0, 2, 1)
 				end
 				if AkaliLoaded then
-					settings.combosettings.esetting:addParam("EWaitQ", "Wait for Q proc before E cast", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.esetting:addParam("EWaitQ", "Wait for Q Proc before E Cast", SCRIPT_PARAM_ONOFF, true)
 				end
 			settings.combosettings:addSubMenu("                    ~ R Settings ~", "rsetting")
 				if SupportedChampion then
@@ -1793,7 +2064,6 @@ function OnLoad()
 				end
 				if AkaliLoaded then
 					settings.combosettings.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
-					settings.combosettings.rsetting:addParam("UseR", "Use R in Combo", SCRIPT_PARAM_ONOFF, true) 
 					settings.combosettings.rsetting:addParam("space", "Safe Range:", SCRIPT_PARAM_INFO, "")
 					settings.combosettings.rsetting:addParam("Rdebuff", "Only Ult Outside This Range", SCRIPT_PARAM_SLICE, 370, 1, 720, 0)
 					settings.combosettings.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -1841,8 +2111,10 @@ function OnLoad()
 		settings:addSubMenu("Misc", "misc")
 			settings.misc:addSubMenu("Remove Impairments (Auto QSS)", "impaired")
 				settings.misc.impaired:addParam("Humanizer", "Humanizer                        Seconds:", SCRIPT_PARAM_SLICE, 0, 0, 2, 1)
+				settings.misc.impaired:addParam("debug", "Chat Debug", SCRIPT_PARAM_ONOFF, true)
 				settings.misc.impaired:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.misc.impaired:addParam("info0", "                    ~ Remove ~", SCRIPT_PARAM_INFO, "")
+				settings.misc.impaired:addParam("wither", "Wither", SCRIPT_PARAM_ONOFF, true)
 				settings.misc.impaired:addParam("exhaust", "Exhaust", SCRIPT_PARAM_ONOFF, true)
 				settings.misc.impaired:addParam("stun", "Stun", SCRIPT_PARAM_ONOFF, true)
 				settings.misc.impaired:addParam("silence", "Silence", SCRIPT_PARAM_ONOFF, false)
@@ -1893,6 +2165,8 @@ function OnLoad()
 				settings.misc:addParam("MouseVector", "normalized vector:", SCRIPT_PARAM_SLICE, 300, 140, 600, 0)
 				settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				if KatarinaLoaded then
+					settings.misc:addParam("BlockESpawn", "Do not Cast E on Enemies in their Spawn", SCRIPT_PARAM_ONOFF, true)
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.misc:addParam("UseEOverRide", "Do not Cast E on Enemy if my HP is low", SCRIPT_PARAM_ONOFF, false)
 					settings.misc:addParam("EOverRide", "     Set Low HP % to Block Shunpo", SCRIPT_PARAM_SLICE, 30, 1, 100, 0)
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -2173,7 +2447,6 @@ function OnLoad()
 			settings.autolvl:addParam("PrintText", "Print Levelup Text in Chat", SCRIPT_PARAM_ONOFF, true)
 			settings.autolvl:addParam("DrawText", "Draw Levelup Text (On Champion)", SCRIPT_PARAM_ONOFF, true)
 			settings.autolvl:addParam("DrawTextSlider", "Time of Levelup Text (Seconds)", SCRIPT_PARAM_SLICE, 3, 1, 5, 0)
-			Sequence()
 		settings:addSubMenu("Drawing", "draws")
 		settings.draws:addSubMenu("Q Settings", "qsetting")
 		if SupportedChampion then
@@ -2181,7 +2454,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.qsetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 7, 0)
 						settings.draws.qsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							178,
@@ -2194,7 +2467,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("particlesline", "Draw Particle Line", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.qsetting:addParam("particlessize", "Q Particle Size", SCRIPT_PARAM_SLICE, 30, 20, 50, 0)
 				settings.draws.qsetting:addParam("particleswidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("particlessnap", "Snap", SCRIPT_PARAM_SLICE, 25, 10, 40, 0)
+				settings.draws.qsetting:addParam("particlessnap", "Quality", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
 						settings.draws.qsetting:addParam("particlescolor", "Q Particle Color", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -2206,7 +2479,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("size", "Size of Dagger Circle", SCRIPT_PARAM_SLICE, 150, 50, 300, 0)
 				settings.draws.qsetting:addParam("targetwidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("targetsnap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.qsetting:addParam("targetsnap", "Quality", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
 						settings.draws.qsetting:addParam("QcircleColor", "Targets with Dagger Color", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -2216,14 +2489,16 @@ function OnLoad()
 				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("CloseToDeathMinions", "Draw Minions Killable (Q)", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.qsetting:addParam("DynamicQMinionBounce", "Draw Dynamic Q Harass off minion(s)", SCRIPT_PARAM_ONOFF, true)
-				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
-				settings.draws.qsetting:addParam("info0", "More Options for this coming soon, promise! :D", SCRIPT_PARAM_INFO, "")
+				settings.draws.qsetting:addParam("DynamicQMinionBounceType", "                                              Draw Type:", SCRIPT_PARAM_LIST, 2, {
+					[1] = "Circle",
+					[2] = "Feild Arc"
+				})
 			end
 			if AkaliLoaded then
 				settings.draws.qsetting:addParam("DrawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.qsetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 7, 0)
 						settings.draws.qsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							178,
@@ -2236,7 +2511,7 @@ function OnLoad()
 				settings.draws.qsetting:addParam("particlesline", "Draw Particle Line", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.qsetting:addParam("particlessize", "Q Particle Size", SCRIPT_PARAM_SLICE, 30, 20, 50, 0)
 				settings.draws.qsetting:addParam("particleswidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("particlessnap", "Snap", SCRIPT_PARAM_SLICE, 25, 10, 40, 0)
+				settings.draws.qsetting:addParam("particlessnap", "Quality", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
 						settings.draws.qsetting:addParam("particlescolor", "Q Particle Color", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -2248,13 +2523,34 @@ function OnLoad()
 				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("size", "Size of Mota Circle", SCRIPT_PARAM_SLICE, 150, 50, 300, 0)
 				settings.draws.qsetting:addParam("targetwidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.qsetting:addParam("targetsnap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.qsetting:addParam("targetsnap", "Quality", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
 						settings.draws.qsetting:addParam("QcircleColor", "Targets with Mota Color", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
 							0,
 							0
 						})
+			end
+			if DravenLoaded then
+				settings.draws.qsetting:addParam("DrawAXEposition", "Draw Axe Position", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.qsetting:addParam("AArangeColor", "AA Range Color", SCRIPT_PARAM_COLOR, {
+						255,
+						0,
+						255,
+						255
+					})
+					settings.draws.qsetting:addParam("AXEpositionColor", "Axe Position Color", SCRIPT_PARAM_COLOR, {
+						255,
+						255,
+						255,
+						0
+					})
+					settings.draws.qsetting:addParam("AXEpositionColor2", "Axe Position Color", SCRIPT_PARAM_COLOR, {
+						255,
+						0,
+						255,
+						255
+					})
 			end
 		else
 			settings.draws.qsetting:addParam("info0", "No Supported Q settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
@@ -2265,7 +2561,7 @@ function OnLoad()
 				settings.draws.wsetting:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.wsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.wsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.wsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.wsetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 5, 0)
 						settings.draws.wsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							32,
@@ -2277,7 +2573,7 @@ function OnLoad()
 				settings.draws.wsetting:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.wsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.wsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.wsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.wsetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 7, 0)
 						settings.draws.wsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							32,
@@ -2320,7 +2616,7 @@ function OnLoad()
 				settings.draws.esetting:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.esetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.esetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.esetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 7, 0)
 						settings.draws.esetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							128,
@@ -2331,7 +2627,7 @@ function OnLoad()
 				settings.draws.esetting:addParam("DrawErecudtion", "Draw E Reduction", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.esetting:addParam("Erecudtionwidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.esetting:addParam("Erecudtionsnap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.esetting:addParam("Erecudtionsnap", "Quality", SCRIPT_PARAM_SLICE, 2, 1, 4, 0)
 						settings.draws.esetting:addParam("Eredcolor", "E Reduction Color", SCRIPT_PARAM_COLOR, {
 							255,
 							109,
@@ -2343,7 +2639,7 @@ function OnLoad()
 				settings.draws.esetting:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.esetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.esetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.esetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
 						settings.draws.esetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							128,
@@ -2361,7 +2657,7 @@ function OnLoad()
 				settings.draws.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.rsetting:addParam("DrawRChannel", "Draw Only if R Channeling", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.rsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.rsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.rsetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
 						settings.draws.rsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -2369,12 +2665,12 @@ function OnLoad()
 							0
 						})
 				settings.draws.rsetting:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
-				settings.draws.rsetting:addParam("particles", "Draw R Particle", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.rsetting:addParam("particles", "Draw R Particles", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.rsetting:addParam("particlesline", "Draw Particle Line", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.rsetting:addParam("particlessize", "R Particle Size", SCRIPT_PARAM_SLICE, 30, 20, 50, 0)
 				settings.draws.rsetting:addParam("particleswidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.rsetting:addParam("particlessnap", "Snap", SCRIPT_PARAM_SLICE, 15, 10, 40, 0)
+				settings.draws.rsetting:addParam("particlessnap", "Quality", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
 						settings.draws.rsetting:addParam("particlescolor", "R Particle Color", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -2388,7 +2684,7 @@ function OnLoad()
 				settings.draws.rsetting:addParam("DrawR", "Draw R Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.rsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.rsetting:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 125, 60, 500, 0)
+				settings.draws.rsetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 7, 0)
 						settings.draws.rsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							255,
@@ -2405,22 +2701,54 @@ function OnLoad()
 			settings.draws.hitbox:addParam("DrawHitBox", "Draw Hit Box", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.hitbox:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws.hitbox:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-			settings.draws.hitbox:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 36, 20, 50, 0)
+			settings.draws.hitbox:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 2, 1, 3, 0)
 					settings.draws.hitbox:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 						200,
 						255,
 						180,
 						0
 					})
+		settings.draws:addSubMenu("ESP Settings", "esp")
+			settings.draws.esp:addParam("draw", "Draw " .. myHero.charName .. " ESP", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.esp:addParam("myboxcolour", "" .. myHero.charName .. " ESP Colour", SCRIPT_PARAM_COLOR, {
+					255,
+					255,
+					255,
+					255
+				})
+			settings.draws.esp:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.draws.esp:addParam("drawally", "Draw Ally ESP", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.esp:addParam("allyboxcolour", "Ally ESP Colour", SCRIPT_PARAM_COLOR, {
+					255,
+					0,
+					255,
+					255
+				})
+			settings.draws.esp:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.draws.esp:addParam("drawenemy", "Draw Enemy ESP", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.esp:addParam("enemyboxcolour", "Enemy ESP Colour", SCRIPT_PARAM_COLOR, {
+					255,
+					255,
+					0,
+					0
+				})
+			settings.draws.esp:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.draws.esp:addParam("cubetype", "ESP Type:", SCRIPT_PARAM_LIST, 1, {
+				[1] = "2D Box",
+				[2] = "2D Frame",
+				[3] = "Circle",
+				[4] = "Advanced Circle"
+			})
+			settings.draws.esp:addParam("boxthickness", "ESP Box Thickness", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
 		settings.draws:addSubMenu("Waypoints (Entity Paths)", "pcs")
 			settings.draws.pcs:addParam("MyClicks", "Draw " .. MyChampion .. " Pathing", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.pcs:addParam("AllyClicks", "Draw Ally Pathing", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.pcs:addParam("EnemyClicks", "Draw Enemy Pathing", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.pcs:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws.pcs:addParam("info1", "Width:", SCRIPT_PARAM_INFO, "")
-			settings.draws.pcs:addParam("MyThick", "" .. MyChampion .. " Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-			settings.draws.pcs:addParam("AllyThick", "Ally Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-			settings.draws.pcs:addParam("EnemyThick", "Enemy Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+			settings.draws.pcs:addParam("MyThick", "" .. MyChampion .. " Width", SCRIPT_PARAM_SLICE, 2, 1, 10, 0)
+			settings.draws.pcs:addParam("AllyThick", "Ally Width", SCRIPT_PARAM_SLICE, 2, 1, 10, 0)
+			settings.draws.pcs:addParam("EnemyThick", "Enemy Width", SCRIPT_PARAM_SLICE, 2, 1, 10, 0)
 			settings.draws.pcs:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws.pcs:addParam("info2", "Colour:", SCRIPT_PARAM_INFO, "")
 				settings.draws.pcs:addParam("MyColor", "" .. MyChampion .. " Colour", SCRIPT_PARAM_COLOR, {
@@ -2452,7 +2780,33 @@ function OnLoad()
 				[4] = "Cross",
 			})
 			settings.draws.pcs:addParam("space", "", SCRIPT_PARAM_INFO, "")
-			settings.draws.pcs:addParam("snap", "Snap for Advanced Circle Only", SCRIPT_PARAM_SLICE, 30, 10, 50, 0)
+			settings.draws.pcs:addParam("snap", "Quality for Advanced Circle Only", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
+		settings.draws:addSubMenu("Map Hack", "map")
+			settings.draws.map:addParam("Toggle","Toggle ON/OFF", SCRIPT_PARAM_ONOFF, true)
+			settings.draws.map:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.draws.map:addParam("info0", "Map:", SCRIPT_PARAM_INFO, "")
+			settings.draws.map:addParam("circle","Draw Missing Circle", SCRIPT_PARAM_ONOFF, true)
+			settings.draws.map:addParam("textinfo","Draw Missing Timer", SCRIPT_PARAM_ONOFF, true)
+			settings.draws.map:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.draws.map:addParam("info1", "MiniMap:", SCRIPT_PARAM_INFO, "")
+			settings.draws.map:addParam("circleMap","Draw Missing Circle", SCRIPT_PARAM_ONOFF, true)
+			settings.draws.map:addParam("timer","Draw Missing Timer", SCRIPT_PARAM_ONOFF, true)
+			settings.draws.map:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.draws.map:addParam("min", "Min Range to Start Draw:", SCRIPT_PARAM_SLICE, 2000, 1500, 3000, 0)
+			settings.draws.map:addParam("max", "Max Range to Draw to:", SCRIPT_PARAM_SLICE, 8000, 3000, 15000, 0)
+			settings.draws.map:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.map:addParam("colourdistance", "Traveling Distance Colour", SCRIPT_PARAM_COLOR, {
+					255,
+					255,
+					0,
+					0
+				})
+				settings.draws.map:addParam("colourmax", "Max Distance Colour", SCRIPT_PARAM_COLOR, {
+					255,
+					255,
+					0,
+					255
+				})
 		settings.draws:addSubMenu("Awareness Settings", "aws")
 			settings.draws.aws:addParam("Toggle", "Toggle ON/OFF", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.aws:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -2479,7 +2833,7 @@ function OnLoad()
 					settings.draws.autoPoro:addParam("range", "Range to Draw Poros", SCRIPT_PARAM_SLICE, 1250, 0, 10000, 0)
 					settings.draws.autoPoro:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.draws.autoPoro:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-					settings.draws.autoPoro:addParam("snap", "Snap", SCRIPT_PARAM_SLICE, 30, 10, 75, 0)
+					settings.draws.autoPoro:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
 						settings.draws.autoPoro:addParam("colour", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							72,
@@ -2487,6 +2841,8 @@ function OnLoad()
 							0
 						})
 			end
+			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.draws:addParam("wards", "Ward Tracker", SCRIPT_PARAM_ONOFF, true)
 			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws:addParam("DrawPing", "Draw Ping", SCRIPT_PARAM_ONOFF, true)
 			settings.draws:addParam("DrawFPS", "Draw FPS", SCRIPT_PARAM_ONOFF, true)
@@ -2506,13 +2862,9 @@ function OnLoad()
 			PrintSpecialText("<font color='#FF8B22'>SAC</font><font color='#00FF00'>:</font><font color='#FF8B22'>Reborn</font> Loading... Please wait!")
 			settings:addSubMenu("Orbwalker", "orbWalk")
 			settings.orbWalk:addParam("SACLoaded", "SAC:R integration supported!", SCRIPT_PARAM_INFO, "")
-			settings.orbWalk:addParam("SACSpace", "", SCRIPT_PARAM_INFO, "")
-			settings.orbWalk:addParam("SACMovementSettingToggle", "Change Orbwalk Location to mousePos", SCRIPT_PARAM_ONOFF, true)
-			settings.orbWalk:addParam("SACMessage0", "                 Could prevent bans.", SCRIPT_PARAM_INFO, "")
-			settings.orbWalk:addParam("SACSpace", "", SCRIPT_PARAM_INFO, "")
-			settings.orbWalk:addParam("SACMessage1", "This is currently not working since SAC", SCRIPT_PARAM_INFO, "")
-			settings.orbWalk:addParam("SACMessage2", "automatically replaces mousePos with", SCRIPT_PARAM_INFO, "")
-			settings.orbWalk:addParam("SACMessage3", "mousePos vector normalized at 300.", SCRIPT_PARAM_INFO, "")
+			settings.orbWalk:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.orbWalk:addParam("SACMessage0", "PLEASE MAKE SURE HUMAN MOVEMENT IS ENABLED!", SCRIPT_PARAM_INFO, "")
+			settings.orbWalk:addParam("SACMessage0", "It removes the normalized vector that SAC uses!", SCRIPT_PARAM_INFO, "")
 			DelayAction(function()
 				PrintSpecialText("<font color='#FF8B22'>SAC</font><font color='#00FF00'>:</font><font color='#FF8B22'>Reborn</font> integration successful!")
 			end, 5)
@@ -2521,11 +2873,11 @@ function OnLoad()
 			SxOrb = true
 			require("SxOrbWalk")
 			DelayAction(function()
-			settings:addSubMenu("SxOrbWalk", "orbWalk")
-			PrintSpecialText("<font color='#FF8B22'>SxOrbWalk</font> integration successful!")
+				settings:addSubMenu("SxOrbWalk", "orbWalk")
+				PrintSpecialText("<font color='#FF8B22'>SxOrbWalk</font> integration successful!")
 			end, 5)
 			DelayAction(function()
-			_G.SxOrb:LoadToMenu(settings.orbWalk)
+				_G.SxOrb:LoadToMenu(settings.orbWalk)
 			end, 5)
 		elseif SAC ~= true and SxOrb ~= true then
 			PrintSpecialText("<font color='#FF8B22'>SAC</font><font color='#00FF00'>:</font><font color='#FF8B22'>Reborn</font> or <font color='#FF8B22'> SxOrbWalk</font> is required.")
@@ -2599,6 +2951,17 @@ function OnLoad()
 					[9] = "Headhunter",
 					[10] = "Sashimi"
 				})
+			elseif DravenLoaded then
+				settings:addParam("selectedChampionSkin", "Skin Changer", SCRIPT_PARAM_LIST, 1, {
+					[1] = "Off",
+					[2] = "Original",
+					[3] = "Soul Reaver",
+					[4] = "Gladiator",
+					[5] = "Primetime",
+					[6] = "Pool Party",
+					[7] = "Beast Hunter",
+					[8] = "Draven Draven"
+				})
 			else
 				settings:addParam("selectedChampionSkin", "Skin Changer", SCRIPT_PARAM_LIST, 1, {
 					[1] = "Off",
@@ -2642,6 +3005,7 @@ function OnLoad()
 		UltStartTime = os.clock()
 		LastUltPosText = "OnLoad().pos"
 	end
+	GetMinimapRatio()
 end
 
 --[[
@@ -2663,6 +3027,10 @@ function OnUnload()
 	else
 		PrintSpecialText("Unloaded!")
 	end
+end
+
+function OnBugSplat()
+	WriteFile("BugSplat While  -  Champion: " .. myHero.charName .. "  |  Kills: " .. myHero.kills .. "  |  Deaths: " .. myHero.deaths .. "  |  Assists: " .. myHero.assists .. "  |  Total Minions Killed: " .. (myHero:GetInt('MINIONS_KILLED') + myHero:GetInt('NEUTRAL_MINIONS_KILLED')) .. "  |  Normal Minions Killed: " .. myHero:GetInt('MINIONS_KILLED') .. "  |  Jungle Minions Killed: " .. myHero:GetInt('NEUTRAL_MINIONS_KILLED') .. "  |  X: " .. myHero.x .. "  |  Y: " .. myHero.y .. "  |  Z: " .. myHero.z .. "  |  KatUlting: " .. KatUlting .. "  |  GameTimer: " .. GetInGameTimer() .. "  |  SAC: " .. SAC, _BUG_SPLAT_PATH)
 end
 
 --[[
@@ -3347,9 +3715,9 @@ function harass(target)
 					if not UnderTurret(myHero) then
 						SpellCast("Q", target)
 					end
-				elseif not settings.harass.noQundertower then
-					SpellCast("Q", target)
 				end
+			elseif not settings.harass.noQundertower then
+				SpellCast("Q", target)
 			end
 			if settings.harass.DynamicQMinionBounce then
 				if GetDistance(target, myHero) >= Katarina_Q_Range then
@@ -3620,9 +3988,21 @@ function SpellCast(spell, target)
 			end
 			if spell == "E3" and target ~= nil and E_is_Ready and os.clock() - Katarina_LastE > settings.combosettings.esetting.hdelay then
 				if settings.misc.UseEOverRide and not EUnderPercentage then
-					CastSpell(_E, target)
+					if settings.misc.BlockESpawn then
+						if CheckEntitySpawn(target) == false then
+							CastSpell(_E, target)
+						end
+					elseif not settings.misc.BlockESpawn then
+						CastSpell(_E, target)
+					end
 				elseif not settings.misc.UseEOverRide then
-					CastSpell(_E, target)
+					if settings.misc.BlockESpawn then
+						if CheckEntitySpawn(target) == false then
+							CastSpell(_E, target)
+						end
+					elseif not settings.misc.BlockESpawn then
+						CastSpell(_E, target)
+					end
 				else
 					return
 				end
@@ -4067,37 +4447,37 @@ function OnProcessAttack(unit, attack)
 	end
 end
 
-function OnProcessSpell(unit, buff)
-	if unit == myHero and buff.name == "KatarinaQ" then
+function OnProcessSpell(unit, spell)
+	if unit == myHero and spell.name == "KatarinaQ" then
 		Katarina_WaitQ = true
 		Katarina_LastQ = os.clock()
 	end
-	if buff and buff.name == "katarinarsound" then
+	if spell and spell.name == "katarinarsound" then
 		DisableMove()
 		DisableAttacks()
 		KatUlting = true
 	end
 	if AkaliLoaded then
-		if unit and buff and unit.isMe and buff.name == myHero:GetSpellData(_R).name then
+		if unit and spell and unit.isMe and spell.name == myHero:GetSpellData(_R).name then
 			ValidR = true
 		end
 	end
-	if buff.name == myHero:GetSpellData(_Q).name then
-		Qwind = buff.windUpTime
-	elseif buff.name == myHero:GetSpellData(_W).name then
-		Wwind = buff.windUpTime
-	elseif buff.name == myHero:GetSpellData(_E).name then
-		Ewind = buff.windUpTime
-	elseif buff.name == myHero:GetSpellData(_R).name then
-		Rwind = buff.windUpTime
+	if spell.name == myHero:GetSpellData(_Q).name then
+		Qwind = spell.windUpTime
+	elseif spell.name == myHero:GetSpellData(_W).name then
+		Wwind = spell.windUpTime
+	elseif spell.name == myHero:GetSpellData(_E).name then
+		Ewind = spell.windUpTime
+	elseif spell.name == myHero:GetSpellData(_R).name then
+		Rwind = spell.windUpTime
 	elseif GetDistance(unit) < 50 then
-		AAwind = buff.windUpTime
+		AAwind = spell.windUpTime
 	end
 end
 
-function OnApplyBuff(entity, source, buff)
+function OnApplyBuff(target, source, buff)
 	if source and source.isMe then
-		if entity == myHero then
+		--if target == myHero then
 			if buff.name == "katarinaqmark" then
 				TargetsWithQ[target.networkID] = true
 				Katarina_WaitQ = false
@@ -4105,8 +4485,16 @@ function OnApplyBuff(entity, source, buff)
 			if buff.name == "AkaliMota" then
 				TargetsWithQ[target.networkID] = true
 			end
-		end
-		if entity.type == myHero.type then
+			if buff.name == "NasusW" then
+				if settings.misc.impaired.wither then
+					if _Dev_Mode then
+						PrintSpecialText("Detected Nasus Wither on: <font color='#00FF00'>" .. source.charName .. "</font> | Buff Type: <font color='#00FFFF'>" .. buff.type .. "</font>")
+					end
+					RemoveImpaired("Wither")
+				end
+			end
+		--end
+		if target.type == myHero.type then
 			--PrintSpecialText("<font color='#00FFFF'>Buff Type: </font>" .. buff.type)
 			if buff.name == "SummonerExhaust" and settings.misc.impaired.exhaust then
 				RemoveImpaired("Exhaust")
@@ -4169,6 +4557,18 @@ function OnUpdateBuff(target, buff, stacks)
 			end
 		end
 	end
+	if target and target.isMe and buff and buff.name then
+		if buff.name == "DravenSpinningAttack" then
+			if stacks > 0 then
+				if _Dev_Mode then
+					PrintSpecialText("Obtained Axe! [<font color='#00FF00'>" .. stacks .. "</font>]")
+				end
+				Axefound = true
+				Axes.stacks = stacks
+				Axes.readytext = "True"
+			end
+		end
+	end
 end
 
 function OnRemoveBuff(target, buff)
@@ -4196,6 +4596,18 @@ function OnRemoveBuff(target, buff)
 			end
 			if buff.name == "AkaliMota" then
 				TargetsWithQ[target.networkID] = nil
+			end
+		end
+	end
+	if DravenLoaded then
+		if target and target.isMe and buff and buff.name then
+			if buff.name == "DravenSpinningAttack" then
+				if _Dev_Mode then
+					PrintSpecialText("Lost Axe! [<font color='#00FF00'>" .. Axes.stacks .. "</font>]")
+				end
+				Axefound = false
+				Axes.stacks = 0
+				Axes.readytext = "False"
 			end
 		end
 	end
@@ -4254,6 +4666,41 @@ function OnCreateObj(obj)
 		if obj.spellOwner == myHero and obj.name == "missile" then
 			Gobj = obj
 		end
+		if DravenLoaded then
+			if obj and obj.name then
+				if obj.name == "Draven_Base_Q_ReticleCatchSuccess.troy" then
+					if AxesInAir > 3 then
+						return
+					end
+					LastAxe = os.clock()
+					DelayAction(function()
+						AxesInAir = AxesInAir + 1
+					end, 0.10)
+				end
+				if obj.name == "Draven_Base_Q_activation.troy" then
+					if AxesInAir >= 3 then
+						return
+					end
+					AxesInAir = AxesInAir + 1
+				end
+				if obj.name == "Draven_Base_Q_reticle_self.troy" then
+					AxeLanding = true
+					table.insert(ActiveAxes, obj)
+				elseif obj.name == "draven_spinning_buff_end_sound.troy" then
+					AxeLanding = false
+					AxesInAir = 0
+				end
+				if obj.spellOwner == myHero and obj.name:find("missile") then
+					AAobj = obj
+				end
+			end
+		end
+	end
+	if obj and obj.name == "Acidtrail_buf.troy" then
+		PoisonStarted = true
+		StartPoisonTime = os.clock()
+		Pobj = obj
+		StartPoisonPos = myHero.pos
 	end
 	if os.clock() - LastWard < 0.5 and obj.valid and (string.find(obj.name, "Ward") ~= nil or string.find(obj.name, "Trinket")) ~= nil then
 		LastWardObj = obj
@@ -4262,6 +4709,43 @@ function OnCreateObj(obj)
 	if obj.name == "SRU_Order_nexus_swirlies.troy" or obj.name == "SRU_Chaos_nexus_swirlies.troy" then
 		GameHasEndedPos = obj
 		GameHasEnded = false
+	end
+	if obj and (obj.name:lower():find("visionward") or obj.name:lower():find("sightward")) and obj.networkID ~= 0 then
+		if obj.team ~= myHero.team then
+			i = 1
+			while i < wardNumber do
+				if (wards[i]) then
+					i = i + 1
+				else
+					break
+				end
+			end
+			wards[i] = {}
+			wards[i][1] = obj.x
+			wards[i][2] = obj.y
+			wards[i][3] = obj.z
+			wards[i][4] = obj.networkID
+			GetDrawPoints(i)
+		end
+	end
+	if obj ~= nil and (obj.name:find("Ward") or obj.name:find("ward")) and not (obj.name:find("Idle") or obj.name:find("idle")) then
+		if obj.team ~= myHero.team then
+			if obj.name:find("Sight")  or (obj.name:find("Vision") and obj.maxMana == 180 and obj.mana > 5) then
+				local destroytime = math.ceil(GetGameTimer()) + obj.mana
+				while SightWards[destroytime] ~= nil do
+					destroytime = destroytime + 1
+				end
+				SightWards[destroytime] = obj
+			else
+				if obj.name:find("Vision") then
+					local destroytime = math.ceil(GetGameTimer())
+					while VisionWards[destroytime] ~= nil do
+						destroytime = destroytime + 3
+					end
+					VisionWards[destroytime] = obj
+				end
+			end
+		end
 	end
 end
 
@@ -4290,9 +4774,69 @@ function OnDeleteObj(obj)
 		if obj.spellOwner == myHero and obj.name == "missile" then
 			Gobj = nil
 		end
+		if DravenLoaded then
+			if obj and obj.name then
+				if obj.name == "Draven_Base_Q_reticle_self.troy" then
+					if AxesInAir ~= 1 then 
+						AxesInAir = AxesInAir - 1 
+					else
+						DelayAction(function()
+							AxesInAir = AxesInAir - 1
+						end, 0.3)
+					end
+					for i, Axe in pairs(ActiveAxes) do
+						if obj.name == Axe.name then
+							table.remove(ActiveAxes, i)
+						end
+					end
+				end
+				if obj.spellOwner == myHero and obj.name:find("missile") then
+					AAobj = nil
+				end
+			end
+		end
+	end
+	if obj and obj.name == "Acidtrail_buf.troy" then
+		PoisonEnded = true
+		EndPoisonTime = os.clock()
+		Pobj = nil
+		EndPoisonPos = myHero.pos
 	end
 	if obj.name == "SRU_Order_nexus_swirlies.troy" or obj.name == "SRU_Chaos_nexus_swirlies.troy" then
 		GameHasEnded = true
+	end
+	if obj and obj.name and (obj.name:lower():find("visionward") or obj.name:lower():find("sightward")) and obj.networkID ~= 0 then	
+		i = 1
+		while i < wardNumber do
+			if (wards[i]) then
+				if (wards[i][4] == obj.networkID) then
+					wards[i] = nil
+					return
+				end
+			end
+			i = i + 1
+		end
+	end
+	if obj ~= nil and obj.name ~= nil and (obj.name:find("Ward") or obj.name:find("ward")) and not (obj.name:find("Idle") or obj.name:find("idle")) then
+		if obj.team ~= myHero.team then
+			if obj.name:find("Sight") then
+				for time, ward in pairs(SightWards) do
+					if obj.name:find("Sight") or (obj.name:find("Vision") and obj.maxMana == 180) then
+						if obj == ward then
+							SightWards[time] = nil
+						end
+					end
+				end
+			else
+				if obj.name:find("Vision") then
+					for time, ward in pairs(VisionWards) do
+						if obj == ward then
+							VisionWards[time] = nil
+						end
+					end
+				end
+			end
+		end
 	end
 end
 
@@ -4325,14 +4869,79 @@ function OnDraw()
 	--  Dev mode
 	if _Dev_Mode then
 		
+		--  Dev Mode for Draven Devs
+		if DravenLoaded then
+			DrawText("Current Axes:                   "..Axes.stacks.."/2", 15, 250, 250, ARGB(255, 255, 255, 255))
+			DrawText("Axe is Ready to Throw:", 15, 250, 265, ARGB(255, 255, 255, 255))
+			if Axefound then
+				ReadyColor = ARGB(255, 0, 255, 0)
+			else
+				ReadyColor = ARGB(255, 255, 0, 0)
+			end
+			DrawText("" .. Axes.readytext, 15, 385, 265, ReadyColor)
+			DrawText("Movement Status:", 15, 250, 280, ARGB(255, 255, 255, 255))
+			if myHero.dead then
+				DrawText("Dead", 15, 385, 280, ARGB(255, 255, 0, 0))
+			elseif MovementOverride then
+				DrawText("Enabled", 15, 385, 280, ARGB(255, 0, 255, 0))
+			elseif not MovementOverride and SAC or SxOrb then
+				DrawText("Disabled", 15, 385, 280, ARGB(255, 255, 0, 0))
+			elseif SAC then
+				DrawText("Loading SAC", 15, 385, 280, ARGB(255, 255, 255, 0))
+			elseif SxOrb then
+				DrawText("Loading SxOrb", 15, 385, 280, ARGB(255, 255, 255, 0))
+			else
+				DrawText("No Orbwalker Detected", 15, 385, 280, ARGB(255, 255, 255, 0))
+			end
+			DrawText("Catching Status:", 15, 250, 295, ARGB(255, 255, 255, 255))
+			if myHero.dead then
+				DrawText("Dead", 15, 385, 295, ARGB(255, 255, 0, 0))
+			elseif not MovementOverride and AxeLanding then
+				DrawText("Catching", 15, 385, 295, ARGB(255, 0, 255, 0))
+			elseif MovementOverride and InsideAxeZone then
+				DrawText("Picking Up", 15, 385, 295, ARGB(255, 255, 255, 0))
+			else
+				DrawText("Idle", 15, 385, 295, ARGB(255, 255, 0, 0))
+			end
+			DrawText("Inside Axe Zone:", 15, 250, 310, ARGB(255, 255, 255, 255))
+			if myHero.dead then
+				DrawText("Dead", 15, 385, 310, ARGB(255, 255, 0, 0))
+			elseif InsideAxeZone then
+				DrawText("True", 15, 385, 310, ARGB(255, 0, 255, 0))
+			elseif not InsideAxeZone then
+				DrawText("False", 15, 385, 310, ARGB(255, 255, 0, 0))
+			end
+			DrawText("Movement Enabled:", 15, 250, 325, ARGB(255, 255, 255, 255))
+			if myHero.dead then
+				DrawText("Dead", 15, 385, 325, ARGB(255, 255, 0, 0))
+			elseif MovementEnabled then
+				DrawText("True", 15, 385, 325, ARGB(255, 0, 255, 0))
+			elseif not MovementEnabled then
+				DrawText("False", 15, 385, 325, ARGB(255, 255, 0, 0))
+			end
+			DrawText("Attacks Enabled:", 15, 250, 340, ARGB(255, 255, 255, 255))
+			if myHero.dead then
+				DrawText("Dead", 15, 385, 340, ARGB(255, 255, 0, 0))
+			elseif AttacksEnabled then
+				DrawText("True", 15, 385, 340, ARGB(255, 0, 255, 0))
+			elseif not AttacksEnabled then
+				DrawText("False", 15, 385, 340, ARGB(255, 255, 0, 0))
+			end
+			local function roundToFirstDecimal(seconds)
+				return math.ceil(seconds * 1000) * 0.001
+			end
+			DrawText("Attacks Speed:", 15, 250, 355, ARGB(255, 255, 255, 255))
+			DrawText("" .. roundToFirstDecimal(0.679 * myHero.attackSpeed), 15, 385, 355, ARGB(255, 0, 255, 255))
+		end
+		
 		--  Ludens Echo Draws
-		DrawText("Luden's Echo Stacks: " .. Ludens.stacks .. "/100", 15, 250, 250, ARGB(255, 0, 255, 255))
-		DrawText("Ready: " .. Ludens.readytext, 15, 250, 265, ARGB(255, 255, 0, 255))
+		DrawText("Luden's Echo Stacks: " .. Ludens.stacks .. "/100", 15, 250, 200, ARGB(255, 0, 255, 255))
+		DrawText("Ready: " .. Ludens.readytext, 15, 250, 215, ARGB(255, 255, 0, 255))
 		
 		--  Draws Base
-		DrawCircle2(BlueSpawn.x, BlueSpawn.y, BlueSpawn.z, 2, SpawnRange, 200, ARGB(255, 0, 180, 255))
+		DrawCircle2(BlueSpawn.x, BlueSpawn.y, BlueSpawn.z, 2, SpawnRange, 3, ARGB(255, 0, 180, 255))
 		DrawLine3D(myHero.x, myHero.y, myHero.z, BlueSpawn.x, myHero.y, BlueSpawn.z, 2, ARGB(255, 0, 180, 255))
-		DrawCircle2(PurpleSpawn.x, PurpleSpawn.y, PurpleSpawn.z, 2, SpawnRange, 200, ARGB(255, 255, 0, 255))
+		DrawCircle2(PurpleSpawn.x, PurpleSpawn.y, PurpleSpawn.z, 2, SpawnRange, 3, ARGB(255, 255, 0, 255))
 		DrawLine3D(myHero.x, myHero.y, myHero.z, PurpleSpawn.x, myHero.y, PurpleSpawn.z, 2, ARGB(255, 255, 0, 255))
 		
 		--  Draws Slots
@@ -4420,30 +5029,173 @@ function OnDraw()
 	--  Testing when game is over..... :/
 	if GameHasEnded then
 		DrawText("GAME OVER", 15, 400, 400, ARGB(255, 255, 0, 0))
+		SendChat("/dance")
 		if myHero.team == 100 then
 			if GetDistance(GameHasEndedPos, PurpleSpawn) < 4000 then
 				DrawText("PURPLE TEAM NEXUS..  |  YOU WIN!", 15, 400, 415, ARGB(255, 0, 255, 0))
-				--DrawText3D("PURPLE TEAM NEXUS..  |  YOU WIN!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 0, 255, 0), true)
-				SendChat("/dance")
 			else
 				DrawText("BLUE TEAM NEXUS..  |  YOU LOSE!", 15, 400, 415, ARGB(255, 255, 0, 0))
-				--DrawText3D("BLUE TEAM NEXUS..  |  YOU LOSE!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 255, 0, 0), true)
-				SendChat("/dance")
 			end
 		elseif myHero.team == 200 then
 			if GetDistance(GameHasEndedPos, BlueSpawn) < 4000 then
 				DrawText("BLUE TEAM NEXUS..  |  YOU WIN!", 15, 400, 415, ARGB(255, 0, 255, 0))
-				--DrawText3D("BLUE TEAM NEXUS..  |  YOU WIN!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 0, 255, 0), true)
-				SendChat("/dance")
 			else
 				DrawText("PURPLE TEAM NEXUS..  |  YOU LOSE!", 15, 400, 415, ARGB(255, 255, 0, 0))
-				--DrawText3D("PURPLE TEAM NEXUS..  |  YOU LOSE!", GameHasEndedPos.x - 50, GameHasEndedPos.y, GameHasEndedPos.z + 50, 30, ARGB(255, 255, 0, 0), true)
-				SendChat("/dance")
+			end
+		end
+	end
+	if not GameHasEnded then
+		--DrawCircle2(GameHasEndedPos.x, GameHasEndedPos.y, GameHasEndedPos.z, 3, 100, 1, ARGB(255, 255, 0, 0))
+	end
+		
+	--  Catch Axes [Draven]
+	if DravenLoaded then
+		if not myHero.dead then
+			if settings.draws.DrawHitBox then
+				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.boundingRadius, 1.5, ARGB(table.unpack(settings.draws.color.HitBoxcolor)))
+			end
+			if settings.draws.DrawAArange then
+				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, 666, 1.5, ARGB(table.unpack(settings.draws.qsetting.AArangeColor)))
+			end
+			if settings.draws.qsetting.DrawAXEposition then
+				if AAobj and not AxeLanding then
+					DrawCircle2(AAobj.x, AAobj.y, AAobj.z, 2, 30, 1.5, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor)))
+					DrawLine3D(myHero.x, myHero.y, myHero.z, AAobj.x, AAobj.y, AAobj.z, 2, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor)))
+				end
+				if AAobj and AxeLanding then
+					DrawCircle2(AAobj.x, AAobj.y, AAobj.z, 2, 30, 1.5, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor2)))
+					DrawLine3D(myHero.x, myHero.y, myHero.z, AAobj.x, AAobj.y, AAobj.z, 2, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor2)))
+				end
+				if AxeLanding then
+					for _, AxeLandingPos in ipairs(ActiveAxes) do
+						DrawCircle2(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, 2, 90, 1.5, ARGB(255, 0, 255, 255))
+						DrawHDArrow3DVector(myHero, AxeLandingPos, 2, ARGB(255, 0, 255, 0), ARGB(255, 0, 0, 0), 100)
+						if AxeObject then
+							DrawLine3D(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, AxeObject.x, AxeObject.y, AxeObject.z, 2, ARGB(255, 0, 255, 255))
+						end
+						if GetDistance(myHero, AxeLandingPos) > myHero.boundingRadius + 55 then
+							local VectorPickUp = AxeLandingPos + (Vector(myHero) - AxeLandingPos):normalized() * AxeLandingDistance
+							DrawCircle2(VectorPickUp.x, VectorPickUp.y, VectorPickUp.z, 2, myHero.boundingRadius, 1.5, ARGB(255, 255, 0, 0))
+							CollectAxe = true
+						else
+							CollectAxe = false
+						end
+					end
+				end
 			end
 		end
 	end
 	
-	-- Auto Poro function
+    --  Map Hack
+	if settings.draws.map.Toggle then
+		local MissingMulti = 0
+		for i, enemy in pairs(enemies) do
+			if not enemy.visible and not enemy.dead and MissingSince[i] ~= -1 then
+				TotalDistance = enemy.ms * MissingTime[i]
+				if TotalDistance > settings.draws.map.min then
+					if not myHero.dead then
+						if TotalDistance < settings.draws.map.max then
+							if settings.draws.map.circle then
+								DrawCircle2(enemy.x, enemy.y, enemy.z, 2, TotalDistance, 8, ARGB(table.unpack(settings.draws.map.colourdistance)))
+							end
+							if settings.draws.map.circle then
+								DrawCircleMinimap(enemy.x, enemy.y, enemy.z, TotalDistance, 2, ARGB(table.unpack(settings.draws.map.colourdistance)))
+							end
+							if settings.draws.map.timer then
+								DrawText(tostring(math.floor(MissingTime[i])), 20, GetMinimapX(enemy.x) - 6 * GetMinimapRatio(), GetMinimapY(enemy.z) - 6 * GetMinimapRatio(), ARGB(255, 255, 255, 0))
+							end
+						else
+							if settings.draws.map.circle then
+								DrawCircle2(enemy.x, enemy.y, enemy.z, 2, settings.draws.map.max, 8, ARGB(table.unpack(settings.draws.map.colourmax)))
+							end
+							if settings.draws.map.circleMap then
+								DrawCircleMinimap(enemy.x, enemy.y, enemy.z, settings.draws.map.max, 2, ARGB(table.unpack(settings.draws.map.colourmax)))
+							end
+							if settings.draws.map.timer then
+								DrawText(tostring(math.floor(MissingTime[i])), 20, GetMinimapX(enemy.x) - 6 * GetMinimapRatio(), GetMinimapY(enemy.z) - 6 * GetMinimapRatio(), ARGB(255, 255, 0, 0))
+							end
+						end
+						if settings.draws.map.textinfo then
+							if MissingTime[i] < 100 then
+								if (TotalDistance < GetDistance(enemy, myHero)) and (TotalDistance < settings.draws.map.max) then
+									VectorToMapLine = enemy + (Vector(myHero) - enemy):normalized() * TotalDistance
+									local VectorScreen = WorldToScreen(D3DXVECTOR3(VectorToMapLine.x, VectorToMapLine.y, VectorToMapLine.z))
+									DrawLine(VectorScreen.x + 90, VectorScreen.y - 10, VectorScreen.x + 90, VectorScreen.y + 50, 200, ARGB(120, 0, 0, 0))
+									DrawText("" .. enemy.charName .. "", 20, VectorScreen.x, VectorScreen.y, ARGB(255, 0, 255, 0))
+									DrawText("Missing for:     Seconds", 20, VectorScreen.x, VectorScreen.y + 20, ARGB(255, 255, 255, 255))
+									DrawText("" .. tostring(math.floor(MissingTime[i])), 20, VectorScreen.x + 95, VectorScreen.y + 20, ARGB(255, 255, 255, 0))
+								elseif (TotalDistance > GetDistance(enemy, myHero)) or (TotalDistance > settings.draws.map.max) then
+									DrawLine(WINDOW_W / 5 + MissingMulti, 35, WINDOW_W / 5 + 200 + MissingMulti, 35, 50, ARGB(120, 0, 0, 0))
+									DrawText("" .. enemy.charName .. "", 20, WINDOW_W / 5 + 5 + MissingMulti, 15, ARGB(255, 0, 255, 0))
+									DrawText("Missing for:     Seconds", 20, WINDOW_W / 5 + 5 + MissingMulti, 35, ARGB(255, 255, 255, 255))
+									DrawText("" .. tostring(math.floor(MissingTime[i])), 20, WINDOW_W / 5 + 100 + MissingMulti, 35, ARGB(255, 255, 255, 0))
+									MissingMulti = MissingMulti + 210
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	--  Enemy Ward Tracker
+	local num = 1
+	if settings.draws.wards then
+		while num < wardNumber do
+			if (wards[num]) then
+				ward = wards[num]
+				i = 1
+				while (ward[4 + i]) do
+					if ward[5 + i] then
+						DrawLine3D(ward[4+i][1], ward[4+i][2], ward[4+i][3], ward[5+i][1], ward[5+i][2], ward[5+i][3], 3, ARGB(BlinkMultiplier(1), 255, 255, 255))
+					else
+						DrawLine3D(ward[4+i][1], ward[4+i][2], ward[4+i][3], ward[5][1], ward[5][2], ward[5][3], 3, ARGB(BlinkMultiplier(1), 255, 255, 255))
+					end
+					i = i + 1
+				end
+			end
+			num = num + 1
+		end
+		for time, ward in pairs(SightWards) do
+			if ward.health == 0 then
+				SightWards[time] = nil
+			end
+			if ward ~= nil and ward.x ~= nil and ward.y ~= nil and ward.z ~= nil then
+				local remainingTime = time - math.ceil(GetGameTimer())
+				local textpos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z)) 
+				DrawLine(textpos.x + 8, textpos.y - 20, textpos.x + 8, textpos.y + 35, 80, ARGB(120, 0, 0, 0))				
+				DrawText("Trinket", 16, textpos.x - 30, textpos.y - 15, ARGB(255, 0, 255, 0))
+				DrawText("" .. TimerText(math.ceil(remainingTime)), 16, textpos.x - 30, textpos.y, ARGB(255, 0, 255, 0))
+				DrawText("HP: " .. ward.health .. "/" .. ward.maxHealth, 16, textpos.x - 30, textpos.y + 15, ARGB(255, 0, 255, 0))
+				DrawCircle3D(ward.x, ward.y, ward.z, 80, 2, ARGB(255, 0, 255, 0), 15)
+			end
+		end
+		for time, ward in pairs(VisionWards) do
+			if ward.health == 0 then
+				VisionWards[time] = nil
+			end
+			if ward ~= nil and ward.x ~= nil and ward.y ~= nil and ward.z ~= nil then
+				local textpos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
+				local remainingTime = time - math.ceil(GetGameTimer())
+				if ward.maxHealth == 4 then
+					DrawLine(textpos.x + 8, textpos.y - 20, textpos.x + 8, textpos.y + 35, 80, ARGB(120, 0, 0, 0))
+					DrawText("Vision", 16, textpos.x - 30, textpos.y - 15, ARGB(255, 255, 0, 255))
+					DrawText("No Time", 16, textpos.x - 30, textpos.y, ARGB(255, 255, 0, 255))
+					DrawText("HP: " .. ward.health .. "/" .. ward.maxHealth, 16, textpos.x - 30, textpos.y + 15, ARGB(255, 255, 0, 255))
+					DrawCircle3D(ward.x, ward.y, ward.z, 80, 2, ARGB(255, 255, 0, 255), 15)
+				else
+					DrawLine(textpos.x + 8, textpos.y - 20, textpos.x + 8, textpos.y + 35, 80, ARGB(120, 0, 0, 0))
+					DrawText("Sight Stone", 16, textpos.x - 30, textpos.y - 15, ARGB(255, 255, 255, 0))
+					DrawText("" .. TimerText(math.ceil(remainingTime + 150)), 16, textpos.x - 30, textpos.y, ARGB(255, 255, 255, 0))
+					DrawText("HP: " .. ward.health .. "/" .. ward.maxHealth, 16, textpos.x - 30, textpos.y + 15, ARGB(255, 255, 255, 0))
+					DrawCircle3D(ward.x, ward.y, ward.z, 80, 2, ARGB(255, 255, 255, 0), 15)
+				end
+			end
+		end
+	end
+	
+	--  Auto Poro function
 	if GetGame().map.shortName == "howlingAbyss" then
 		if settings.misc.enablePoro then
 			if not myHero.dead then
@@ -4454,12 +5206,12 @@ function OnDraw()
 						--  Draw Line to Poro
 						if settings.draws.autoPoro.line then
 							if settings.draws.autoPoro.fromhitbox then
-								MyVector = myHero + (Vector(Poro) - myHero):normalized() * (myHero.boundingRadius - 5)
+								MyVector = myHero + (Vector(Poro) - myHero):normalized() * (myHero.boundingRadius)
 							else
 								MyVector = myHero
 							end
 							if settings.draws.autoPoro.circle then
-								PoroVector = Poro + (Vector(myHero) - Poro):normalized() * (Poro.boundingRadius / 2 - 5)
+								PoroVector = Poro + (Vector(myHero) - Poro):normalized() * (Poro.boundingRadius / 2)
 							else
 								PoroVector = Poro
 							end
@@ -4473,6 +5225,25 @@ function OnDraw()
 						end
 					end
 				end
+			end
+		end
+	end
+
+	--  ESP Draw
+	if settings.draws.esp.draw then
+		DrawESP_and_HeadManager(myHero, settings.draws.esp.myboxcolour)
+	end
+	if settings.draws.esp.drawally then
+		for _, Ally in pairs(GetAllyHeroes()) do
+			if not Ally.isMe then
+				DrawESP_and_HeadManager(Ally, settings.draws.esp.allyboxcolour)
+			end
+		end
+	end
+	if settings.draws.esp.drawenemy then
+		for _, Enemy in pairs(GetEnemyHeroes()) do
+			if not Enemy.isMe then
+				DrawESP_and_HeadManager(Enemy, settings.draws.esp.enemyboxcolour)
 			end
 		end
 	end
@@ -4519,12 +5290,12 @@ function OnDraw()
 				VectorOffset = unit + (Vector(myHero) - unit):normalized() * 46
 				if not UnitValid then
 					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 0, 255, 0))
-					DrawCircle2(unit.x, myHero.y, unit.z, 2, 50, 30, ARGB(255, 0, 255, 0))
-					DrawCircle2(unit.x, myHero.y, unit.z, 2, settings.misc.foundwarddistance, 50, ARGB(50, 255, 255, 255))
+					DrawCircle2(unit.x, myHero.y, unit.z, 2, 50, 1, ARGB(255, 0, 255, 0))
+					DrawCircle2(unit.x, myHero.y, unit.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
 					DrawText("Flee Position", 14, LinePos.x - 25, LinePos.y - 60, ARGB(255, 0, 255, 0))
 				else
 					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 255, 255, 0))
-					DrawCircle2(unit.x, myHero.y, unit.z, 2, 50, 30, ARGB(255, 255, 255, 0))
+					DrawCircle2(unit.x, myHero.y, unit.z, 2, 50, 1, ARGB(255, 255, 255, 0))
 					DrawText("Location Found", 14, LinePos.x - 26, LinePos.y - 60, ARGB(255, 255, 255, 0))
 				end
 				if GetDistance(mousePos) > 680 then
@@ -4590,7 +5361,7 @@ function OnDraw()
 					if GetDistance(target, ward) < settings.misc.foundwarddistance and not target.dead and MinionDistance > GetDistance(mousePos, target) then
 						MinionDistance = GetDistance(mousePos, target)
 						WardValid = target
-					end                            
+					end
 				end
 				if WardValid then
 					ward = WardValid
@@ -4601,12 +5372,12 @@ function OnDraw()
 				VectorOffset = ward + (Vector(myHero) - ward):normalized() * 46
 				if not WardValid then
 					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 0, 255, 0))
-					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 40, ARGB(255, 0, 255, 0))
-					DrawCircle2(ward.x, myHero.y, ward.z, 2, settings.misc.foundwarddistance, 70, ARGB(50, 255, 255, 255))
+					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 1, ARGB(255, 0, 255, 0))
+					DrawCircle2(ward.x, myHero.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
 					DrawText("Ward Jump", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 0, 255, 0))
 				else
 					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 255, 255, 0))
-					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 40, ARGB(255, 255, 255, 0))
+					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 1, ARGB(255, 255, 255, 0))
 					DrawText("Location Found", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 255, 0))
 				end
 				if GetDistance(mousePos) < 590 then
@@ -4765,8 +5536,8 @@ function OnDraw()
 				ward = WardValid
 			end
 			if not E_is_Ready and selectedTar then
-				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 10, ARGB(255, 255, 0, 0))
-				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 50, ARGB(50, 255, 255, 255))
+				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 1, ARGB(255, 255, 0, 0))
+				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
 				LinePos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
 				DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 1, ARGB(255, 255, 0, 0))
 				DrawText("E not Ready", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 0, 0))
@@ -4776,8 +5547,8 @@ function OnDraw()
 					end
 				end
 			elseif E_is_Ready and selectedTar then
-				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 10, ARGB(255, 0, 255, 0))
-				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 50, ARGB(50, 255, 255, 255))
+				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 1, ARGB(255, 0, 255, 0))
+				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
 				LinePos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
 				DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 1, ARGB(255, 0, 255, 0))
 				DrawText("Hit and Run End Location", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 0, 255, 0))
@@ -4788,8 +5559,8 @@ function OnDraw()
 				end
 			end
 			if E_is_Ready and not selectedTar and not myHero.dead then
-				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 10, ARGB(255, 255, 255, 0))
-				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 50, ARGB(50, 255, 255, 255))
+				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 1, ARGB(255, 255, 255, 0))
+				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
 				LinePos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
 				DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 2, ARGB(255, 255, 255, 0))
 				DrawText("Hit and Run End Location", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 255, 0))
@@ -4812,7 +5583,7 @@ function OnDraw()
 		
 		-- Draw Last Ult Pos (Draws Loaded Pos is Last Ult Pos is nil)
 		if settings.draws.rsetting.ultposZone then
-			DrawText("Visible Enemies in R Range: " .. CountEnemyHeroInRange(Katarina_R_Range), 20, 200, 200, ARGB(255, 0, 255, 0))
+			DrawText("Visible Enemies in R Range: " .. CountHeroInRange(Katarina_R_Range, GetEnemyHeroes()), 20, 200, 180, ARGB(255, 0, 255, 0))
 			UltPos = WorldToScreen(D3DXVECTOR3(UltX, UltY, UltZ))
 			if KatUlting then
 				drawUltTimer = true
@@ -4836,7 +5607,7 @@ function OnDraw()
 		--	DrawText3D("" .. roundToFirstDecimal(TheUltTimer), myHero.x + 203, myHero.y, myHero.z + 97, 30, ARGB(255, 0, 0, 0), true)
 		--	DrawText3D("" .. roundToFirstDecimal(TheUltTimer), myHero.x + 200, myHero.y, myHero.z + 100, 30, ARGB(255, 255, 0, 0), true)
 			DrawText("" .. LastUltPosText, 20, UltPos.x - 45, UltPos.y, ARGB(255, 0, 255, 0))
-			DrawCircle2(UltX, UltY, UltZ, 2, 100, 60, ARGB(255, 0, 255, 0))
+			DrawCircle2(UltX, UltY, UltZ, 2, 100, 1, ARGB(255, 0, 255, 0))
 		end
 		
 		-- Draw E Buff Time Circle (When the circle reaches your HitBox the <buff> is gone)
@@ -4853,9 +5624,9 @@ function OnDraw()
 					if GetDistance(myHero, minion) <= 1000 then
 						local DMG = getDmg("Q", minion, myHero)
 						if DMG > minion.health then
-							DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 30, ARGB(255, 0, 255, 0))
+							DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 1, ARGB(255, 0, 255, 0))
 						elseif DMG + 150 > minion.health then
-							DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 30, ARGB(255, 255, 120, 0))
+							DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 1, ARGB(255, 255, 120, 0))
 						end
 					end
 				end
@@ -4871,23 +5642,32 @@ function OnDraw()
 							if GetDistance(myHero, target) >= Katarina_Q_Range then
 								for _, minion in pairs(minionManager(MINION_ENEMY, 1000, myHero, MINION_SORT_HEALTH_ASC).objects) do
 									if ValidTarget(minion, 1000) and minion ~= nil and not minion.dead and minion.visible then
+										local VectorFromMeToMinion = myHero + (Vector(minion) - myHero):normalized() * 2000
 										if GetDistance(minion, target) <= Katarina_Q_BounceRange then
 											if GetDistance(myHero, minion) <= Katarina_Q_Range then
 												DrawLine3D(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 2, ARGB(255, 255, 255, 0))
 												DrawLine3D(minion.x, minion.y, minion.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
-												DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 40, ARGB(255, 255, 255, 0))
-												DrawCircle2(target.x, target.y, target.z, 2, minion.boundingRadius, 40, ARGB(255, 0, 255, 0))
+												DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 2, ARGB(255, 255, 255, 0))
+												DrawCircle2(target.x, target.y, target.z, 2, minion.boundingRadius, 2, ARGB(255, 0, 255, 0))
 											elseif GetDistance(myHero, minion) >= Katarina_Q_Range and GetDistance(myHero, minion) <= Katarina_Q_Range + Katarina_Q_BounceRange then
-												DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 80, ARGB(100, 255, 255, 0))
+												if settings.draws.qsetting.DynamicQMinionBounceType == 1 then
+													DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 2, ARGB(100, 255, 255, 0))
+												elseif settings.draws.qsetting.DynamicQMinionBounceType == 2 then
+													DrawArc2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 77, ARGB(100, 255, 255, 0), minion, VectorFromMeToMinion, 50, 155)
+												end
 											end
 										elseif GetDistance(minion, target) >= Katarina_Q_BounceRange and GetDistance(minion, target) <= 500 then
-											DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 80, ARGB(100, 255, 0, 0))
+											if settings.draws.qsetting.DynamicQMinionBounceType == 1 then
+												DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 2, ARGB(100, 255, 0, 0))
+											elseif settings.draws.qsetting.DynamicQMinionBounceType == 2 then
+												DrawArc2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 77, ARGB(100, 255, 0, 0), minion, VectorFromMeToMinion, 50, 155)
+											end
 										end
 									end
 								end
 							else
 								DrawLine3D(myHero.x, myHero.y, myHero.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
-								DrawCircle2(target.x, target.y, target.z, 2, target.boundingRadius, 40, ARGB(255, 0, 255, 0))
+								DrawCircle2(target.x, target.y, target.z, 2, target.boundingRadius, 2, ARGB(255, 0, 255, 0))
 							end
 						end
 					end
@@ -4994,7 +5774,7 @@ function OnDraw()
 		local TimeW = WTime()
 		if os.clock() < WAt + TimeW then
 			if settings.draws.wsetting.DrawWSpeed and WBuff then
-				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime() - os.clock()) + myHero.boundingRadius, 50, ARGB(table.unpack(settings.draws.wsetting.Wspeedcolor)))
+				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime() - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedcolor)))
 			end
 		end
 		
@@ -5070,7 +5850,7 @@ function OnDraw()
 					end
 				end
 				if settings.draws.wsetting.particles then
-					DrawCircle2(Wobj.x, Wobj.y + 40, Wobj.z, 2, 420, 40, ARGB(table.unpack(settings.draws.wsetting.WCirlceColor)))
+					DrawCircle2(Wobj.x, Wobj.y + 40, Wobj.z, 2, 420, 2, ARGB(table.unpack(settings.draws.wsetting.WCirlceColor)))
 				end
 			end
 		end
@@ -5078,7 +5858,7 @@ function OnDraw()
 	
 	--  Draw Mouse Pos (in World [3D])
 	if settings.draws.drawMouse then
-		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 30, 20000, ARGB(255, 0, 255, 255))
+		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 30, 1, ARGB(255, 0, 255, 255))
 	end
 	
 	-- Draw DMG indicator (On Bar Pos)
@@ -5162,7 +5942,7 @@ function OnDraw()
 	--  Draw My Waypoints
 	if settings.draws.pcs.MyClicks then
 		if myHero.hasMovePath and myHero.pathCount >= 2 then
-			if not myHero.dead then
+			if not myHero.dead and myHero.visible then
 				local IndexPath = myHero:GetPath(myHero.pathIndex)
 				if IndexPath then
 					if GetDistance(myHero, myHero.endPath) > 30 then
@@ -5280,44 +6060,69 @@ function OnDraw()
 end
 
 function DrawCircle2(x, y, z, width, radius, snap, color)
-	local vPos1 = Vector(x, y, z)
-	local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
-	local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
-	local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
-	if OnScreen({x = sPos.x, y = sPos.y}, {x = sPos.x, y = sPos.y}) then
-		DrawCircleNextLvl(x, y, z, radius, width, color, snap)
+	--DrawCircleNextLvl(x, y, z, radius, width, color, snap)
+	DrawCircleNextLvl2(x, y, z, radius, width, color, snap)
+end
+
+function DrawCircleNextLvl2(x, y, z, radius, width, color, quality)
+	for i=-radius * math.cos(math.pi / 4), radius * math.cos(math.pi / 4) - 1, radius * math.cos(math.pi / 4) / quality do
+		local TopStart = WorldToScreen(D3DXVECTOR3((x + i), y, (z + math.sqrt(radius * radius - i * i))))
+		local TopEnd = WorldToScreen(D3DXVECTOR3((x + i + radius * math.cos(math.pi / 4) / quality), y, (z + math.sqrt(radius * radius - (i + radius * math.cos(math.pi / 4) / quality) * (i + radius * math.cos(math.pi / 4) / quality)))))
+		local BottomStart = WorldToScreen(D3DXVECTOR3((x + i), y, (z - math.sqrt(radius * radius - i * i))))
+		local BottomEnd = WorldToScreen(D3DXVECTOR3((x + i + radius * math.cos(math.pi / 4) / quality), y, (z - math.sqrt(radius * radius - (i + radius * math.cos(math.pi / 4) / quality) * (i + radius * math.cos(math.pi / 4 ) / quality)))))
+		local RightStart = WorldToScreen(D3DXVECTOR3((x + math.sqrt(radius * radius - i * i)), y, (z + i)))
+		local RightEnd = WorldToScreen(D3DXVECTOR3((x + math.sqrt(radius * radius - (i + radius * math.cos(math.pi / 4) / quality) * (i + radius * math.cos(math.pi / 4) / quality))), y, (z + i + radius * math.cos(math.pi / 4) / quality)))
+		local LeftStart = WorldToScreen(D3DXVECTOR3((x - math.sqrt(radius * radius - i * i)), y, (z + i)))
+		local LeftEnd = WorldToScreen(D3DXVECTOR3((x - math.sqrt(radius * radius - (i + radius * math.cos(math.pi / 4) / quality) * (i + radius * math.cos(math.pi / 4) / quality))), y, (z + i + radius * math.cos(math.pi / 4) / quality)))
+		DrawLineAfterScreen(TopStart.x, TopStart.y, TopEnd.x, TopEnd.y, width, color)
+		DrawLineAfterScreen(BottomStart.x, BottomStart.y, BottomEnd.x, BottomEnd.y, width, color)
+		DrawLineAfterScreen(RightStart.x, RightStart.y, RightEnd.x, RightEnd.y, width, color)
+		DrawLineAfterScreen(LeftStart.x, LeftStart.y, LeftEnd.x, LeftEnd.y, width, color)
 	end
 end
 
-function DrawCircle(x, y, z, radius, color)
-	local vPos1 = Vector(x, y, z)
-	local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
-	local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
-	local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
-	if OnScreen({x = sPos.x, y = sPos.y}, {x = sPos.x, y = sPos.y}) then
-		DrawCircleNextLvl(x, y, z, radius, 2, color, 100)
+function DrawLineAfterScreen(StartX, StartY, EndX, EndY, width, color)
+	if (StartX > 0 and StartX < WINDOW_W) and (StartY > 0 and StartY < WINDOW_H) and (EndX > 0 and EndX < WINDOW_W) and (EndY > 0 and EndY < WINDOW_H) then
+		DrawLine(StartX, StartY, EndX, EndY, width, color)
 	end
 end
 
-function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
-	radius = radius or 300
-	quality = math.max(8, Round(180 / math.deg((math.asin(chordlength / (2 * radius))))))
-	quality = 2 * math.pi / quality
-	radius = radius * 0.92
-	local points = {}
-	for theta = 0, 2 * math.pi + quality, quality do
-		local c = WorldToScreen(D3DXVECTOR3(x + radius * math.cos(theta), y, z - radius * math.sin(theta)))
-		points[#points + 1] = D3DXVECTOR2(c.x, c.y)
-	end
-	DrawLines2(points, width or 1, color or 4294967295)
+function DrawArc2(x, y, z, radius, width, color, chordlength, unit, endPos, arcWidth, thetaPos)
+    local vPos1 = Vector(x, y, z)
+    local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
+    local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
+    local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
+    if OnScreen({ x = sPos.x, y = sPos.y }, { x = sPos.x, y = sPos.y }) then
+        DrawArcNextLvl(x, y, z, radius, width, color, chordlength, unit, endPos, arcWidth, thetaPos)
+    end
 end
 
-function Round(number)
-	if number >= 0 then
-		return math.floor(number + 0.5)
-	else
-		return math.ceil(number - 0.5)
+function DrawArcNextLvl(x, y, z, width, radius, chordlength, color, unit, endPos, aWidth, thetaPos)
+	local Angle = angleBetweenArc(Vector(unit.pos), Vector(unit.pos), Vector(endPos)) + thetaPos
+    local points = {}
+	local arcWidth = aWidth
+	for theta = arcWidth, 0, -10 do
+		local ToScreen = WorldToScreen(D3DXVECTOR3(x + (unit.boundingRadius) * math.cos((Angle + theta) * math.pi / 180), y, z - (unit.boundingRadius) * math.sin((Angle + theta) * math.pi / 180)))
+		points[#points + 1] = D3DXVECTOR2(ToScreen.x, ToScreen.y)
 	end
+	for theta = 0, arcWidth, 5 do
+		local ToScreen = WorldToScreen(D3DXVECTOR3(x + (radius) * math.cos((Angle + theta) * math.pi / 180), y, z - (radius) * math.sin((Angle + theta) * math.pi / 180)))
+		points[#points + 1] = D3DXVECTOR2(ToScreen.x, ToScreen.y)
+	end
+	local ToScreen = WorldToScreen(D3DXVECTOR3(x + (unit.boundingRadius) * math.cos((Angle + arcWidth) * math.pi / 180), y, z - (unit.boundingRadius) * math.sin((Angle + arcWidth) * math.pi / 180)))
+	points[#points + 1] = D3DXVECTOR2(ToScreen.x, ToScreen.y)
+	DrawLines2(points, width, color or 4294967295)
+end
+
+function angleBetweenArc(v0, v1, v2)
+    assert(VectorType(v1) and VectorType(v2), "angleBetween: wrong argument types (2 <Vector> expected)")
+    local p1 = (-v0 + v1)
+    local p2 = (-v0 + v2)
+    local theta = math.max(p1:polar()) - math.max(p2:polar())
+	if theta < 0 then
+		theta = theta + 180
+	end
+    return theta
 end
 
 function BlinkMultiplier(Multiplier)
@@ -5325,6 +6130,30 @@ function BlinkMultiplier(Multiplier)
 	Algorithm = (Multiplier / 2) > (Base / (Multiplier + Multiplier)) and Base or Multiplier - (Base - Multiplier)
 	Alpha = ((Algorithm * 150) + 100)
 	return Alpha
+end
+
+function GetDrawPoints(index) 
+	local i = 1
+	local wardVector = Vector(wards[index][1],wards[index][2],wards[index][3])
+	local alpha = 0
+	while(i <= 36 * 3) do
+		alpha = alpha + 360 / 36 / 3
+		wards[index][4+i] = {}
+		a = 0.1
+		wards[index][4 + i][1] = wardVector.x 
+		wards[index][4 + i][2] = wardVector.y
+		wards[index][4 + i][3] = wardVector.z + 110
+		while (not IsWall(D3DXVECTOR3(wards[index][4 + i][1],wards[index][4 + i][2],wards[index][4 + i][3]))) and a < 0.9 do
+			a = a + 0.025
+			vc = Vector(1100 * math.sin(alpha / 360 * 6.28), 0, 1100 * math.cos(alpha / 360 * 6.28))
+			vc:normalize()
+			vc = vc * 1100 * a
+			wards[index][4 + i][1] = wardVector.x + vc.x
+			wards[index][4 + i][2] = wardVector.y
+			wards[index][4 + i][3] = wardVector.z + vc.z
+		end
+		i = i + 1
+	end
 end
 
 function DrawRectangleButton(x, y, w, h, color)
@@ -5403,36 +6232,6 @@ function DrawLineHPBar2(damage, line, text, unit)
 	DrawLine(Offs_X-150, StartPos.y-(line*15), StartPos.x-20, StartPos.y-(line*15), 10, ARGB(140, 0, 0, 0))
 end
 
---[[function Q_Dynamic_Harass_Draws(target)
-	for _, target in pairs(GetEnemyHeroes()) do
-		if ValidTarget(target, 1000) and target ~= nil and not target.dead and target.visible then
-			if Q_is_Ready then
-				if GetDistance(myHero, target) >= Katarina_Q_Range then
-					for _, minion in pairs(minionManager(MINION_ENEMY, 1000, player, MINION_SORT_HEALTH_ASC).objects) do
-						if ValidTarget(minion, 1000) and minion ~= nil and not minion.dead and minion.visible then
-							if GetDistance(minion, target) <= Katarina_Q_BounceRange then
-								if GetDistance(myHero, minion) <= Katarina_Q_Range then
-									DrawLine3D(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 2, ARGB(255, 255, 255, 0))
-									DrawLine3D(minion.x, minion.y, minion.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
-									DrawCircle2(minion.x, minion.y, minion.z, 2, 50, 20, ARGB(255, 255, 255, 0))
-									DrawCircle2(target.x, target.y, target.z, 2, 50, 20, ARGB(255, 0, 255, 0))
-								elseif GetDistance(myHero, minion) >= Katarina_Q_Range and GetDistance(myHero, minion) <= Katarina_Q_Range + Katarina_Q_BounceRange then
-									DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 20, ARGB(100, 255, 255, 0))
-								end
-							elseif GetDistance(minion, target) >= Katarina_Q_BounceRange and GetDistance(minion, target) <= 500 then
-								DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 20, ARGB(100, 255, 0, 0))
-							end
-						end
-					end
-				else
-					DrawLine3D(myHero.x, myHero.y, myHero.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
-					DrawCircle2(target.x, target.y, target.z, 2, 50, 20, ARGB(255, 0, 255, 0))
-				end
-			end
-		end
-	end
-end]]
-
 function DrawUltimateAwareness(startx, starty, startz, endx, endy, endz, thickness, color, entity)
 	startLinePos = {
 		x = startx,
@@ -5445,7 +6244,7 @@ function DrawUltimateAwareness(startx, starty, startz, endx, endy, endz, thickne
 		z = endz
 	}
 	if settings.draws.aws.fromhitbox then
-		startLinePosStructure = startLinePos + (Vector(endLinePos) - startLinePos):normalized() * (myHero.boundingRadius - 5)
+		startLinePosStructure = startLinePos + (Vector(endLinePos) - startLinePos):normalized() * (myHero.boundingRadius)
 	else
 		startLinePosStructure = startLinePos
 	end
@@ -5477,7 +6276,7 @@ function DrawOtherPathing(HeroType, Thickness, Color)
 			return
 		end
 		if hero.hasMovePath and hero.pathCount >= 2 then
-			if not hero.dead then
+			if not hero.dead and hero.visible then
 				local IndexPath = hero:GetPath(hero.pathIndex)
 				if IndexPath then
 					if GetDistance(hero, hero.endPath) > 30 then
@@ -5519,9 +6318,9 @@ function DrawEndPos(unit, Thickness, Color)
 	end
 	if settings.draws.pcs.mode == 3 then
 		if settings.draws.pcs.outlines then 
-			draw:DrawCircle2(unit.endPath.x, unit.endPath.y, unit.endPath.z, 3, 50, settings.draws.pcs.snap, ARGB(255, 0, 0, 0))
+			DrawCircle2(unit.endPath.x, unit.endPath.y, unit.endPath.z, 3, 1, settings.draws.pcs.snap, ARGB(255, 0, 0, 0))
 		end
-		draw:DrawCircle2(unit.endPath.x, unit.endPath.y, unit.endPath.z, Thickness, 50, settings.draws.pcs.snap, Color)
+		DrawCircle2(unit.endPath.x, unit.endPath.y, unit.endPath.z, Thickness, 1, settings.draws.pcs.snap, Color)
 	end
 	if settings.draws.pcs.mode == 4 then
 		local LocationEnd = unit.endPath
@@ -5536,6 +6335,81 @@ function DrawEndPos(unit, Thickness, Color)
 		DrawLine3D(Top, LocationEnd.y, Left, Bottom, LocationEnd.y, Right, Thickness, Color)
 		DrawLine3D(Top, LocationEnd.y, Right, Bottom, LocationEnd.y, Left, Thickness, Color)
 	end
+end
+
+function DrawHDArrow3DVector(startPos, endPos, thickness, color, outline_color, vectordistance)
+	if vectordistance ~= nil then
+		if GetDistance(myHero, endPos) > vectordistance then
+			VECTORendPos = startPos + (Vector(endPos) - startPos):normalized() * vectordistance
+		else
+			VECTORendPos = endPos
+		end
+	else
+		VECTORendPos = endPos
+	end
+	VECTORLeftPos = VECTORendPos + (Vector(startPos) - VECTORendPos):rotated(0, 45 * math.pi / 180, 0):normalized() * 35
+	VECTORRightPos = VECTORendPos + (Vector(startPos) - VECTORendPos):rotated(0, 315 * math.pi / 180, 0):normalized() * 35
+	DrawLine3D(startPos.x, startPos.y, startPos.z, VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, thickness + 2, outline_color)
+	DrawLine3D(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORLeftPos.x, VECTORLeftPos.y, VECTORLeftPos.z, thickness + 2, outline_color)
+	DrawLine3D(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORRightPos.x, VECTORRightPos.y, VECTORRightPos.z, thickness + 2, outline_color)
+	DrawLine3D(startPos.x, startPos.y, startPos.z, VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, thickness, color)
+	DrawLine3D(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORLeftPos.x, VECTORLeftPos.y, VECTORLeftPos.z, thickness, color)
+	DrawLine3D(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORRightPos.x, VECTORRightPos.y, VECTORRightPos.z, thickness, color)
+end
+
+function DrawESP_and_HeadManager(entity, boxcolor)
+	if entity and not entity.dead and entity.visible then
+		if settings.draws.esp.cubetype == 1 then
+			DrawNormalESP(entity, settings.draws.esp.boxthickness, ARGB(table.unpack(boxcolor)))
+		elseif settings.draws.esp.cubetype == 2 then
+			DrawVectorESP(entity, settings.draws.esp.boxthickness, ARGB(table.unpack(boxcolor)))
+		elseif settings.draws.esp.cubetype == 3 then
+			DrawCircle(entity.x, entity.y, entity.z, entity.boundingRadius, ARGB(table.unpack(boxcolor)))
+		elseif settings.draws.esp.cubetype == 4 then
+			DrawCircle2(entity.x, entity.y, entity.z, settings.draws.esp.boxthickness, entity.boundingRadius, 20, ARGB(table.unpack(boxcolor)))
+		end
+	end
+end
+
+function DrawNormalESP(entity, width, colour)
+	local ScreenVector = WorldToScreen(D3DXVECTOR3(entity.x, entity.y, entity.z))
+	local Offset = entity.boundingRadius / 2
+	local Left = (ScreenVector.x - (entity.boundingRadius / 1.5))
+	local Right = (ScreenVector.x + (entity.boundingRadius / 1.5))
+	local Top = (ScreenVector.y - Offset + entity.boundingRadius)
+	local Bottom = (ScreenVector.y - Offset - entity.boundingRadius)
+	DrawLine(Left, Top, Left, Bottom, width, colour)
+	DrawLine(Right, Top, Right, Bottom, width, colour)
+	DrawLine(Left, Top, Right, Top, width, colour)
+	DrawLine(Left, Bottom, Right, Bottom, width, colour)
+end
+
+function DrawVectorESP(entity, width, colour)
+	local ScreenVector = WorldToScreen(D3DXVECTOR3(entity.x, entity.y, entity.z))
+	local Offset = entity.boundingRadius / 1.5
+	local Left = (ScreenVector.x - (entity.boundingRadius / 1.5))
+	local Right = (ScreenVector.x + (entity.boundingRadius / 1.5))
+	local Top = (ScreenVector.y - Offset + entity.boundingRadius)
+	local Bottom = (ScreenVector.y - Offset - entity.boundingRadius)
+	DrawNewIndexLine3D(Left, Top, Left, Bottom, width, colour)
+	DrawNewIndexLine3D(Right, Top, Right, Bottom, width, colour)
+	DrawNewIndexLine3D(Left, Top, Right, Top, width, colour)
+	DrawNewIndexLine3D(Left, Bottom, Right, Bottom, width, colour)
+end
+
+function DrawNewIndexLine3D(x_start, y_start, x_end, y_end, width, colour)
+	StartLeftVectorPos = {
+		x = x_start,
+		y = y_start
+	}
+	StartRightVectorPos = {
+		x = x_end,
+		y = y_end
+	}
+	local StopLeftVectorPos = StartLeftVectorPos + (Vector(StartRightVectorPos) - StartLeftVectorPos):normalized() * (myHero.boundingRadius / 2)
+	local StopRightVectorPos = StartRightVectorPos + (Vector(StartLeftVectorPos) - StartRightVectorPos):normalized() * (myHero.boundingRadius / 2)
+	DrawLine(StartLeftVectorPos.x, StartLeftVectorPos.y, StopLeftVectorPos.x, StopLeftVectorPos.y, width, colour)
+	DrawLine(StartRightVectorPos.x, StartRightVectorPos.y, StopRightVectorPos.x, StopRightVectorPos.y, width, colour)
 end
 
 function DrawMyCooldown()
