@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 1.6
+-- > > > Version 1.7
 
 --_______________________________________________________________________________
 
@@ -257,6 +257,8 @@ Auto Turn around for Trynd W and Cass R
 Enemy Click from mid lane Alert
 First Level up Alert
 Screen Res 2D visual
+Wukong Decoy
+Auto Impairments Remover %HP Filter
 
 EXTRA ASSISTANT!
 Continue SAC walking to mouse if PolyMorphed
@@ -413,8 +415,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1.6
-local _SCRIPT_VERSION_MENU = "1.6"
+local _SCRIPT_VERSION = 1.7
+local _SCRIPT_VERSION_MENU = "1.7"
 local _PATCH = "6.20"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -1358,6 +1360,40 @@ function OnTick()
 		end
 	end
 	
+	--  Checks Draven Axe Position, and acts upon toggles.
+	if DravenLoaded then
+		if not AxeLanding then
+			EnableMove()
+			EnableAttacks()
+		elseif AxeLanding and not InsideAxeZone then
+			if settings.combosettings.qsetting.disableattacks then
+				if tablelength(ActiveAxes) >= 2 then
+					for _, Zone in ipairs(ActiveAxes) do
+						if GetDistance(myHero, Zone) > myHero.boundingRadius + 50 then
+							local AttackSpeed = 0.679 * myHero.attackSpeed
+							if AttackSpeed >= settings.combosettings.qsetting.disableattacksspeed then
+								EnableMove()
+								DisableAttacks()
+							end
+						elseif GetDistance(myHero, Zone) < myHero.boundingRadius + 50 then
+							EnableAttacks()
+						end
+					end
+				end
+			end
+		elseif InsideAxeZone then
+			EnableAttacks()
+			if settings.combosettings.qsetting.disablemovements then
+				DisableMove()
+			else
+				EnableMove()
+			end
+		end
+		if not InsideAxeZone then
+			EnableMove()
+		end
+	end
+	
 	--  Custom PermaShow Settings
 	settings.permaShowEdit(SpacePermaShowTop, "lText", "_______________________________________")
 	settings.permaShowEdit(SpacePermaShowTop, "lTextColor", ARGB(255, 0, 255, 0))
@@ -1674,7 +1710,6 @@ function OnTick()
 			end
 			if axechecker2 then
 				LastAxeTimer3 = (LastAxeTimer2 - LastAxeTimer)
-				axechecker1 = false
 				axechecker2 = false
 			end
 			if settings.combosettings.wsetting.ComboW then
@@ -1690,8 +1725,6 @@ function OnTick()
 							end
 						end
 					end
-					--if tablelength(ActiveAxes) == 2 then
-					--end
 				end
 			end
 			if settings.combosettings.qsetting.autocatch == 1 then
@@ -1711,25 +1744,6 @@ function OnTick()
 				end
 			else
 				InsideAxeZone = false
-			end
-			if InsideAxeZone then
-				if settings.combosettings.qsetting.disablemovements then
-					DisableMove()
-				end
-			end
-			if settings.combosettings.qsetting.disableattacks then
-				if tablelength(ActiveAxes) == 2 then
-					for _, Zone in ipairs(ActiveAxes) do
-						if GetDistance(myHero, Zone) > myHero.boundingRadius + 50 then
-							local AttackSpeed = 0.679 * myHero.attackSpeed
-							if AttackSpeed >= settings.combosettings.qsetting.disableattacksspeed then
-								DisableAttacks()
-							end
-						elseif GetDistance(myHero, Zone) < myHero.boundingRadius + 50 then
-							EnableAttacks()
-						end
-					end
-				end
 			end
 		end
 	--[[
@@ -2858,6 +2872,7 @@ function OnLoad()
 			settings.draws:addParam("drawkillable", "Draw Damage Text on Enemy", SCRIPT_PARAM_ONOFF, true)
 			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws:addParam("drawMouse", "Draw Mouse Position", SCRIPT_PARAM_ONOFF, true)
+			settings.draws:addParam("drawEXP", "Draw Experience/Vision Range", SCRIPT_PARAM_ONOFF, true)
 			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws:addParam("Alpha", "Background Alpha for PermaShow", SCRIPT_PARAM_SLICE, 255, 0, 255, 0)
 			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -3524,8 +3539,7 @@ function GetMyDmg(target)
 				else
 					return 0
 				end
-			end
-			if AkaliLoaded then
+			elseif AkaliLoaded then
 				if R_is_Ready and Q_is_Ready and E_is_Ready then
 					return getDmg("R", target, myHero) + getDmg("Q", target, myHero) + getDmg("E", target, myHero) + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG
 				elseif R_is_Ready and E_is_Ready and ExtraDMG then
@@ -3549,6 +3563,8 @@ function GetMyDmg(target)
 				else
 					return 0
 				end
+			else
+				return 0
 			end
 		end
 	else
@@ -3696,6 +3712,13 @@ function Combo(target)
 			end
 			if settings.combosettings.rsetting.CastR and R_is_Ready and GetDistance(target) <= Akali_R_Range and GetDistance(target) >= settings.combosettings.rsetting.Rdebuff then
 				SpellCast("R", target)
+			end
+		end
+		if DravenLoaded then
+			if settings.combosettings.qsetting.ComboQ then
+				if GetDistance(myHero, target) < 620 then
+					CastSpell(_Q)
+				end
 			end
 		end
 	end
@@ -4884,9 +4907,9 @@ function OnDraw()
 			if myHero.dead then
 				DrawText("Dead", 15, 385, 280, ARGB(255, 255, 0, 0))
 			elseif MovementOverride then
-				DrawText("Enabled", 15, 385, 280, ARGB(255, 0, 255, 0))
+				DrawText("nil", 15, 385, 280, ARGB(255, 0, 255, 255))
 			elseif not MovementOverride and SAC or SxOrb then
-				DrawText("Disabled", 15, 385, 280, ARGB(255, 255, 0, 0))
+				DrawText("Override", 15, 385, 280, ARGB(255, 255, 255, 0))
 			elseif SAC then
 				DrawText("Loading SAC", 15, 385, 280, ARGB(255, 255, 255, 0))
 			elseif SxOrb then
@@ -5860,6 +5883,12 @@ function OnDraw()
 	--  Draw Mouse Pos (in World [3D])
 	if settings.draws.drawMouse then
 		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 30, 1, ARGB(255, 0, 255, 255))
+	end
+	
+	
+	--  Draw Mouse Pos (in World [3D])
+	if settings.draws.drawEXP then
+		DrawCircle2(myHero.x, myHero.y, myHero.z, 6, 1400, 4, ARGB(100, 0, 100, 0))
 	end
 	
 	-- Draw DMG indicator (On Bar Pos)
