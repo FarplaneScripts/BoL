@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 1.5
+-- > > > Version 1.6
 
 --_______________________________________________________________________________
 
@@ -203,6 +203,10 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Fixed AutoLevel bug with the Sequence().
 [x] Added ESP 2D Box, 2D Frame, Circle, Advanced Circle
 
+		18/10/2016 | AM
+[x] Base Locations for Map
+[x] Temp hotfix for Block Spell Enemy Spawn [it casts now without chat spam...  I really need script testers...]
+
 
 
 
@@ -239,13 +243,11 @@ Auto interrupt [Currently no champions supported.]
 Anti-Gapcloser [Currently no champions supported.]
 Time to Travel (to the end of Waypoints)
 EXP Range Circle
-ESP Draws {2D, 3D, 2D Frame, 3D Frame, Circle}
 Smart Ignite
 Auto Mikaels self
 Fix Flash after ward jump toggle.
 Jungle KS TT Enemies.
 ThunderLords support
-Base Locations for Map
 Jungle Mobs for Map
 Use Poro BoundingBox to find how many cookies they've eaten!
 Blue Trinket Ward Jump Support
@@ -254,6 +256,7 @@ Connected circles outline profile border
 Auto Turn around for Trynd W and Cass R
 Enemy Click from mid lane Alert
 First Level up Alert
+Screen Res 2D visual
 
 EXTRA ASSISTANT!
 Continue SAC walking to mouse if PolyMorphed
@@ -410,8 +413,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1.5
-local _SCRIPT_VERSION_MENU = "1.5"
+local _SCRIPT_VERSION = 1.6
+local _SCRIPT_VERSION_MENU = "1.6"
 local _PATCH = "6.20"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -1087,21 +1090,22 @@ end
 --[[
 	Check unit in spawn
 ]]
-function CheckEntitySpawn(unit)
+function CheckEntitySpawn(unit, spell)
 	if unit.team == 100 then
-		if GetDistance(entity, BlueSpawn) < SpawnRange then
-			return true
+		if GetDistance(unit, BlueSpawn) < SpawnRange then
+			return
 		else
-			return false
+			CastSpell(spell, unit)
 		end
 	elseif unit.team == 200 then
-		if GetDistance(entity, PurpleSpawn) < SpawnRange then
-			return true
+		if GetDistance(unit, PurpleSpawn) < SpawnRange then
+			return
 		else
-			return false
+			CastSpell(spell, unit)
 		end
 	end
 end
+
 --[[
 	MiniMap X Y Axis
 ]]
@@ -3990,17 +3994,13 @@ function SpellCast(spell, target)
 			if spell == "E3" and target ~= nil and E_is_Ready and os.clock() - Katarina_LastE > settings.combosettings.esetting.hdelay then
 				if settings.misc.UseEOverRide and not EUnderPercentage then
 					if settings.misc.BlockESpawn then
-						if CheckEntitySpawn(target) == false then
-							CastSpell(_E, target)
-						end
+						CheckEntitySpawn(target, _E)
 					elseif not settings.misc.BlockESpawn then
 						CastSpell(_E, target)
 					end
 				elseif not settings.misc.UseEOverRide then
 					if settings.misc.BlockESpawn then
-						if CheckEntitySpawn(target) == false then
-							CastSpell(_E, target)
-						end
+						CheckEntitySpawn(target, _E)
 					elseif not settings.misc.BlockESpawn then
 						CastSpell(_E, target)
 					end
