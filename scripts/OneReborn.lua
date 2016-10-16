@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 1.7
+-- > > > Version 1.8
 
 --_______________________________________________________________________________
 
@@ -203,9 +203,19 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Fixed AutoLevel bug with the Sequence().
 [x] Added ESP 2D Box, 2D Frame, Circle, Advanced Circle
 
-		18/10/2016 | AM
+		16/10/2016 | 8:24AM
 [x] Base Locations for Map
 [x] Temp hotfix for Block Spell Enemy Spawn [it casts now without chat spam...  I really need script testers...]
+[x] More fixes
+[x] Even More fixes...
+
+		17/10/2016 | 2:46AM
+[x] Tweaked ESP Draws - Proper Y Axis Head when zoomed in now
+[x] Added E Anti-Engage [Draven]
+[x] Reset user settings.
+[x] Added black outlines to ESP
+[x] Updated Visuals for Left Click Target Selector.
+[x] Added BoL Tools Tracker!
 
 
 
@@ -349,6 +359,10 @@ KatarinaLoaded = false
 AkaliLoaded = false
 DravenLoaded = false
 
+--  BoL Tools Tracker, please don't delete this .. <3
+assert(load(Base64Decode("G0x1YVIAAQQEBAgAGZMNChoKAAAAAAAAAAAAAQMeAAAABAAAAEYAQAClAAAAXUAAAUZAQAClQAAAXUAAAWWAAAAIQACBZcAAAAhAgIFGAEEApQABAF1AAAFGQEEAgYABAF1AAAFGgEEApUABAEqAgINGgEEApYABAEqAAIRGgEEApcABAEqAgIRGgEEApQACAEqAAIUfAIAACwAAAAQSAAAAQWRkVW5sb2FkQ2FsbGJhY2sABBQAAABBZGRCdWdzcGxhdENhbGxiYWNrAAQMAAAAVHJhY2tlckxvYWQABA0AAABCb2xUb29sc1RpbWUABBQAAABBZGRHYW1lT3ZlckNhbGxiYWNrAAQGAAAAY2xhc3MABA4AAABTY3JpcHRUcmFja2VyAAQHAAAAX19pbml0AAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAoAAABzZW5kRGF0YXMABAsAAABHZXRXZWJQYWdlAAkAAAACAAAAAwAAAAAAAwkAAAAFAAAAGABAABcAAIAfAIAABQAAAAxAQACBgAAAHUCAAR8AgAADAAAAAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAcAAAB1bmxvYWQAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAEAAAABQAAAAAAAwkAAAAFAAAAGABAABcAAIAfAIAABQAAAAxAQACBgAAAHUCAAR8AgAADAAAAAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAkAAABidWdzcGxhdAAAAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAUAAAAHAAAAAQAEDQAAAEYAwACAAAAAXYAAAUkAAABFAAAATEDAAMGAAABdQIABRsDAAKUAAADBAAEAXUCAAR8AgAAFAAAABA4AAABTY3JpcHRUcmFja2VyAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAUAAABsb2FkAAQMAAAARGVsYXlBY3Rpb24AAwAAAAAAQHpAAQAAAAYAAAAHAAAAAAADBQAAAAUAAAAMAEAAgUAAAB1AgAEfAIAAAgAAAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAgAAAB3b3JraW5nAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAACAAAAA0AAAAAAAksAAAABgBAAB2AgAAaQEAAF4AAgEGAAABfAAABF8AIgEbAQABHAMEAgUABAMaAQQDHwMEBEAFCAN0AAAFdgAAAhsBAAIcAQQHBQAEABoFBAAfBQQJQQUIAj0HCAE6BgQIdAQABnYAAAMbAQADHAMEBAUEBAEaBQQBHwcECjwHCAI6BAQDPQUIBjsEBA10BAAHdgAAAAAGAAEGBAgCAAQABwYECAAACgAEWAQICHwEAAR8AgAALAAAABA8AAABHZXRJbkdhbWVUaW1lcgADAAAAAAAAAAAECQAAADAwOjAwOjAwAAQHAAAAc3RyaW5nAAQHAAAAZm9ybWF0AAQGAAAAJTAyLmYABAUAAABtYXRoAAQGAAAAZmxvb3IAAwAAAAAAIKxAAwAAAAAAAE5ABAIAAAA6AAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAABAAAAAAAAMUAAAABgBAAB2AgAAHQEAAGwAAABdAA4AGAEAAHYCAAAeAQAAbAAAAFwABgAUAgAAMwEAAgYAAAB1AgAEXwACABQCAAAzAQACBAAEAHUCAAR8AgAAFAAAABAgAAABHZXRHYW1lAAQHAAAAaXNPdmVyAAQEAAAAd2luAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAYAAABsb29zZQAAAAAAAgAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAEQAAABEAAAACAAICAAAACkAAgB8AgAABAAAABAoAAABzY3JpcHRLZXkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEQAAABIAAAACAAUKAAAAhgBAAMAAgACdgAABGEBAARfAAICFAIAAjIBAAQABgACdQIABHwCAAAMAAAAEBQAAAHR5cGUABAcAAABzdHJpbmcABAoAAABzZW5kRGF0YXMAAAAAAAIAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABMAAAAiAAAAAgATPwAAAApAAICGgEAAnYCAAAqAgICGAEEAxkBBAAaBQQAHwUECQQECAB2BAAFGgUEAR8HBAoFBAgBdgQABhoFBAIfBQQPBgQIAnYEAAcaBQQDHwcEDAcICAN2BAAEGgkEAB8JBBEECAwAdggABFgECAt0AAAGdgAAACoCAgYaAQwCdgIAACoCAhgoAxIeGQEQAmwAAABdAAIAKgMSHFwAAgArAxIeGQEUAh4BFAQqAAIqFAIAAjMBFAQEBBgBBQQYAh4FGAMHBBgAAAoAAQQIHAIcCRQDBQgcAB0NAAEGDBwCHw0AAwcMHAAdEQwBBBAgAh8RDAFaBhAKdQAACHwCAACEAAAAEBwAAAGFjdGlvbgAECQAAAHVzZXJuYW1lAAQIAAAAR2V0VXNlcgAEBQAAAGh3aWQABA0AAABCYXNlNjRFbmNvZGUABAkAAAB0b3N0cmluZwAEAwAAAG9zAAQHAAAAZ2V0ZW52AAQVAAAAUFJPQ0VTU09SX0lERU5USUZJRVIABAkAAABVU0VSTkFNRQAEDQAAAENPTVBVVEVSTkFNRQAEEAAAAFBST0NFU1NPUl9MRVZFTAAEEwAAAFBST0NFU1NPUl9SRVZJU0lPTgAECwAAAGluZ2FtZVRpbWUABA0AAABCb2xUb29sc1RpbWUABAYAAABpc1ZpcAAEAQAAAAAECQAAAFZJUF9VU0VSAAMAAAAAAADwPwMAAAAAAAAAAAQJAAAAY2hhbXBpb24ABAcAAABteUhlcm8ABAkAAABjaGFyTmFtZQAECwAAAEdldFdlYlBhZ2UABA4AAABib2wtdG9vbHMuY29tAAQXAAAAL2FwaS9ldmVudHM/c2NyaXB0S2V5PQAECgAAAHNjcmlwdEtleQAECQAAACZhY3Rpb249AAQLAAAAJmNoYW1waW9uPQAEDgAAACZib2xVc2VybmFtZT0ABAcAAAAmaHdpZD0ABA0AAAAmaW5nYW1lVGltZT0ABAgAAAAmaXNWaXA9AAAAAAACAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAjAAAAJwAAAAMACiEAAADGQEAAAYEAAN2AAAHHwMAB3YCAAArAAIDHAEAAzADBAUABgACBQQEA3UAAAscAQADMgMEBQcEBAIABAAHBAQIAAAKAAEFCAgBWQYIC3UCAAccAQADMgMIBQcECAIEBAwDdQAACxwBAAMyAwgFBQQMAgYEDAN1AAAIKAMSHCgDEiB8AgAASAAAABAcAAABTb2NrZXQABAgAAAByZXF1aXJlAAQHAAAAc29ja2V0AAQEAAAAdGNwAAQIAAAAY29ubmVjdAADAAAAAAAAVEAEBQAAAHNlbmQABAUAAABHRVQgAAQSAAAAIEhUVFAvMS4wDQpIb3N0OiAABAUAAAANCg0KAAQLAAAAc2V0dGltZW91dAADAAAAAAAAAAAEAgAAAGIAAwAAAPyD15dBBAIAAAB0AAQKAAAATGFzdFByaW50AAQBAAAAAAQFAAAARmlsZQAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAA="), nil, "bt", _ENV))()
+TrackerLoad("NeRQjBYHRlGQiYTh")
+
 local MyChampion = myHero.charName
 local MyUser = GetUser()
 
@@ -415,8 +429,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1.7
-local _SCRIPT_VERSION_MENU = "1.7"
+local _SCRIPT_VERSION = 1.8
+local _SCRIPT_VERSION_MENU = "1.8"
 local _PATCH = "6.20"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -504,6 +518,11 @@ local AxeLandingDistance = 60
 local LastAxeTimer3 = 0
 local axechecker = false
 local axechecker2 = false
+
+local Draven_Q_Range = 620
+local Draven_W_Range = myHero.boundingRadius
+local Draven_E_Range = 1050
+local Draven_R_Range = 15000
 
 Axes = {
 	stacks = 0,
@@ -680,6 +699,60 @@ local Ludens = {
 	stacks = 0,
 	ready = false,
 	readytext = "false"
+}
+
+--[[
+	Engage Spells Array
+]]
+local SpellEnages = {
+	["AatroxQ"] = true,
+	["BandageToss"] = true,
+	["BlindMonkQTwo"] = true,
+	["DianaTeleport"] = true,
+	["Headbutt"] = true,
+	["InfiniteDuress"] = true,
+	["JarvanIVDragonStrike"] = true,
+	["JaxLeapStrike"] = true,
+	["KennenLightningRush"] = true,
+	["Landslide"] = true,
+	["MonkeyKingNimbus"] = true,
+	["MonkeyKingSpinToWin"] = true,
+	["MalphiteR"] = true,
+	["NocturneParanoia"] = true,
+	["OlafRagnarok"] = true,
+	["PoppyE"] = true,
+	["RenektonSliceAndDice"] = true,
+	["RengarR"] = true,
+	["ShenE"] = true,
+	["ShyvanaTransformCast"] = true,
+	["SummonerFlash"] = true,
+	["TalonCutthroat"] = true,
+	["threshqleap"] = true,
+	["UdyrBearStance"] = true,
+	["UrgotSwap2"] = true,
+	["ViQ"] = true,
+	["ViR"] = true,
+	["VolibearQ"] = true,
+	["YasuoRKnockUpComboW"] = true,
+	["ZacE"] = true
+}
+
+--[[
+	Channel Spells Array
+]]
+local SpellChannels = {
+	["AlZaharNetherGrasp"] = true,
+	["CaitlynAceintheHole"] = true,
+	["GalioIdolOfDurand"] = true,
+	["InfiniteDuress"] = true,
+	["JhinR"] = true,
+	["KatarinaR"] = true,
+	["LucianR"] = true,
+	["MissFortuneBulletTime"] = true,
+	["UrgotSwap2"] = true,
+	["TwistedFateR"] = true,
+	["VelkozR"] = true,
+	["XerathLocusPulse"] = true
 }
 
 --[[
@@ -1258,6 +1331,22 @@ end
 	Catches Dravens Axes Function
 ]]
 function DoCatchAxe()
+	if settings.combosettings.qsetting.tower then
+		for _, AxePosition in ipairs(ActiveAxes) do
+			if not UnderTurret(AxePosition) then
+				if SAC then
+					if _G.AutoCarry.Orbwalker then
+						_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
+					end
+				elseif SxOrb then
+					_G.SxOrb:ForcePoint(nil)
+				end
+				EnableMove()
+				EnableAttacks()
+				return
+			end
+		end
+	end
 	if AxeLanding then
 		for _, AxePosition in ipairs(ActiveAxes) do
 			if (math.abs(myHero.x - AxePosition.x) <= 900 and math.abs(myHero.z - AxePosition.z) <= 900) and not (AxePosition.x <= 55 and AxePosition.y <= 55) then
@@ -1713,13 +1802,17 @@ function OnTick()
 				axechecker2 = false
 			end
 			if settings.combosettings.wsetting.ComboW then
-				if myHero.mana / myHero.maxMana >= settings.combosettings.wsetting.manaW / 100 then
-					if tablelength(ActiveAxes) >= 1 then
-						if AxeLanding then
-							if InsideAxeZone then
-								if AAobj and AxeLanding then
-									if GetDistance(myHero, AAobj) < 100 then
-										CastSpell(_W)
+				for _, target in pairs(GetEnemyHeroes()) do
+					if myHero.mana / myHero.maxMana >= settings.combosettings.wsetting.manaW / 100 then
+						if tablelength(ActiveAxes) >= 1 then
+							if AxeLanding then
+								if InsideAxeZone then
+									if AAobj and AxeLanding then
+										if GetDistance(myHero, AAobj) < 100 then
+											if GetDistance(myHero, target) < Draven_Q_Range + 130 then
+												CastSpell(_W)
+											end
+										end
 									end
 								end
 							end
@@ -1746,6 +1839,7 @@ function OnTick()
 				InsideAxeZone = false
 			end
 		end
+		
 	--[[
 		Special OnTick for Akali ONLY
 	]]
@@ -1996,7 +2090,7 @@ end
 ]]
 
 function OnLoad()
-	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_006")
+	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_007")
 			settings.ts = TargetSelector(TARGET_LESS_CAST, 800, DAMAGE_MAGIC, true)
 			settings.ts.name = "" .. MyChampion
 			settings:addTS(settings.ts)
@@ -2023,6 +2117,7 @@ function OnLoad()
 					})
 					settings.combosettings.qsetting:addParam("axeholdkey", "Axe Hold Key:", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("X"))
 					settings.combosettings.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.combosettings.qsetting:addParam("tower", "Do not Catch Axe if Axe is under tower", SCRIPT_PARAM_ONOFF, true)
 					settings.combosettings.qsetting:addParam("disablemovements", "Disable Movement inside Catch Zone", SCRIPT_PARAM_ONOFF, true)
 					settings.combosettings.qsetting:addParam("info0", "Disable Attacks if outside Catch Zone and", SCRIPT_PARAM_INFO, "")
 					settings.combosettings.qsetting:addParam("disableattacks", "Draven has 2 Axes, if Above Attackspeed", SCRIPT_PARAM_ONOFF, true)
@@ -2043,7 +2138,7 @@ function OnLoad()
 					settings.combosettings.wsetting:addParam("info0", "No Supported W settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 				end
 				if DravenLoaded then
-					settings.combosettings.wsetting:addParam("manaW", " ....if Mana Above %:", SCRIPT_PARAM_SLICE, 40, 0, 100, 0)
+					settings.combosettings.wsetting:addParam("manaW", " ....if Mana Above %:", SCRIPT_PARAM_SLICE, 70, 0, 100, 0)
 				end
 				if KatarinaLoaded then
 					settings.combosettings.wsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -2062,6 +2157,16 @@ function OnLoad()
 				end
 				if AkaliLoaded then
 					settings.combosettings.esetting:addParam("EWaitQ", "Wait for Q Proc before E Cast", SCRIPT_PARAM_ONOFF, true)
+				end
+				if DravenLoaded then
+					settings.combosettings.esetting:addParam("OnlyEif", "Only E if:", SCRIPT_PARAM_LIST, 3, {
+						[1] = "Always",
+						[2] = "My % HP Below",
+						[3] = "In x Range"
+					})
+					settings.combosettings.esetting:addParam("eHP", "   -  Set Low HP % E", SCRIPT_PARAM_SLICE, 20, 1, 100, 0)
+					settings.combosettings.esetting:addParam("eRange", "   -  Set Distance to E", SCRIPT_PARAM_SLICE, 800, myHero.boundingRadius, 1050, 0)
+					settings.combosettings.esetting:addParam("info0", "   (" .. myHero.boundingRadius .. " min | 620 Default AA Range | 1050 max)", SCRIPT_PARAM_INFO, "")
 				end
 			settings.combosettings:addSubMenu("                    ~ R Settings ~", "rsetting")
 				if SupportedChampion then
@@ -2166,6 +2271,27 @@ function OnLoad()
 				settings.misc.impaired:addParam("info3", "                     ~ Note ~", SCRIPT_PARAM_INFO, "")
 				settings.misc.impaired:addParam("info4", "             Script will prioritise:", SCRIPT_PARAM_INFO, "")
 				settings.misc.impaired:addParam("info5", "           Spells -> Cleanse -> Items", SCRIPT_PARAM_INFO, "")
+				if DravenLoaded then
+					settings.misc:addSubMenu("E Anti-Engage", "disengage")
+					local FoundDisEngage = false
+					for spellowner, spell in pairs(SpellEnages) do
+						if spellowner ~= nil and spell ~= nil then
+							for _, enemy in ipairs(GetEnemyHeroes()) do
+								if enemy ~= nil then
+									if spellowner == enemy.charName then
+										FoundDisEngage = true
+										settings.misc.disengage:addParam(spellowner .. spell, spell .. "( " .. spellowner .. " )", SCRIPT_PARAM_ONOFF, true)
+									end
+								end
+							end
+						end
+					end
+					if FoundDisEngage then
+						settings.misc.disengage:addParam("toggle", "Enable:", SCRIPT_PARAM_ONOFF, true)
+					elseif not FoundDisEngage then
+						settings.misc.disengage:addParam("info0", "No Enemy Engages Found!", SCRIPT_PARAM_INFO, "")
+					end
+				end
 			if ((SupportedChampion) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
 				if ((KatarinaLoaded) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -2180,9 +2306,11 @@ function OnLoad()
 					settings.misc:addParam("foundwarddistance", "Flee Loaction Snap Distance", SCRIPT_PARAM_SLICE, 200, 50, 500, 0)
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				end
-				settings.misc:addParam("useMouseVector", "Use normalized vector to mousePos", SCRIPT_PARAM_ONOFF, false)
-				settings.misc:addParam("MouseVector", "normalized vector:", SCRIPT_PARAM_SLICE, 300, 140, 600, 0)
-				settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				if ((KatarinaLoaded) or (AkaliLoaded) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
+					settings.misc:addParam("useMouseVector", "Use normalized vector to mousePos", SCRIPT_PARAM_ONOFF, false)
+					settings.misc:addParam("MouseVector", "normalized vector:", SCRIPT_PARAM_SLICE, 300, 140, 600, 0)
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				end
 				if KatarinaLoaded then
 					settings.misc:addParam("BlockESpawn", "Do not Cast E on Enemies in their Spawn", SCRIPT_PARAM_ONOFF, true)
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -2208,8 +2336,8 @@ function OnLoad()
 			end
 			settings.misc:addParam("Debug", "Debugger", SCRIPT_PARAM_ONOFF, false)
 			settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
-			settings.misc:addParam("MovementMark", "Enable Fake Movement Markers", SCRIPT_PARAM_ONOFF, true)
-			settings.misc:addParam("AttackMark", "Enable Fake Attack Markers", SCRIPT_PARAM_ONOFF, true)
+			settings.misc:addParam("MovementMark", "Enable Fake Movement Markers (soon)", SCRIPT_PARAM_ONOFF, true)
+			settings.misc:addParam("AttackMark", "Enable Fake Attack Markers (soon)", SCRIPT_PARAM_ONOFF, true)
 			settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.misc:addParam("masteryemote", "Mastery Emote on:", SCRIPT_PARAM_LIST, 1, {
 						[1] = "Kills",
@@ -2752,13 +2880,14 @@ function OnLoad()
 					0
 				})
 			settings.draws.esp:addParam("space", "", SCRIPT_PARAM_INFO, "")
-			settings.draws.esp:addParam("cubetype", "ESP Type:", SCRIPT_PARAM_LIST, 1, {
+			settings.draws.esp:addParam("cubetype", "ESP Type:", SCRIPT_PARAM_LIST, 2, {
 				[1] = "2D Box",
 				[2] = "2D Frame",
 				[3] = "Circle",
 				[4] = "Advanced Circle"
 			})
-			settings.draws.esp:addParam("boxthickness", "ESP Box Thickness", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
+			settings.draws.esp:addParam("outlines", "ESP Outlines", SCRIPT_PARAM_ONOFF, true)
+			settings.draws.esp:addParam("boxthickness", "ESP Box Thickness", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
 		settings.draws:addSubMenu("Waypoints (Entity Paths)", "pcs")
 			settings.draws.pcs:addParam("MyClicks", "Draw " .. MyChampion .. " Pathing", SCRIPT_PARAM_ONOFF, true)
 			settings.draws.pcs:addParam("AllyClicks", "Draw Ally Pathing", SCRIPT_PARAM_ONOFF, true)
@@ -3716,8 +3845,23 @@ function Combo(target)
 		end
 		if DravenLoaded then
 			if settings.combosettings.qsetting.ComboQ then
-				if GetDistance(myHero, target) < 620 then
+				if GetDistance(myHero, target) < Draven_Q_Range then
 					CastSpell(_Q)
+				end
+			end
+			if settings.combosettings.esetting.ComboE then
+				if settings.combosettings.esetting.OnlyEif == 1 then
+					if GetDistance(myHero, target) < (Draven_E_Range) then
+						CastSpell(_E, target.x, target.z)
+					end
+				elseif settings.combosettings.esetting.OnlyEif == 2 then
+					if myHero.health / myHero.maxHealth <= settings.combosettings.esetting.eHP / 100 then
+						CastSpell(_E, target.x, target.z)
+					end
+				elseif settings.combosettings.esetting.OnlyEif == 3 then
+					if GetDistance(myHero, target) < settings.combosettings.esetting.eRange then
+						CastSpell(_E, target.x, target.z)
+					end
 				end
 			end
 		end
@@ -4486,6 +4630,17 @@ function OnProcessSpell(unit, spell)
 			ValidR = true
 		end
 	end
+	if DravenLoaded then
+		if unit and spell then
+			if SpellEnages[spell.name] ~= nil then
+				if unit.team ~= myHero.team and GetDistance(myHero, unit) <= Draven_E_Range then
+					if E_is_Ready then
+						CastSpell(_E, unit)
+					end
+				end
+			end
+		end
+	end
 	if spell.name == myHero:GetSpellData(_Q).name then
 		Qwind = spell.windUpTime
 	elseif spell.name == myHero:GetSpellData(_W).name then
@@ -5163,6 +5318,11 @@ function OnDraw()
 		end
 	end
 	
+	--  Screen Res Testing
+	--[[local MEPOS = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z)) 
+	DrawLine(WINDOW_W / 1.17, WINDOW_H / 65, WINDOW_W, WINDOW_H / 65, 35, ARGB(255, 0, 0, 0))
+	DrawText("[" .. WINDOW_W .. "x" .. WINDOW_H .. "]", 15, WINDOW_W / 1.04, WINDOW_H / 100, ARGB(255, 255, 255, 255))]]
+	
 	--  Enemy Ward Tracker
 	local num = 1
 	if settings.draws.wards then
@@ -5255,19 +5415,19 @@ function OnDraw()
 
 	--  ESP Draw
 	if settings.draws.esp.draw then
-		DrawESP_and_HeadManager(myHero, settings.draws.esp.myboxcolour)
+		DrawESP(myHero, settings.draws.esp.myboxcolour)
 	end
 	if settings.draws.esp.drawally then
 		for _, Ally in pairs(GetAllyHeroes()) do
 			if not Ally.isMe then
-				DrawESP_and_HeadManager(Ally, settings.draws.esp.allyboxcolour)
+				DrawESP(Ally, settings.draws.esp.allyboxcolour)
 			end
 		end
 	end
 	if settings.draws.esp.drawenemy then
 		for _, Enemy in pairs(GetEnemyHeroes()) do
 			if not Enemy.isMe then
-				DrawESP_and_HeadManager(Enemy, settings.draws.esp.enemyboxcolour)
+				DrawESP(Enemy, settings.draws.esp.enemyboxcolour)
 			end
 		end
 	end
@@ -5888,7 +6048,7 @@ function OnDraw()
 	
 	--  Draw Mouse Pos (in World [3D])
 	if settings.draws.drawEXP then
-		DrawCircle2(myHero.x, myHero.y, myHero.z, 6, 1400, 4, ARGB(100, 0, 100, 0))
+		DrawCircle2(myHero.x, myHero.y, myHero.z, 6, 1400, 4, ARGB(75, 0, 155, 100))
 	end
 	
 	-- Draw DMG indicator (On Bar Pos)
@@ -5925,16 +6085,17 @@ function OnDraw()
 			return math.ceil(seconds * 10) * 0.1
 		end
 		if GetDistance(selectedTar, myHero) > 740 then
-			DrawCircle(selectedTar.x, selectedTar.y, selectedTar.z, selectedTar.boundingRadius + 40, ARGB(255, 255, 0, 255))
-			DrawCircle(myHero.x, myHero.y, myHero.z, 20, ARGB(255, 255, 0, 255))
+			DrawCircle2(selectedTar.x, selectedTar.y, selectedTar.z, 2, selectedTar.boundingRadius + 40, 2, ARGB(255, 255, 0, 0))
+			DrawCircle2(selectedTar.x, selectedTar.y, selectedTar.z, 2, selectedTar.boundingRadius, 2, ARGB(255, 255, 0, 255))
+			DrawCircle2(myHero.x, myHero.y, myHero.z, 2, 20, 1, ARGB(255, 255, 0, 255))
 			DrawLine3D(myHero.x, myHero.y, myHero.z, selectedTar.x, selectedTar.y, selectedTar.z, 6, ARGB(120, 255, 0, 0))
 			--DrawLine3D(selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 255, 0, 0))
 			--DrawLine3D(selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 255, 0, 0))
 			DrawText3D(""..selectedTar.name.." Health - [".. roundToFirstDecimal((selectedTar.health / selectedTar.maxHealth)*100).."%]", selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius*1.6, 15, ARGB(255, 0, 255, 255), true)
 			DrawText3D(""..selectedTar.charName.." Distance - [".. math.ceil(GetDistance(selectedTar, myHero)).."]", selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius*2, 15, ARGB(255, 255, 255, 255), true)
 		else
-			DrawCircle(selectedTar.x, selectedTar.y, selectedTar.z, selectedTar.boundingRadius + 40, ARGB(255, 0, 255, 255))
-			DrawCircle(myHero.x, myHero.y, myHero.z, 20, ARGB(255, 0, 255, 255))
+			DrawCircle2(selectedTar.x, selectedTar.y, selectedTar.z, 2, selectedTar.boundingRadius + 40, 2, ARGB(255, 0, 255, 0))
+			DrawCircle2(myHero.x, myHero.y, myHero.z, 2, 20, 1, ARGB(255, 0, 255, 0))
 			DrawLine3D(myHero.x, myHero.y, myHero.z, selectedTar.x, selectedTar.y, selectedTar.z, 10, ARGB(210, 0, 255, 0))
 			--DrawLine3D(selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 0, 255, 0))
 			--DrawLine3D(selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 0, 255, 0))
@@ -6387,44 +6548,57 @@ function DrawHDArrow3DVector(startPos, endPos, thickness, color, outline_color, 
 	DrawLine3D(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORRightPos.x, VECTORRightPos.y, VECTORRightPos.z, thickness, color)
 end
 
-function DrawESP_and_HeadManager(entity, boxcolor)
+function DrawESP(entity, boxcolor)
 	if entity and not entity.dead and entity.visible then
 		if settings.draws.esp.cubetype == 1 then
+			if settings.draws.esp.outlines then
+				DrawNormalESP(entity, settings.draws.esp.boxthickness + 2, ARGB(255, 0, 0, 0))
+			end
 			DrawNormalESP(entity, settings.draws.esp.boxthickness, ARGB(table.unpack(boxcolor)))
 		elseif settings.draws.esp.cubetype == 2 then
+			if settings.draws.esp.outlines then
+				DrawVectorESP(entity, settings.draws.esp.boxthickness + 2, ARGB(255, 0, 0, 0))
+			end
 			DrawVectorESP(entity, settings.draws.esp.boxthickness, ARGB(table.unpack(boxcolor)))
 		elseif settings.draws.esp.cubetype == 3 then
 			DrawCircle(entity.x, entity.y, entity.z, entity.boundingRadius, ARGB(table.unpack(boxcolor)))
 		elseif settings.draws.esp.cubetype == 4 then
-			DrawCircle2(entity.x, entity.y, entity.z, settings.draws.esp.boxthickness, entity.boundingRadius, 20, ARGB(table.unpack(boxcolor)))
+			if settings.draws.esp.outlines then
+				DrawCircle2(entity.x, entity.y, entity.z, settings.draws.esp.boxthickness + 2, entity.boundingRadius, 1, ARGB(255, 0, 0, 0))
+			end
+			DrawCircle2(entity.x, entity.y, entity.z, settings.draws.esp.boxthickness, entity.boundingRadius, 1, ARGB(table.unpack(boxcolor)))
 		end
 	end
 end
 
 function DrawNormalESP(entity, width, colour)
-	local ScreenVector = WorldToScreen(D3DXVECTOR3(entity.x, entity.y, entity.z))
+	--DrawCircle2(entity.x, entity.y, entity.z, 2, entity.boundingRadius, 1, ARGB(255, 0, 255, 0))
+	--DrawCircle2(entity.x, entity.y + (entity.boundingRadius * 3.5), entity.z, 2, entity.boundingRadius, 1, ARGB(255, 0, 255, 0))
+	local ScreenVectorFeet = WorldToScreen(D3DXVECTOR3(entity.x, entity.y, entity.z))
+	local ScreenVectorHead = WorldToScreen(D3DXVECTOR3(entity.x, (entity.y + (entity.boundingRadius * 3.5)), entity.z))
 	local Offset = entity.boundingRadius / 2
-	local Left = (ScreenVector.x - (entity.boundingRadius / 1.5))
-	local Right = (ScreenVector.x + (entity.boundingRadius / 1.5))
-	local Top = (ScreenVector.y - Offset + entity.boundingRadius)
-	local Bottom = (ScreenVector.y - Offset - entity.boundingRadius)
+	local Left = (ScreenVectorFeet.x - (entity.boundingRadius / 1.5))
+	local Right = (ScreenVectorFeet.x + (entity.boundingRadius / 1.5))
+	local Top = (ScreenVectorHead.y)
+	local Bottom = (ScreenVectorFeet.y - Offset + entity.boundingRadius)
 	DrawLine(Left, Top, Left, Bottom, width, colour)
 	DrawLine(Right, Top, Right, Bottom, width, colour)
-	DrawLine(Left, Top, Right, Top, width, colour)
 	DrawLine(Left, Bottom, Right, Bottom, width, colour)
+	DrawLine(Left, Top, Right, Top, width, colour)
 end
 
 function DrawVectorESP(entity, width, colour)
-	local ScreenVector = WorldToScreen(D3DXVECTOR3(entity.x, entity.y, entity.z))
-	local Offset = entity.boundingRadius / 1.5
-	local Left = (ScreenVector.x - (entity.boundingRadius / 1.5))
-	local Right = (ScreenVector.x + (entity.boundingRadius / 1.5))
-	local Top = (ScreenVector.y - Offset + entity.boundingRadius)
-	local Bottom = (ScreenVector.y - Offset - entity.boundingRadius)
+	local ScreenVectorFeet = WorldToScreen(D3DXVECTOR3(entity.x, entity.y, entity.z))
+	local ScreenVectorHead = WorldToScreen(D3DXVECTOR3(entity.x, (entity.y + (entity.boundingRadius * 3.5)), entity.z))
+	local Offset = entity.boundingRadius / 2
+	local Left = (ScreenVectorFeet.x - (entity.boundingRadius / 1.5))
+	local Right = (ScreenVectorFeet.x + (entity.boundingRadius / 1.5))
+	local Top = (ScreenVectorHead.y)
+	local Bottom = (ScreenVectorFeet.y - Offset + entity.boundingRadius)
 	DrawNewIndexLine3D(Left, Top, Left, Bottom, width, colour)
 	DrawNewIndexLine3D(Right, Top, Right, Bottom, width, colour)
-	DrawNewIndexLine3D(Left, Top, Right, Top, width, colour)
 	DrawNewIndexLine3D(Left, Bottom, Right, Bottom, width, colour)
+	DrawNewIndexLine3D(Left, Top, Right, Top, width, colour)
 end
 
 function DrawNewIndexLine3D(x_start, y_start, x_end, y_end, width, colour)
