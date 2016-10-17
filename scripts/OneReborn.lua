@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 1.8
+-- > > > Version 1.9
 
 --_______________________________________________________________________________
 
@@ -216,6 +216,8 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Added black outlines to ESP
 [x] Updated Visuals for Left Click Target Selector.
 [x] Added BoL Tools Tracker!
+[x] Enemy Hard CC Counter
+[x] Fixed SAC Auth "integration successful!" message (before it was just delayed)
 
 
 
@@ -336,6 +338,19 @@ Count R Buff Stacks
 
 
 
+			[ Draven ]
+
+Auto W to lane
+Draw Axes under tower if toggle
+settings connected.
+Q buff state tracker (countdown re-apply)
+Cast R support
+
+
+
+
+
+
 ======================================
 ===========[ Known Issues ]===========
 ======================================
@@ -429,8 +444,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1.8
-local _SCRIPT_VERSION_MENU = "1.8"
+local _SCRIPT_VERSION = 1.9
+local _SCRIPT_VERSION_MENU = "1.9"
 local _PATCH = "6.20"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -701,25 +716,40 @@ local Ludens = {
 	readytext = "false"
 }
 
+local StatikShankCharge = {
+	stacks = 0,
+	ready = false,
+	readytext = "false",
+	KircheisShardReady = false,
+	RapidFirecannonReady = false,
+	StatikShivReady = false
+}
+
 --[[
 	Engage Spells Array
 ]]
 local SpellEnages = {
 	["AatroxQ"] = true,
+	["AlZaharNetherGrasp"] = true,
 	["BandageToss"] = true,
 	["BlindMonkQTwo"] = true,
+	["CaitlynAceintheHole"] = true,
 	["DianaTeleport"] = true,
+	["GalioIdolOfDurand"] = true,
 	["Headbutt"] = true,
 	["InfiniteDuress"] = true,
 	["JarvanIVDragonStrike"] = true,
 	["JaxLeapStrike"] = true,
+	["JhinR"] = true,
+	["KatarinaR"] = true,
 	["KennenLightningRush"] = true,
 	["Landslide"] = true,
+	["LucianR"] = true,
+	["MissFortuneBulletTime"] = true,
 	["MonkeyKingNimbus"] = true,
 	["MonkeyKingSpinToWin"] = true,
-	["MalphiteR"] = true,
 	["NocturneParanoia"] = true,
-	["OlafRagnarok"] = true,
+	--["OlafRagnarok"] = true,        IF AZIR OR TRUNDLE ONLY
 	["PoppyE"] = true,
 	["RenektonSliceAndDice"] = true,
 	["RengarR"] = true,
@@ -728,31 +758,16 @@ local SpellEnages = {
 	["SummonerFlash"] = true,
 	["TalonCutthroat"] = true,
 	["threshqleap"] = true,
+	["TwistedFateR"] = true,
 	["UdyrBearStance"] = true,
 	["UrgotSwap2"] = true,
+	["VelkozR"] = true,
 	["ViQ"] = true,
 	["ViR"] = true,
 	["VolibearQ"] = true,
+	["XerathLocusPulse"] = true,
 	["YasuoRKnockUpComboW"] = true,
 	["ZacE"] = true
-}
-
---[[
-	Channel Spells Array
-]]
-local SpellChannels = {
-	["AlZaharNetherGrasp"] = true,
-	["CaitlynAceintheHole"] = true,
-	["GalioIdolOfDurand"] = true,
-	["InfiniteDuress"] = true,
-	["JhinR"] = true,
-	["KatarinaR"] = true,
-	["LucianR"] = true,
-	["MissFortuneBulletTime"] = true,
-	["UrgotSwap2"] = true,
-	["TwistedFateR"] = true,
-	["VelkozR"] = true,
-	["XerathLocusPulse"] = true
 }
 
 --[[
@@ -1154,11 +1169,11 @@ function SlotDevMode(slot)
 	end
 	DrawText("Slot [" .. slot .. "]", 15, 700, 200 - SlotMulti, ARGB(255, 255, 255, 255))
 	DrawText("< " .. myHero:GetSpellData(slot).name .. " >", 15, 750, 200 - SlotMulti, ARGB(255, 0, 255, 255))
-	DrawText("Ready:", 15, 900, 200 - SlotMulti, ARGB(255, 255, 255, 255))
+	DrawText("Ready:", 15, 1200, 200 - SlotMulti, ARGB(255, 255, 255, 255))
 	if myHero:CanUseSpell(slot) == READY then
-		DrawText("true", 15, 950, 200 - SlotMulti, ARGB(255, 0, 255, 0))
+		DrawText("true", 15, 1250, 200 - SlotMulti, ARGB(255, 0, 255, 0))
 	else
-		DrawText("false", 15, 950, 200 - SlotMulti, ARGB(255, 255, 0, 0))
+		DrawText("false", 15, 1250, 200 - SlotMulti, ARGB(255, 255, 0, 0))
 	end
 end
 
@@ -1333,7 +1348,7 @@ end
 function DoCatchAxe()
 	if settings.combosettings.qsetting.tower then
 		for _, AxePosition in ipairs(ActiveAxes) do
-			if not UnderTurret(AxePosition) then
+			if UnderTurret(AxePosition) then
 				if SAC then
 					if _G.AutoCarry.Orbwalker then
 						_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
@@ -1575,6 +1590,25 @@ function OnTick()
 	jungleMinions:update()
 	allyMinions:update()
 
+	--  Find Rapid Firecannon Stacks and itemPos and determine if it is ready!
+	if StatikShankCharge.ready then
+		for slot = ITEM_1, ITEM_7 do
+			if myHero:getItem(slot) then
+				if myHero:getItem(slot).id == 2015 then
+					StatikShankCharge.KircheisShardReady = true
+				end
+				if myHero:getItem(slot).id == 3094 then
+					StatikShankCharge.KircheisShardReady = false
+					StatikShankCharge.RapidFirecannonReady = true
+				end
+				if myHero:getItem(slot).id == 3087 then
+					StatikShankCharge.KircheisShardReady = false
+					StatikShankCharge.StatikShivReady = true
+				end
+			end
+		end
+	end
+	
 	--  Find If We Are InSpawn or InEnemySpawn
 	if myHero.team == 100 then
 		if GetDistance(myHero, BlueSpawn) < SpawnRange then
@@ -1651,6 +1685,16 @@ function OnTick()
 		Rup = false
 	end
 
+	--  OnLoad SAC print..
+	if CheckSAC then
+		if _G.Reborn_Loaded or _G.Reborn_Initialised or _G.AutoCarry ~= nil then
+			if _G.AutoCarry.MyHero then
+				CheckSAC = false
+				PrintSpecialText("<font color='#FF8B22'>SAC</font><font color='#00FF00'>:</font><font color='#FF8B22'>Reborn</font> integration successful!")
+			end
+		end
+	end
+	
 	--  KillSteal
 	if settings.killsteal.killswitch then
 		KillSteal()
@@ -1712,9 +1756,40 @@ function OnTick()
 		end
 	end
 	
+	--  Auto Heal
+	if HealSlot ~= nil then
+		if settings.summoners.heal.UseHeallowhp then
+			if not myHero.dead then
+				if myHero:CanUseSpell(HealSlot) == READY then
+					for _, target in pairs(GetEnemyHeroes()) do
+						if GetDistance(target, myHero) < 740 and myHero.health / myHero.maxHealth <= settings.summoners.heal.HealLowHp / 100 then
+							CastSpell(HealSlot)
+						end
+					end
+				end
+			end
+		end
+	end
+	
 	--  Auto Ignite
-	if settings.killsteal.ignite then
-		AutoIgnite()
+	if IgniteSlot ~= nil then
+		if settings.summoners.ignite.useIgnite then
+			if not myHero.dead then
+				if myHero:CanUseSpell(IgniteSlot) == READY then
+					for _, target in pairs(GetEnemyHeroes()) do
+						if ValidTarget(target, 600) and target.health <= getDmg('IGNITE', target, myHero) then
+							if settings.summoners.ignite.castMorethan1 then
+								if CountHeroInRange(1000, GetEnemyHeroes()) > 1 then
+									CastSpell(IgniteSlot, target)
+								end
+							else
+								CastSpell(IgniteSlot, target)
+							end
+						end
+					end
+				end
+			end
+		end
 	end
 	
 	--  Auto Poro-Snax
@@ -1809,8 +1884,10 @@ function OnTick()
 								if InsideAxeZone then
 									if AAobj and AxeLanding then
 										if GetDistance(myHero, AAobj) < 100 then
-											if GetDistance(myHero, target) < Draven_Q_Range + 130 then
-												CastSpell(_W)
+											if target.visible and not target.dead then
+												if GetDistance(myHero, target) < Draven_Q_Range + 130 then
+													CastSpell(_W)
+												end
 											end
 										end
 									end
@@ -2159,7 +2236,7 @@ function OnLoad()
 					settings.combosettings.esetting:addParam("EWaitQ", "Wait for Q Proc before E Cast", SCRIPT_PARAM_ONOFF, true)
 				end
 				if DravenLoaded then
-					settings.combosettings.esetting:addParam("OnlyEif", "Only E if:", SCRIPT_PARAM_LIST, 3, {
+					settings.combosettings.esetting:addParam("OnlyEif", "Only E if:", SCRIPT_PARAM_LIST, 2, {
 						[1] = "Always",
 						[2] = "My % HP Below",
 						[3] = "In x Range"
@@ -2273,24 +2350,124 @@ function OnLoad()
 				settings.misc.impaired:addParam("info5", "           Spells -> Cleanse -> Items", SCRIPT_PARAM_INFO, "")
 				if DravenLoaded then
 					settings.misc:addSubMenu("E Anti-Engage", "disengage")
-					local FoundDisEngage = false
-					for spellowner, spell in pairs(SpellEnages) do
-						if spellowner ~= nil and spell ~= nil then
-							for _, enemy in ipairs(GetEnemyHeroes()) do
-								if enemy ~= nil then
-									if spellowner == enemy.charName then
-										FoundDisEngage = true
-										settings.misc.disengage:addParam(spellowner .. spell, spell .. "( " .. spellowner .. " )", SCRIPT_PARAM_ONOFF, true)
-									end
+						settings.misc.disengage:addParam("toggle", "Enable:", SCRIPT_PARAM_ONOFF, true)
+						settings.misc.disengage:addParam("space", "", SCRIPT_PARAM_INFO, "")
+						local FoundSupported = false
+						for _, enemy in ipairs(GetEnemyHeroes()) do
+							if ((enemy.charName == "Aatrox") or (enemy.charName == "Amumu") or (enemy.charName == "LeeSin") or (enemy.charName == "Diana") or (enemy.charName == "Alistar") or (enemy.charName == "WarWick") or (enemy.charName == "JarvanIV") or (enemy.charName == "Jax") or (enemy.charName == "Kennen") or (enemy.charName == "Malphite") or (enemy.charName == "MonkeyKing") or (enemy.charName == "Nocturne") or (enemy.charName == "Poppy") or(enemy.charName == "Renekton") or (enemy.charName == "Rengar") or (enemy.charName == "Shen") or (enemy.charName == "Shyvana") or (enemy.charName == "Talon") or (enemy.charName == "Thresh") or (enemy.charName == "Udyr") or (enemy.charName == "Vi") or (enemy.charName == "Volibear") or (enemy.charName == "Yasuo") or (enemy.charName == "Zac") or (enemy.charName == "Malzahar") or (enemy.charName == "Caitlyn") or (enemy.charName == "Galio") or (enemy.charName == "Jhin") or (enemy.charName == "Katarina") or (enemy.charName == "Lucian") or (enemy.charName == "MissFortune") or (enemy.charName == "Urgot") or (enemy.charName == "TwistedFate") or (enemy.charName == "Velkoz") or (enemy.charName == "Xerath")) then
+								FoundSupported = true
+								if enemy.charName == "Aatrox" then
+									settings.misc.disengage:addParam("i", "Found Aatrox Q!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Amumu" then
+									settings.misc.disengage:addParam("i", "Found Amumu Q!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "LeeSin" then
+									settings.misc.disengage:addParam("i", "Found Lee Sin Second Q!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Diana" then
+									settings.misc.disengage:addParam("i", "Found Diana R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Alistar" then
+									settings.misc.disengage:addParam("i", "Found Alistar W!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "WarWick" then
+									settings.misc.disengage:addParam("i", "Found Warwick R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "JarvanIV" then
+									settings.misc.disengage:addParam("i", "Found Jarvan IV Q!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Jax" then
+									settings.misc.disengage:addParam("i", "Found Jax Q!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Kennen" then
+									settings.misc.disengage:addParam("i", "Found Kennen E!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Malphite" then
+									settings.misc.disengage:addParam("i", "Found Malphite R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "MonkeyKing" then
+									settings.misc.disengage:addParam("i", "Found Wukong E!", SCRIPT_PARAM_INFO, "")
+									settings.misc.disengage:addParam("i", "Found Wukong R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Nocturne" then
+									settings.misc.disengage:addParam("i", "Found Nocturne Second R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Poppy" then
+									settings.misc.disengage:addParam("i", "Found Poppy E!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Renekton" then
+									settings.misc.disengage:addParam("i", "Found Renekton E!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Rengar" then
+									settings.misc.disengage:addParam("i", "Found Rengar R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Shen" then
+									settings.misc.disengage:addParam("i", "Found Shen E!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Shyvana" then
+									settings.misc.disengage:addParam("i", "Found Shyvana R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Talon" then
+									settings.misc.disengage:addParam("i", "Found Talon E!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Thresh" then
+									settings.misc.disengage:addParam("i", "Found Thresh Second Q!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Udyr" then
+									settings.misc.disengage:addParam("i", "Found Udyr E!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Vi" then
+									settings.misc.disengage:addParam("i", "Found Vi Q!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Volibear" then
+									settings.misc.disengage:addParam("i", "Found Volibear Q!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Yasuo" then
+									settings.misc.disengage:addParam("i", "Found Yasuo Q3 After W!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Zac" then
+									settings.misc.disengage:addParam("i", "Found Zac E!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Malzahar" then
+									settings.misc.disengage:addParam("i", "Found Malzahar R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Caitlyn" then
+									settings.misc.disengage:addParam("i", "Found Caitlyn R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Galio" then
+									settings.misc.disengage:addParam("i", "Found Galio R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Jhin" then
+									settings.misc.disengage:addParam("i", "Found Jhin R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Katarina" then
+									settings.misc.disengage:addParam("i", "Found Katarina R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Lucian" then
+									settings.misc.disengage:addParam("i", "Found Lucian R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "MissFortune" then
+									settings.misc.disengage:addParam("i", "Found Miss Fortune R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Urgot" then
+									settings.misc.disengage:addParam("i", "Found Urgot R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "TwistedFate" then
+									settings.misc.disengage:addParam("i", "Found Twisted Fate R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Velkoz" then
+									settings.misc.disengage:addParam("i", "Found Velkoz R!", SCRIPT_PARAM_INFO, "")
+								end
+								if enemy.charName == "Xerath" then
+									settings.misc.disengage:addParam("i", "Found Xerath R!", SCRIPT_PARAM_INFO, "")
 								end
 							end
 						end
-					end
-					if FoundDisEngage then
-						settings.misc.disengage:addParam("toggle", "Enable:", SCRIPT_PARAM_ONOFF, true)
-					elseif not FoundDisEngage then
-						settings.misc.disengage:addParam("info0", "No Enemy Engages Found!", SCRIPT_PARAM_INFO, "")
-					end
+						if not FoundSupported then
+							settings.misc.disengage:addParam("info0", "No Enemy Engages Found!", SCRIPT_PARAM_INFO, "")
+						end
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				end
 			if ((SupportedChampion) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
 				if ((KatarinaLoaded) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
@@ -2519,8 +2696,6 @@ function OnLoad()
 				end
 				settings.killsteal:addParam("stealcamps", "Kill Steal (Jungle)", SCRIPT_PARAM_ONOFF, true)
 			end
-			settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
-			settings.killsteal:addParam("ignite", "Kill Steal Ignite (Smart Ignite soon(tm))", SCRIPT_PARAM_ONOFF, true)
 			settings.killsteal:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
 			settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.killsteal:addParam("info1", "Script Takes Kills Automatically With:", SCRIPT_PARAM_INFO, "")
@@ -2679,20 +2854,21 @@ function OnLoad()
 						})
 			end
 			if DravenLoaded then
+				settings.draws.qsetting:addParam("DrawQ", "Draw Q / AA Range", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.qsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+				settings.draws.qsetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 7, 0)
+				settings.draws.qsetting:addParam("color", "Colour:", SCRIPT_PARAM_INFO, "nil")
+				settings.draws.qsetting:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
 				settings.draws.qsetting:addParam("DrawAXEposition", "Draw Axe Position", SCRIPT_PARAM_ONOFF, true)
-					settings.draws.qsetting:addParam("AArangeColor", "AA Range Color", SCRIPT_PARAM_COLOR, {
-						255,
-						0,
-						255,
-						255
-					})
+				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.draws.qsetting:addParam("AXEpositionColor", "Axe Position Color", SCRIPT_PARAM_COLOR, {
 						255,
 						255,
 						255,
 						0
 					})
-					settings.draws.qsetting:addParam("AXEpositionColor2", "Axe Position Color", SCRIPT_PARAM_COLOR, {
+					settings.draws.qsetting:addParam("AXEpositionColor2", "Axe Position Color [back]", SCRIPT_PARAM_COLOR, {
 						255,
 						0,
 						255,
@@ -2794,6 +2970,18 @@ function OnLoad()
 							128
 						})
 			end
+			if DravenLoaded then
+				settings.draws.esetting:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.esetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+				settings.draws.esetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 7, 0)
+						settings.draws.esetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
+							255,
+							128,
+							0,
+							128
+						})
+			end
 		else
 			settings.draws.esetting:addParam("info0", "No Supported E settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 		end
@@ -2840,6 +3028,17 @@ function OnLoad()
 						})
 				settings.draws.rsetting:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
 				settings.draws.rsetting:addParam("DrawR2", "Draw R Safe Range", SCRIPT_PARAM_ONOFF, true)
+			end
+			if DravenLoaded then
+				settings.draws.rsetting:addParam("DrawR", "Draw R Hit Box", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.rsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+						settings.draws.rsetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
+							255,
+							255,
+							255,
+							255
+						})
 			end
 		else
 			settings.draws.rsetting:addParam("info0", "No Supported R settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
@@ -3008,15 +3207,13 @@ function OnLoad()
 			settings.draws:addParam("NamesEnabled", "Are In Game Names Enabled?", SCRIPT_PARAM_ONOFF, true)
 		if _G.Reborn_Loaded then
 			SAC = true
+			CheckSAC = true
 			PrintSpecialText("<font color='#FF8B22'>SAC</font><font color='#00FF00'>:</font><font color='#FF8B22'>Reborn</font> Loading... Please wait!")
 			settings:addSubMenu("Orbwalker", "orbWalk")
 			settings.orbWalk:addParam("SACLoaded", "SAC:R integration supported!", SCRIPT_PARAM_INFO, "")
 			settings.orbWalk:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.orbWalk:addParam("SACMessage0", "PLEASE MAKE SURE HUMAN MOVEMENT IS ENABLED!", SCRIPT_PARAM_INFO, "")
 			settings.orbWalk:addParam("SACMessage0", "It removes the normalized vector that SAC uses!", SCRIPT_PARAM_INFO, "")
-			DelayAction(function()
-				PrintSpecialText("<font color='#FF8B22'>SAC</font><font color='#00FF00'>:</font><font color='#FF8B22'>Reborn</font> integration successful!")
-			end, 5)
 		elseif not _G.Reborn_Loaded and FileExist(LIB_PATH .. "SxOrbWalk.lua") then
 			PrintSpecialText("<font color='#FF8B22'>SxOrbWalk</font> Loading... Please wait!")
 			SxOrb = true
@@ -3031,6 +3228,25 @@ function OnLoad()
 		elseif SAC ~= true and SxOrb ~= true then
 			PrintSpecialText("<font color='#FF8B22'>SAC</font><font color='#00FF00'>:</font><font color='#FF8B22'>Reborn</font> or <font color='#FF8B22'> SxOrbWalk</font> is required.")
 		end
+		settings:addSubMenu("Summoner Spells", "summoners")
+			if HealSlot ~= nil then
+				settings.summoners:addSubMenu("Heal Settings", "heal")
+					settings.summoners.heal:addParam("UseHeallowhp", "Use Heal on Low HP", SCRIPT_PARAM_ONOFF, true)
+					settings.summoners.heal:addParam("HealLowHp", "     Set Low HP % to use Heal", SCRIPT_PARAM_SLICE, 15, 1, 100, 0)
+					settings.summoners.heal:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.summoners.heal:addParam("info0", "Note: Only Casts if there is an Enemy Champion nearby!", SCRIPT_PARAM_INFO, "")
+			end
+			if IgniteSlot ~= nil then
+				settings.summoners:addSubMenu("Ignite Settings", "ignite")
+					settings.summoners.ignite:addParam("useIgnite", "Kill Steal Ignite (Smart Ignite soon(tm))", SCRIPT_PARAM_ONOFF, true)
+					settings.summoners.ignite:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.summoners.ignite:addParam("castMorethan1", "Only Cast if there is more than one enemy", SCRIPT_PARAM_ONOFF, true)
+			end
+			if HealSlot == nil and IgniteSlot == nil then
+				settings.summoners:addParam("info0", "No Detected Supported Summoner Spells!", SCRIPT_PARAM_INFO, "")
+				settings.summoners:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.summoners:addParam("info1", "Come Back Later!", SCRIPT_PARAM_INFO, "")
+			end
 		settings:addParam("targetselector","Left Click For Override Target Selection", SCRIPT_PARAM_ONOFF, false)
 		if KatarinaLoaded then
 			settings:addParam("hitandrun", "Hit & Run Key (^Click Target First^)", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("X"))
@@ -4101,28 +4317,6 @@ function MainStealCamp()
 	end
 end
 
---		 ▄▄▄       █    ██ ▄▄▄█████▓ ▒█████         ██▓  ▄████  ███▄    █  ██▓▄▄▄█████▓▓█████ 
---		▒████▄     ██  ▓██▒▓  ██▒ ▓▒▒██▒  ██▒      ▓██▒ ██▒ ▀█▒ ██ ▀█   █ ▓██▒▓  ██▒ ▓▒▓█   ▀ 
---		▒██  ▀█▄  ▓██  ▒██░▒ ▓██░ ▒░▒██░  ██▒      ▒██▒▒██░▄▄▄░▓██  ▀█ ██▒▒██▒▒ ▓██░ ▒░▒███   
---		░██▄▄▄▄██ ▓▓█  ░██░░ ▓██▓ ░ ▒██   ██░      ░██░░▓█  ██▓▓██▒  ▐▌██▒░██░░ ▓██▓ ░ ▒▓█  ▄ 
---		 ▓█   ▓██▒▒▒█████▓   ▒██▒ ░ ░ ████▓▒░      ░██░░▒▓███▀▒▒██░   ▓██░░██░  ▒██▒ ░ ░▒████▒
---		 ▒▒   ▓▒█░░▒▓▒ ▒ ▒   ▒ ░░   ░ ▒░▒░▒░       ░▓   ░▒   ▒ ░ ▒░   ▒ ▒ ░▓    ▒ ░░   ░░ ▒░ ░
---		  ▒   ▒▒ ░░░▒░ ░ ░     ░      ░ ▒ ▒░        ▒ ░  ░   ░ ░ ░░   ░ ▒░ ▒ ░    ░     ░ ░  ░
---		  ░   ▒    ░░░ ░ ░   ░      ░ ░ ░ ▒         ▒ ░░ ░   ░    ░   ░ ░  ▒ ░  ░         ░   
---		      ░  ░   ░                  ░ ░         ░        ░          ░  ░              ░  ░
-
-function AutoIgnite()
-	if IgniteSlot ~= nil and myHero:CanUseSpell(IgniteSlot) == READY then
-		for _, target in pairs(GetEnemyHeroes()) do
-			if ValidTarget(target, 600) and target.health <= getDmg('IGNITE', target, myHero) then
-				CastSpell(IgniteSlot, target)
-			end
-		end
-	end
-end
-
--- THIS IS BROKEN/CHANGED FUCKIN HELL LOL								SOON(TM)
-
 --		  ██████  ██▓███  ▓█████  ██▓     ██▓           ▄████▄   ▄▄▄        ██████ ▄▄▄█████▓ ██▓ ███▄    █   ▄████ 
 --		▒██    ▒ ▓██░  ██▒▓█   ▀ ▓██▒    ▓██▒          ▒██▀ ▀█  ▒████▄    ▒██    ▒ ▓  ██▒ ▓▒▓██▒ ██ ▀█   █  ██▒ ▀█▒
 --		░ ▓██▄   ▓██░ ██▓▒▒███   ▒██░    ▒██░          ▒▓█    ▄ ▒██  ▀█▄  ░ ▓██▄   ▒ ▓██░ ▒░▒██▒▓██  ▀█ ██▒▒██░▄▄▄░
@@ -4611,6 +4805,16 @@ function OnProcessAttack(unit, attack)
 			DelayAction(function()
 				MYAUTOATTACK = false
 			end, 1)
+			if DravenLoaded then
+				if StatikShankCharge.stacks == 100 then
+					StatikShankCharge.stacks = 0
+					StatikShankCharge.ready = false
+					StatikShankCharge.readytext = "false"
+					StatikShankCharge.KircheisShardReady = false
+					StatikShankCharge.RapidFirecannonReady = false
+					StatikShankCharge.StatikShivReady = false
+				end
+			end
 		end
 	end
 end
@@ -4635,7 +4839,7 @@ function OnProcessSpell(unit, spell)
 			if SpellEnages[spell.name] ~= nil then
 				if unit.team ~= myHero.team and GetDistance(myHero, unit) <= Draven_E_Range then
 					if E_is_Ready then
-						CastSpell(_E, unit)
+						CastSpell(_E, unit.x, unit.z)
 					end
 				end
 			end
@@ -4733,6 +4937,17 @@ function OnUpdateBuff(target, buff, stacks)
 				Ludens.stacks = stacks
 				Ludens.ready = false
 				Ludens.readytext = "false"
+			end
+		end
+		if buff.name == "itemstatikshankcharge" then
+			if stacks == 100 then
+				StatikShankCharge.stacks = stacks
+				StatikShankCharge.ready = true
+				StatikShankCharge.readytext = "true"
+			else
+				StatikShankCharge.stacks = stacks
+				StatikShankCharge.ready = false
+				StatikShankCharge.readytext = "false"
 			end
 		end
 	end
@@ -5116,6 +5331,26 @@ function OnDraw()
 		--  Ludens Echo Draws
 		DrawText("Luden's Echo Stacks: " .. Ludens.stacks .. "/100", 15, 250, 200, ARGB(255, 0, 255, 255))
 		DrawText("Ready: " .. Ludens.readytext, 15, 250, 215, ARGB(255, 255, 0, 255))
+
+		--  Rapid Firecannon Draws
+		ItemIDText = "Shank"
+		for slot = ITEM_1, ITEM_7 do
+			if myHero:getItem(slot) then
+				if StatikShankCharge.RapidFirecannonReady then
+					ItemIDText = "Rapid Firecannon"
+				elseif StatikShankCharge.StatikShivReady then
+					ItemIDText = "Statik Shiv"
+				elseif StatikShankCharge.KircheisShardReady then
+					ItemIDText = "Kircheis Shard"
+				end
+			end
+		end
+		-- Kircheis Shard = 2015
+		-- Statik Shiv = 3087
+		-- Rapid Firecannon = 3094     |     myHero:getItem(ITEM_2).id
+			
+		DrawText(ItemIDText .." Stacks: " .. StatikShankCharge.stacks .. "/100", 15, 250, 155, ARGB(255, 0, 255, 255))
+		DrawText("Ready: " .. StatikShankCharge.readytext, 15, 250, 170, ARGB(255, 255, 0, 255))
 		
 		--  Draws Base
 		DrawCircle2(BlueSpawn.x, BlueSpawn.y, BlueSpawn.z, 2, SpawnRange, 3, ARGB(255, 0, 180, 255))
@@ -5124,39 +5359,44 @@ function OnDraw()
 		DrawLine3D(myHero.x, myHero.y, myHero.z, PurpleSpawn.x, myHero.y, PurpleSpawn.z, 2, ARGB(255, 255, 0, 255))
 		
 		--  Draws Slots
-		DrawText(".charName:", 25, 700, 85, ARGB(255, 255, 255, 255))
-		DrawText("" .. MyChampion, 25, 820, 85, ARGB(255, 255, 255, 0))
+		DrawText(".charName:", 25, 700, 60, ARGB(255, 255, 255, 255))
+		DrawText("" .. MyChampion, 25, 820, 60, ARGB(255, 255, 255, 0))
+		DrawText("Slot", 15, 700, 85, ARGB(255, 255, 255, 255))
+		DrawText("GetSpellData(slot).name", 15, 750, 85, ARGB(255, 0, 255, 255))
+		DrawText("getItem(slot)", 15, 950, 85, ARGB(255, 255, 255, 255))
+		DrawText(".name", 15, 1025, 85, ARGB(255, 255, 0, 0))
+		DrawText(".id", 15, 1100, 85, ARGB(255, 255, 255, 0))
 		DrawText("Slot [0]", 15, 700, 110, ARGB(255, 255, 255, 255))
 		DrawText("< " .. myHero:GetSpellData(_Q).name .. " >", 15, 750, 110, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 900, 110, ARGB(255, 255, 255, 255))
+		DrawText("Ready:", 15, 1200, 110, ARGB(255, 255, 255, 255))
 		if myHero:CanUseSpell(_Q) == READY then
-			DrawText("true", 15, 950, 110, ARGB(255, 0, 255, 0))
+			DrawText("true", 15, 11250, 110, ARGB(255, 0, 255, 0))
 		else
-			DrawText("false", 15, 950, 110, ARGB(255, 255, 0, 0))
+			DrawText("false", 15, 1250, 110, ARGB(255, 255, 0, 0))
 		end
 		DrawText("Slot [1]", 15, 700, 125, ARGB(255, 255, 255, 255))
 		DrawText("< " .. myHero:GetSpellData(_W).name .. " >", 15, 750, 125, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 900, 125, ARGB(255, 255, 255, 255))
+		DrawText("Ready:", 15, 1200, 125, ARGB(255, 255, 255, 255))
 		if myHero:CanUseSpell(_W) == READY then
-			DrawText("true", 15, 950, 125, ARGB(255, 0, 255, 0))
+			DrawText("true", 15, 1250, 125, ARGB(255, 0, 255, 0))
 		else
-			DrawText("false", 15, 950, 125, ARGB(255, 255, 0, 0))
+			DrawText("false", 15, 1250, 125, ARGB(255, 255, 0, 0))
 		end
 		DrawText("Slot [2]", 15, 700, 140, ARGB(255, 255, 255, 255))
 		DrawText("< " .. myHero:GetSpellData(_E).name .. " >", 15, 750, 140, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 900, 140, ARGB(255, 255, 255, 255))
+		DrawText("Ready:", 15, 1200, 140, ARGB(255, 255, 255, 255))
 		if myHero:CanUseSpell(_E) == READY then
-			DrawText("true", 15, 950, 140, ARGB(255, 0, 255, 0))
+			DrawText("true", 15, 1250, 140, ARGB(255, 0, 255, 0))
 		else
-			DrawText("false", 15, 950, 140, ARGB(255, 255, 0, 0))
+			DrawText("false", 15, 1250, 140, ARGB(255, 255, 0, 0))
 		end
 		DrawText("Slot [3]", 15, 700, 155, ARGB(255, 255, 255, 255))
 		DrawText("< " .. myHero:GetSpellData(_R).name .. " >", 15, 750, 155, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 900, 155, ARGB(255, 255, 255, 255))
+		DrawText("Ready:", 15, 1200, 155, ARGB(255, 255, 255, 255))
 		if myHero:CanUseSpell(_R) == READY then
-			DrawText("true", 15, 950, 155, ARGB(255, 0, 255, 0))
+			DrawText("true", 15, 1250, 155, ARGB(255, 0, 255, 0))
 		else
-			DrawText("false", 15, 950, 155, ARGB(255, 255, 0, 0))
+			DrawText("false", 15, 1250, 155, ARGB(255, 255, 0, 0))
 		end
 		if FlashSlot ~= nil then
 			SlotDevMode(FlashSlot)
@@ -5195,11 +5435,15 @@ function OnDraw()
 		for slot = ITEM_1, ITEM_7 do
 			DrawText("Slot [" .. slot .. "]", 15, 700, 200 + devmulti, ARGB(255, 255, 255, 255))
 			DrawText("< " .. myHero:GetSpellData(slot).name .. " >", 15, 750, 200 + devmulti, ARGB(255, 0, 255, 255))
-			DrawText("Ready:", 15, 900, 200 + devmulti, ARGB(255, 255, 255, 255))
+			if myHero:getItem(slot) then
+				DrawText("< " .. myHero:getItem(slot).name .. " >", 15, 950, 200 + devmulti, ARGB(255, 255, 0, 0))
+				DrawText("< " .. myHero:getItem(slot).id .. " >", 15, 1100, 200 + devmulti, ARGB(255, 255, 255, 0))
+			end
+			DrawText("Ready:", 15, 1200, 200 + devmulti, ARGB(255, 255, 255, 255))
 			if myHero:CanUseSpell(slot) == READY then
-				DrawText("true", 15, 950, 200 + devmulti, ARGB(255, 0, 255, 0))
+				DrawText("true", 15, 1250, 200 + devmulti, ARGB(255, 0, 255, 0))
 			else
-				DrawText("false", 15, 950, 200 + devmulti, ARGB(255, 255, 0, 0))
+				DrawText("false", 15, 1250, 200 + devmulti, ARGB(255, 255, 0, 0))
 			end
 			devmulti = devmulti + 15
 		end
@@ -6037,6 +6281,31 @@ function OnDraw()
 					DrawCircle2(Wobj.x, Wobj.y + 40, Wobj.z, 2, 420, 2, ARGB(table.unpack(settings.draws.wsetting.WCirlceColor)))
 				end
 			end
+		end
+	end
+	
+	--[[
+		Special Draven Draws
+	]]
+	if DravenLoaded then
+		--  Q
+		if settings.draws.qsetting.DrawQ then
+			if StatikShankCharge.RapidFirecannonReady and StatikShankCharge.stacks == 100 then
+				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Draven_Q_Range + 126, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
+			else
+				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Draven_Q_Range, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
+			end
+		end
+		--  W
+		
+		--  E
+		if Eup then
+			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Draven_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
+		end
+		--  R
+		if Rup then
+			local MousePosVector = myHero + (Vector(mousePos) - myHero):normalized() * (GetDistance(mousePos) + 500)
+			DrawLineBorder3D(myHero.x, myHero.y, myHero.z, MousePosVector.x, myHero.y, MousePosVector.z, 200, ARGB(table.unpack(settings.draws.rsetting.color)), settings.draws.rsetting.width)
 		end
 	end
 	
