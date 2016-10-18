@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 1.9
+-- > > > Version 2.0
 
 --_______________________________________________________________________________
 
@@ -29,6 +29,7 @@ _W_CALCS = false				-- More W Calculation -> Draws
 _SKIN_CHANGER = true			-- Skin Changer Switch
 _IMMUNE_PRINTS = false			-- Print when Skills are being blocks due to immunities
 
+_Draven_Dev = true				-- Developer mode for Draven
 _Dev_Mode = false				-- Developer mode
 
 --[[
@@ -219,6 +220,15 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Enemy Hard CC Counter
 [x] Fixed SAC Auth "integration successful!" message (before it was just delayed)
 
+		18/10/2016 | 11:08PM
+[x] Updated and Fixed the Recall Finder.
+[x] Added More Features to Dev mode [Draven]
+[x] Added Auto W to lane [Draven]
+[x] Auto Q Saver on Last Tick [Draven]
+[x] Changed the way Q catcher works [Draven]
+[x] Added W Draws (Movement buff and Attack Speed buff) [Circle and Text]  [Draven]
+[x] Added Filter for Rapid Firecannon, Statik Shiv and Kircheis Shard (Room for DMG Calc function ...soon(tm) :D )
+[x] Auto Surrender at 20 minutes
 
 
 
@@ -271,6 +281,7 @@ First Level up Alert
 Screen Res 2D visual
 Wukong Decoy
 Auto Impairments Remover %HP Filter
+Auto Feeder
 
 EXTRA ASSISTANT!
 Continue SAC walking to mouse if PolyMorphed
@@ -340,9 +351,7 @@ Count R Buff Stacks
 
 			[ Draven ]
 
-Auto W to lane
 Draw Axes under tower if toggle
-settings connected.
 Q buff state tracker (countdown re-apply)
 Cast R support
 
@@ -444,8 +453,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 1.9
-local _SCRIPT_VERSION_MENU = "1.9"
+local _SCRIPT_VERSION = 2.0
+local _SCRIPT_VERSION_MENU = "2.0"
 local _PATCH = "6.20"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -456,6 +465,8 @@ local player = GetMyHero()
 local CurrentMap = GetGame().map.shortName
 
 local lastTimeTickCalled = 0
+local TargetsWithQ = {}
+local isMe_Recalling = false
 local ScriptHasUpdated = false
 local OnLoadOnScreenPos = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
 
@@ -479,70 +490,85 @@ local TargetSelectorRange = 740
 --[[
 	Special Katarina Vars
 ]]
-local Katarina_WaitQ = false
-local Katarina_LastQ = os.clock()
-local Katarina_LastE = os.clock()
-local TargetsWithQ = {}
-local KatUlting = false
-local katarinarsound = '"katarinarsound"'
-local EAt = 0
-local EBuff = false
-local KatRCD = false
+if KatarinaLoaded then
+	Katarina_WaitQ = false
+	Katarina_LastQ = os.clock()
+	Katarina_LastE = os.clock()
+	KatUlting = false
+	katarinarsound = '"katarinarsound"'
+	EAt = 0
+	EBuff = false
+	KatRCD = false
 
-local Katarina_Q_Range = 680
-local Katarina_Q_BounceRange = 200
-local Katarina_W_Range = 390
-local Katarina_E_Range = 700
-local Katarina_R_Range = 590
+	Katarina_Q_Range = 680
+	Katarina_Q_BounceRange = 200
+	Katarina_W_Range = 390
+	Katarina_E_Range = 700
+	Katarina_R_Range = 590
+end
 
 --[[
 	Special Akali Vars
 ]]
-local VisibleSelf = true
-local ValidR = false
-local etext = false
-local WBuffShroud = false
-local StartWTime = 0
-local WAt = 0
-local WBuff = false
+if AkaliLoaded then
+	VisibleSelf = true
+	ValidR = false
+	etext = false
+	WBuffShroud = false
+	StartWTime = 0
+	WAt = 0
+	WBuff = false
 
-local Akali_Q_Range = 635
-local Akali_W_Range = 710
-local Akali_E_Range = 320
-local Akali_R_Range = 740
+	Akali_Q_Range = 635
+	Akali_W_Range = 710
+	Akali_E_Range = 320
+	Akali_R_Range = 740
+end
 
 --[[
 	Special Singed Vars
 ]]
-local PoisonStarted = false
-local PoisonEnded = false
+if SingedLoaded then
+	PoisonStarted = false
+	PoisonEnded = false
+end
 
 --[[
 	Special Draven Vars
 ]]
-local Axefound = false
-local CollectAxe = false
-local InsideAxeZone = false
+if DravenLoaded then
+	temptimertime = "nil"
+	DravenPassiveStacks = 0
+	
+	Axefound = false
+	CollectAxe = false
+	InsideAxeZone = false
 
-local AxesInAir = 0
-local LastAxe = 0
+	AxesInAir = 0
+	LastAxe = 0
 
-local ActiveAxes = {}
+	ActiveAxes = {}
+	Axes = {
+		stacks = 0,
+		readytext = "False"
+	}
 
-local AxeLandingDistance = 60
-local LastAxeTimer3 = 0
-local axechecker = false
-local axechecker2 = false
+	DravenWCount = 0
+	DravenWCountHighest = 0
+	DravenWCountToal = 0
+	WAt = 0
+	WBuff = false
 
-local Draven_Q_Range = 620
-local Draven_W_Range = myHero.boundingRadius
-local Draven_E_Range = 1050
-local Draven_R_Range = 15000
+	AxeLandingDistance = 60
+	LastAxeTimer3 = 0
+	axechecker = false
+	axechecker2 = false
 
-Axes = {
-	stacks = 0,
-	readytext = "False"
-}
+	Draven_Q_Range = 620
+	Draven_W_Range = myHero.boundingRadius
+	Draven_E_Range = 1050
+	Draven_R_Range = 15000
+end
 
 --[[
 	Special MiniMap Hack Vars
@@ -1466,6 +1492,31 @@ function OnTick()
 	
 	--  Checks Draven Axe Position, and acts upon toggles.
 	if DravenLoaded then
+		if QTimer then
+			QTimerFlag = true
+			CurrentQTime = os.clock() - StartQTime
+		elseif not QTimer and EndQTime and QTimerFlag then
+			QTimerFlag = false
+			StartEndQTime = (os.clock() + CurrentQTime) - EndQTime
+		end
+		if settings.misc.AutoWLane then
+			if W_is_Ready then
+				local IndexPath = myHero:GetPath(myHero.pathIndex)
+				if IndexPath then
+					if GetDistance(myHero, myHero.endPath) > 6000 then
+						if myHero.team == 100 then
+							if GetDistance(myHero, BlueSpawn) < 4000 then
+								CastSpell(_W)
+							end
+						elseif myHero.team == 200 then
+							if GetDistance(myHero, PurpleSpawn) < 4000 then
+								CastSpell(_W)
+							end
+						end
+					end
+				end
+			end
+		end
 		if not AxeLanding then
 			EnableMove()
 			EnableAttacks()
@@ -1589,25 +1640,6 @@ function OnTick()
 	enemyMinions:update()
 	jungleMinions:update()
 	allyMinions:update()
-
-	--  Find Rapid Firecannon Stacks and itemPos and determine if it is ready!
-	if StatikShankCharge.ready then
-		for slot = ITEM_1, ITEM_7 do
-			if myHero:getItem(slot) then
-				if myHero:getItem(slot).id == 2015 then
-					StatikShankCharge.KircheisShardReady = true
-				end
-				if myHero:getItem(slot).id == 3094 then
-					StatikShankCharge.KircheisShardReady = false
-					StatikShankCharge.RapidFirecannonReady = true
-				end
-				if myHero:getItem(slot).id == 3087 then
-					StatikShankCharge.KircheisShardReady = false
-					StatikShankCharge.StatikShivReady = true
-				end
-			end
-		end
-	end
 	
 	--  Find If We Are InSpawn or InEnemySpawn
 	if myHero.team == 100 then
@@ -1684,7 +1716,7 @@ function OnTick()
 	else
 		Rup = false
 	end
-
+	
 	--  OnLoad SAC print..
 	if CheckSAC then
 		if _G.Reborn_Loaded or _G.Reborn_Initialised or _G.AutoCarry ~= nil then
@@ -1695,16 +1727,16 @@ function OnTick()
 		end
 	end
 	
+	--  
+	if settings.misc.autoFF then
+		local GameTime = (GetInGameTimer() / 60)
+		if ((GameTime == 20) or (GameTime == 23) or (GameTime == 26) or (GameTime == 29) or (GameTime == 32) or (GameTime == 35) or (GameTime == 38) or (GameTime == 41) or (GameTime == 44) or (GameTime == 47) or (GameTime == 50) or (GameTime == 53) or (GameTime == 56) or (GameTime == 59) or (GameTime == 62)) then
+			SendChat("/ff")
+		end
+	end
 	--  KillSteal
 	if settings.killsteal.killswitch then
 		KillSteal()
-	end
-	
-	--  Check if I am recalling 
-	if TargetHaveBuff("Recall", myHero) then
-		isMe_Recalling = true
-	else
-		isMe_Recalling = false
 	end
 
 	-- Anti-AFK Structure				(I will be revamping this VERY SOON!)
@@ -1848,6 +1880,23 @@ function OnTick()
 		Special Draven OnTick
 	]]
 		if DravenLoaded then
+			if CurrentQTime and CurrentQTime >= 5.6 then
+				if settings.misc.AutoQBuff1 then
+					if Axes.stacks >= 1 then
+						if Q_is_Ready then
+							CastSpell(_Q)
+						end
+					end
+				end
+			end
+			if DravenWCount > DravenWCountHighest then
+				DravenWCountHighest = DravenWCount
+			end
+			if HaveWAppliedCheck then
+				if HaveWAppliedTime <= os.clock() then
+					HaveWApplied = false
+				end
+			end
 			if tablelength(ActiveAxes) > 0 then
 				AxeLanding = true
 			else
@@ -2167,7 +2216,7 @@ end
 ]]
 
 function OnLoad()
-	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_007")
+	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_009")
 			settings.ts = TargetSelector(TARGET_LESS_CAST, 800, DAMAGE_MAGIC, true)
 			settings.ts.name = "" .. MyChampion
 			settings:addTS(settings.ts)
@@ -2469,6 +2518,8 @@ function OnLoad()
 						end
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				end
+			settings.misc:addParam("autoFF", "Auto Surrender every 3 minutes", SCRIPT_PARAM_ONOFF, true)
+			settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			if ((SupportedChampion) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
 				if ((KatarinaLoaded) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -2505,6 +2556,13 @@ function OnLoad()
 					settings.misc:addParam("safeWKey", "Max Range Secure Key", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("W"))
 					settings.misc:addParam("safeinfo", "    Please make sure this is bound", SCRIPT_PARAM_INFO, "")
 					settings.misc:addParam("safeinfo2", "    to your Twilight Shroud (W?) key.", SCRIPT_PARAM_INFO, "")
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				end
+				if DravenLoaded then
+					settings.misc:addParam("AutoQBuff1", "Cast Q Last Tick to Save Axes", SCRIPT_PARAM_ONOFF, true)
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.misc:addParam("AutoWLane", "Auto W To Lane (SR only)", SCRIPT_PARAM_ONOFF, true)
+					settings.misc:addParam("AutoWSlow", "Auto W if Slowed", SCRIPT_PARAM_ONOFF, true)
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				end
 				settings.misc:addParam("UseZLowHp", "Use Zhonyas on Low HP", SCRIPT_PARAM_ONOFF, true)
@@ -2924,6 +2982,23 @@ function OnLoad()
 				settings.draws.wsetting:addParam("DrawWCountdown", "Draw W Shroud Countdown", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.wsetting:addParam("particles", "Draw W Shroud", SCRIPT_PARAM_ONOFF, true)
 					settings.draws.wsetting:addParam("WCirlceColor", "Shroud Colour", SCRIPT_PARAM_COLOR, {
+						255,
+						0,
+						255,
+						255
+					})
+			end
+			if DravenLoaded then
+				settings.draws.wsetting:addParam("DrawWSpeed", "Draw W Movement Speed Boost", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.wsetting:addParam("Wspeedmovecolor", "W Movement Speed Colour", SCRIPT_PARAM_COLOR, {
+						255,
+						109,
+						255,
+						73
+					})
+				settings.draws.wsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.wsetting:addParam("DrawWAttack", "Draw W Attack Speed Boost", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.wsetting:addParam("Wspeedattackcolor", "W Attack Speed Colour", SCRIPT_PARAM_COLOR, {
 						255,
 						0,
 						255,
@@ -4805,7 +4880,7 @@ function OnProcessAttack(unit, attack)
 			DelayAction(function()
 				MYAUTOATTACK = false
 			end, 1)
-			if DravenLoaded then
+			--[[if DravenLoaded then
 				if StatikShankCharge.stacks == 100 then
 					StatikShankCharge.stacks = 0
 					StatikShankCharge.ready = false
@@ -4814,7 +4889,7 @@ function OnProcessAttack(unit, attack)
 					StatikShankCharge.RapidFirecannonReady = false
 					StatikShankCharge.StatikShivReady = false
 				end
-			end
+			end]]
 		end
 	end
 end
@@ -4877,6 +4952,22 @@ function OnApplyBuff(target, source, buff)
 				end
 			end
 		--end
+		if DravenLoaded then
+			if target.type == myHero.type then
+				if buff.type == 10 and settings.misc.AutoWSlow then
+					CastSpell(_W)
+				end
+			end
+			if buff.name == "DravenRDoublecast" then
+				RHasCast = true
+				PrintSpecialText("You Cast R!")
+			end
+			--[[if buff.name == "DravenFury" then
+				WAt = os.clock()
+				WBuff = true
+				WAttackBuff = true
+			end]]
+		end
 		if target.type == myHero.type then
 			--PrintSpecialText("<font color='#00FFFF'>Buff Type: </font>" .. buff.type)
 			if buff.name == "SummonerExhaust" and settings.misc.impaired.exhaust then
@@ -4927,27 +5018,29 @@ function OnUpdateBuff(target, buff, stacks)
 			EBuff = true
 		end
 	end
-	if target and target.isMe and buff and buff.name then
-		if buff.name == "itemmagicshankcharge" then
-			if stacks == 100 then
-				Ludens.stacks = stacks
-				Ludens.ready = true
-				Ludens.readytext = "true"
-			else
-				Ludens.stacks = stacks
-				Ludens.ready = false
-				Ludens.readytext = "false"
+	if buff and buff.name then
+		if target and target.isMe then
+			if buff.name == "itemmagicshankcharge" then
+				if stacks == 100 then
+					Ludens.stacks = stacks
+					Ludens.ready = true
+					Ludens.readytext = "true"
+				else
+					Ludens.stacks = stacks
+					Ludens.ready = false
+					Ludens.readytext = "false"
+				end
 			end
-		end
-		if buff.name == "itemstatikshankcharge" then
-			if stacks == 100 then
-				StatikShankCharge.stacks = stacks
-				StatikShankCharge.ready = true
-				StatikShankCharge.readytext = "true"
-			else
-				StatikShankCharge.stacks = stacks
-				StatikShankCharge.ready = false
-				StatikShankCharge.readytext = "false"
+			if buff.name == "itemstatikshankcharge" then
+				if stacks == 100 then
+					StatikShankCharge.stacks = stacks
+					StatikShankCharge.ready = true
+					StatikShankCharge.readytext = "true"
+				else
+					StatikShankCharge.stacks = stacks
+					StatikShankCharge.ready = false
+					StatikShankCharge.readytext = "false"
+				end
 			end
 		end
 	end
@@ -4961,6 +5054,23 @@ function OnUpdateBuff(target, buff, stacks)
 				Axes.stacks = stacks
 				Axes.readytext = "True"
 			end
+		end
+		if buff.name == "DravenSpinning" then
+			QTimer = true
+			StartQTime = os.clock()
+		end
+	end
+	if DravenLoaded then
+		if buff.name == "DravenFury" then
+			HaveWApplied = true
+			DravenWCount = DravenWCount + 1
+			DravenWCountToal = DravenWCountToal + 1
+			WAt = os.clock()
+			WAt2 = os.clock()
+			HaveWAppliedCheck = true
+			HaveWAppliedTime = os.clock() + 2.9
+			WBuff = true
+			WAttackBuff = true
 		end
 	end
 end
@@ -5002,6 +5112,10 @@ function OnRemoveBuff(target, buff)
 				Axefound = false
 				Axes.stacks = 0
 				Axes.readytext = "False"
+			end
+			if buff.name == "DravenSpinning" then
+				EndQTime = os.clock()
+				QTimer = false
 			end
 		end
 	end
@@ -5062,32 +5176,52 @@ function OnCreateObj(obj)
 		end
 		if DravenLoaded then
 			if obj and obj.name then
-				if obj.name == "Draven_Base_Q_ReticleCatchSuccess.troy" then
-					if AxesInAir > 3 then
-						return
+				if obj.name == "Draven_Base_crit_tar.troy" then
+					PrintSpecialText("NICE CRIT!")
+				end
+				--if obj.team == myHero.team then
+					if obj.name == "Draven_Base_Q_ReticleCatchSuccess.troy" then
+						if AxesInAir > 3 then
+							return
+						end
+						LastAxe = os.clock()
+						DelayAction(function()
+							AxesInAir = AxesInAir + 1
+						end, 0.10)
 					end
-					LastAxe = os.clock()
-					DelayAction(function()
+					if obj.name == "Draven_Base_Q_activation.troy" then
+						if AxesInAir >= 3 then
+							return
+						end
 						AxesInAir = AxesInAir + 1
-					end, 0.10)
-				end
-				if obj.name == "Draven_Base_Q_activation.troy" then
-					if AxesInAir >= 3 then
-						return
 					end
-					AxesInAir = AxesInAir + 1
-				end
-				if obj.name == "Draven_Base_Q_reticle_self.troy" then
-					AxeLanding = true
-					table.insert(ActiveAxes, obj)
-				elseif obj.name == "draven_spinning_buff_end_sound.troy" then
-					AxeLanding = false
-					AxesInAir = 0
-				end
+					if obj.name == "Draven_Base_Q_reticle_self.troy" then
+						AxeLanding = true
+						table.insert(ActiveAxes, obj)
+					elseif obj.name == "draven_spinning_buff_end_sound.troy" then
+						AxeLanding = false
+						AxesInAir = 0
+					end
+					if obj.team ~= TEAM_ENEMY then
+						if obj.name == "draven_r_missile_end_sound.troy" then
+							print("Ult has Ended!")
+							Robj = nil
+						end
+					end
+				--end
 				if obj.spellOwner == myHero and obj.name:find("missile") then
 					AAobj = obj
 				end
 			end
+		end
+		if obj.name == "Item_RapidFirecannon_Ready.troy" then
+			RapidFirecannnonREADY = true
+		end
+		if obj.name == "Item_StatikkShiv_Ready.troy" then
+			StatikShivREADY = true
+		end
+		if obj.name == "Item_EnergyShard_Ready.troy" then
+			EnergyShardREADY = true
 		end
 	end
 	if obj and obj.name == "Acidtrail_buf.troy" then
@@ -5103,6 +5237,11 @@ function OnCreateObj(obj)
 	if obj.name == "SRU_Order_nexus_swirlies.troy" or obj.name == "SRU_Chaos_nexus_swirlies.troy" then
 		GameHasEndedPos = obj
 		GameHasEnded = false
+	end
+	if obj and obj.name and ((obj.name == "TeleportHome.troy") or (obj.name == "TeleportHomeImproved.troy")) then
+		if GetDistance(obj, myHero) <= myHero.boundingRadius then
+			isMe_Recalling = true
+		end
 	end
 	if obj and (obj.name:lower():find("visionward") or obj.name:lower():find("sightward")) and obj.networkID ~= 0 then
 		if obj.team ~= myHero.team then
@@ -5170,6 +5309,18 @@ function OnDeleteObj(obj)
 		end
 		if DravenLoaded then
 			if obj and obj.name then
+				--if obj.name and obj.name == "Draven_Base_W_move_buf.troy" then
+				--	WAt = 0
+				--	WBuff = false
+				--end
+				if obj.name and obj.name == "Draven_Base_W_attack_buf.troy" then
+					if DravenWCount >= 1 and not HaveWApplied then
+						DravenWCount = 0
+					end
+					if DravenWCount < 1 then
+						WAttackBuff = false
+					end
+				end
 				if obj.name == "Draven_Base_Q_reticle_self.troy" then
 					if AxesInAir ~= 1 then 
 						AxesInAir = AxesInAir - 1 
@@ -5184,10 +5335,25 @@ function OnDeleteObj(obj)
 						end
 					end
 				end
+				if obj.team ~= TEAM_ENEMY then
+					if obj.name == "Draven_R_cas.troy" then
+						print("Ult Can be cast again!")
+						Robj = obj
+					end
+				end
 				if obj.spellOwner == myHero and obj.name:find("missile") then
 					AAobj = nil
 				end
 			end
+		end
+		if obj.name == "Item_RapidFirecannon_Ready.troy" then
+			RapidFirecannnonREADY = false
+		end
+		if obj.name == "Item_StatikkShiv_Ready.troy" then
+			StatikShivREADY = false
+		end
+		if obj.name == "Item_EnergyShard_Ready.troy" then
+			EnergyShardREADY = false
 		end
 	end
 	if obj and obj.name == "Acidtrail_buf.troy" then
@@ -5198,6 +5364,11 @@ function OnDeleteObj(obj)
 	end
 	if obj.name == "SRU_Order_nexus_swirlies.troy" or obj.name == "SRU_Chaos_nexus_swirlies.troy" then
 		GameHasEnded = true
+	end
+	if obj and obj.name and ((obj.name == "TeleportHome.troy") or (obj.name == "TeleportHomeImproved.troy")) then
+		if GetDistance(obj, myHero) <= myHero.boundingRadius then
+			isMe_Recalling = false
+		end
 	end
 	if obj and obj.name and (obj.name:lower():find("visionward") or obj.name:lower():find("sightward")) and obj.networkID ~= 0 then	
 		i = 1
@@ -5245,12 +5416,16 @@ end
 --		░       ░           ░  ░    ░     ░           ░       ░    
 --		░       
 
-function WTime()
-	return myHero:GetSpellData(_W).level > 0 and (1) or 0
+function WTime(multi)
+	if AkaliLoaded then
+		return myHero:GetSpellData(_W).level > 0 and (1 * multi) or 0
+	elseif DravenLoaded then
+		return myHero:GetSpellData(_W).level > 0 and (1.5 * multi) or 0
+	end
 end
 
-function ETime()
-	return myHero:GetSpellData(_E).level > 0 and (1.5) or 0
+function ETime(multi)
+	return myHero:GetSpellData(_E).level > 0 and (1.5 * multi) or 0
 end
 
 function OnDraw()
@@ -5260,11 +5435,20 @@ function OnDraw()
 		DrawText3D("> > Script Successfully Updated, please reload by pressing F9 twice!!", myHero.x - 50, myHero.y, myHero.z + 50, 30, ARGB(255, 0, 255, 0), true)
 	end
 	
-	--  Dev mode
-	if _Dev_Mode then
-		
-		--  Dev Mode for Draven Devs
+	--  Dev Mode for Draven Devs
+	if _Draven_Dev then
 		if DravenLoaded then
+			if QTimer then
+				temptimertime = CurrentQTime
+			elseif StartEndQTime then
+				temptimertime = StartEndQTime
+			else
+				temptimertime = "unknown"
+			end
+			DrawText("Last Q Buff Time:", 15, 250, 235, ARGB(255, 255, 255, 255))
+			if temptimertime then
+				DrawText("" .. temptimertime, 15, 385, 235, ARGB(255, 0, 255, 0))
+			end
 			DrawText("Current Axes:                   "..Axes.stacks.."/2", 15, 250, 250, ARGB(255, 255, 255, 255))
 			DrawText("Axe is Ready to Throw:", 15, 250, 265, ARGB(255, 255, 255, 255))
 			if Axefound then
@@ -5326,31 +5510,31 @@ function OnDraw()
 			end
 			DrawText("Attacks Speed:", 15, 250, 355, ARGB(255, 255, 255, 255))
 			DrawText("" .. roundToFirstDecimal(0.679 * myHero.attackSpeed), 15, 385, 355, ARGB(255, 0, 255, 255))
+
+
+
+
+			DrawText("W Buff  | Current Count:", 15, 250, 385, ARGB(255, 255, 255, 255))
+			DrawText("" .. DravenWCount, 15, 385, 385, ARGB(255, 0, 255, 255))
+			DrawText("Highest Count:", 15, 400, 385, ARGB(255, 255, 255, 255))
+			DrawText("" .. DravenWCountHighest, 15, 485, 385, ARGB(255, 255, 255, 0))
+			DrawText("Total:", 15, 500, 385, ARGB(255, 255, 255, 255))
+			DrawText(" " .. DravenWCountToal, 15, 530, 385, ARGB(255, 0, 255, 0))
 		end
+	end
+	
+	--  Dev mode
+	if _Dev_Mode then
+		
+		--  Shank Draws
+		DrawText("Shank Charges: " .. StatikShankCharge.stacks .. "/100", 15, 250, 155, ARGB(255, 0, 255, 255))
+		DrawText("Ready:", 15, 250, 170, ARGB(255, 255, 255, 255))
+		DrawText("" .. StatikShankCharge.readytext, 15, 290, 170, ARGB(255, 255, 255, 0))
 		
 		--  Ludens Echo Draws
 		DrawText("Luden's Echo Stacks: " .. Ludens.stacks .. "/100", 15, 250, 200, ARGB(255, 0, 255, 255))
-		DrawText("Ready: " .. Ludens.readytext, 15, 250, 215, ARGB(255, 255, 0, 255))
-
-		--  Rapid Firecannon Draws
-		ItemIDText = "Shank"
-		for slot = ITEM_1, ITEM_7 do
-			if myHero:getItem(slot) then
-				if StatikShankCharge.RapidFirecannonReady then
-					ItemIDText = "Rapid Firecannon"
-				elseif StatikShankCharge.StatikShivReady then
-					ItemIDText = "Statik Shiv"
-				elseif StatikShankCharge.KircheisShardReady then
-					ItemIDText = "Kircheis Shard"
-				end
-			end
-		end
-		-- Kircheis Shard = 2015
-		-- Statik Shiv = 3087
-		-- Rapid Firecannon = 3094     |     myHero:getItem(ITEM_2).id
-			
-		DrawText(ItemIDText .." Stacks: " .. StatikShankCharge.stacks .. "/100", 15, 250, 155, ARGB(255, 0, 255, 255))
-		DrawText("Ready: " .. StatikShankCharge.readytext, 15, 250, 170, ARGB(255, 255, 0, 255))
+		DrawText("Ready:", 15, 250, 215, ARGB(255, 255, 255, 255))
+		DrawText("" .. Ludens.readytext, 15, 290, 215, ARGB(255, 255, 255, 0))
 		
 		--  Draws Base
 		DrawCircle2(BlueSpawn.x, BlueSpawn.y, BlueSpawn.z, 2, SpawnRange, 3, ARGB(255, 0, 180, 255))
@@ -6039,9 +6223,9 @@ function OnDraw()
 		end
 		
 		-- Draw E Buff Time Circle (When the circle reaches your HitBox the <buff> is gone)
-		if os.clock() < EAt + ETime() then
+		if os.clock() < EAt + ETime(1) then
 			if settings.draws.esetting.DrawErecudtion and EBuff then
-				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.Erecudtionwidth, myHero.ms * (EAt + ETime() - os.clock()) + myHero.boundingRadius, settings.draws.esetting.Erecudtionsnap, ARGB(table.unpack(settings.draws.esetting.Eredcolor)))
+				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.Erecudtionwidth, myHero.ms * (EAt + ETime(1) - os.clock()) + myHero.boundingRadius, settings.draws.esetting.Erecudtionsnap, ARGB(table.unpack(settings.draws.esetting.Eredcolor)))
 			end
 		end
 		
@@ -6199,10 +6383,9 @@ function OnDraw()
 		end
 		
 		-- Draw W Buff Time Circle (When the circle reaches your HitBox the <buff> is gone)
-		local TimeW = WTime()
-		if os.clock() < WAt + TimeW then
+		if os.clock() < WAt + WTime(1) then
 			if settings.draws.wsetting.DrawWSpeed and WBuff then
-				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime() - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedcolor)))
+				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime(1) - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedcolor)))
 			end
 		end
 		
@@ -6288,22 +6471,37 @@ function OnDraw()
 		Special Draven Draws
 	]]
 	if DravenLoaded then
+		
 		--  Q
 		if settings.draws.qsetting.DrawQ then
-			if StatikShankCharge.RapidFirecannonReady and StatikShankCharge.stacks == 100 then
-				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Draven_Q_Range + 126, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
-			else
-				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Draven_Q_Range, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
+			--if StatikShankCharge.RapidFirecannonReady and StatikShankCharge.stacks == 100 then
+			--	DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Draven_Q_Range + 126, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
+			--else
+				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, myHero.range + myHero.boundingRadius, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
+			--end
+		end
+
+		-- Draw W Buff Time Circle (When the circle reaches your HitBox the <buff> is gone)
+		if os.clock() < WAt + WTime(1) then
+			if settings.draws.wsetting.DrawWSpeed and WBuff then
+				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime(1) - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedmovecolor)))
 			end
 		end
-		--  W
+		if settings.draws.wsetting.DrawWAttack and WAttackBuff then
+			if os.clock() < WAt + WTime(2) then
+				local screen = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
+				DrawText("W Attack Speed Bonus Active!", 25, screen.x - 150, screen.y, ARGB(table.unpack(settings.draws.wsetting.Wspeedattackcolor)))
+				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime(2) - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedattackcolor)))
+			end
+		end
 		
 		--  E
 		if Eup then
 			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Draven_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
 		end
+		
 		--  R
-		if Rup then
+		if Rup and not Robj then
 			local MousePosVector = myHero + (Vector(mousePos) - myHero):normalized() * (GetDistance(mousePos) + 500)
 			DrawLineBorder3D(myHero.x, myHero.y, myHero.z, MousePosVector.x, myHero.y, MousePosVector.z, 200, ARGB(table.unpack(settings.draws.rsetting.color)), settings.draws.rsetting.width)
 		end
