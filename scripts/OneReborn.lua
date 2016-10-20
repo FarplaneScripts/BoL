@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 2.2
+-- > > > Version 2.3
 
 --_______________________________________________________________________________
 
@@ -230,7 +230,7 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Added Filter for Rapid Firecannon, Statik Shiv and Kircheis Shard (Room for DMG Calc function ...soon(tm) :D )
 [x] Auto Surrender at 20 minutes
 
-		20/10/2016 | AM
+		20/10/2016 | 4:32AM
 [x] Reset user settings
 [x] Added Smart Auto Potion
 [x] Added [in Spawn] Filter to Auto Potion.
@@ -239,7 +239,9 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Added Auto Close LoL.exe after game has ended.
 [x] Reduced Frame Rate Starting from DrawCircleMinimap
 [x] Added Draw Enemy EndPaths on MiniMap (Circles and Lines)
-
+[x] Added Draven Critical Hits counter
+[x] Changed the way movement under Axe Position works, [Old = stop movement under axePosition, New = move to vector of current movepath from axePosition]
+[x] Changed "Do not catch axe if Axe is under tower" from the axePosition to the closest vector from myHero [Draven]
 
 
 
@@ -464,8 +466,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 2.2
-local _SCRIPT_VERSION_MENU = "2.2"
+local _SCRIPT_VERSION = 2.3
+local _SCRIPT_VERSION_MENU = "2.3"
 local _PATCH = "6.21"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -549,6 +551,8 @@ end
 	Special Draven Vars
 ]]
 if DravenLoaded then
+	CritCount = 0
+	
 	temptimertime = "nil"
 	DravenPassiveStacks = 0
 	
@@ -1408,7 +1412,8 @@ end
 function DoCatchAxe()
 	if settings.combosettings.qsetting.tower then
 		for _, AxePosition in ipairs(ActiveAxes) do
-			if UnderTurret(AxePosition) then
+			local VectorPickUp = AxePosition + (Vector(myHero) - AxePosition):normalized() * AxeLandingDistance
+			if UnderTurret(VectorPickUp) then
 				if SAC then
 					if _G.AutoCarry.Orbwalker then
 						_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
@@ -5285,7 +5290,7 @@ function OnCreateObj(obj)
 		if DravenLoaded then
 			if obj and obj.name then
 				if obj.name == "Draven_Base_crit_tar.troy" then
-					PrintSpecialText("NICE CRIT!")
+					CritCount = CritCount + 1
 				end
 				--if obj.team == myHero.team then
 					if obj.name == "Draven_Base_Q_ReticleCatchSuccess.troy" then
@@ -5628,6 +5633,11 @@ function OnDraw()
 			DrawText("" .. DravenWCountHighest, 15, 485, 385, ARGB(255, 255, 255, 0))
 			DrawText("Total:", 15, 500, 385, ARGB(255, 255, 255, 255))
 			DrawText(" " .. DravenWCountToal, 15, 530, 385, ARGB(255, 0, 255, 0))
+			
+			
+			
+			DrawText("Total Critical Hits:", 15, 250, 415, ARGB(255, 255, 255, 255))
+			DrawText("" .. CritCount, 15, 385, 415, ARGB(255, 0, 255, 255))
 		end
 	end
 	
@@ -5769,7 +5779,7 @@ function OnDraw()
 							if UnderTurret(VectorPickUp) then
 								local AxePosScreen = WorldToScreen(D3DXVECTOR3(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z))
 								DrawCircle2(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, 4, AxeRadius, 1.5, ARGB(255, 255, 0, 0))
-								DrawText("This Axe is under Tower!", 20, AxePosScreen.x - 2, AxePosScreen.y - 2, ARGB(255, 0, 0, 0))
+								DrawText("This Axe is under Tower!", 20, AxePosScreen.x + 2, AxePosScreen.y - 2, ARGB(255, 0, 0, 0))
 								DrawText("This Axe is under Tower!", 20, AxePosScreen.x, AxePosScreen.y, ARGB(255, 255, 0, 0))
 							else
 								if settings.combosettings.qsetting.disablemovements == 2 then
