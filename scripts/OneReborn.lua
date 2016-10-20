@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 2.1
+-- > > > Version 2.2
 
 --_______________________________________________________________________________
 
@@ -464,8 +464,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 2.1
-local _SCRIPT_VERSION_MENU = "2.1"
+local _SCRIPT_VERSION = 2.2
+local _SCRIPT_VERSION_MENU = "2.2"
 local _PATCH = "6.21"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -5779,8 +5779,15 @@ function OnDraw()
 												local VectorLinePastQ = AxeLandingPos + (Vector(IndexPath) - AxeLandingPos):normalized() * (AxeRadius - 20)
 												DrawLine3D(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, ARGB(255, 0, 255, 0))
 												DrawCircle2(VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, (AxeRadius / 2), 1.5, ARGB(255, 0, 255, 0))
-												DisableMove()
-												myHero:MoveTo(mousePos.x, mousePos.z)
+												if SAC then
+													if _G.AutoCarry.MyHero then
+														if _G.AutoCarry.Orbwalker then
+															_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(VectorLinePastQ)
+														end
+													end
+												elseif SxOrb then
+													_G.SxOrb:ForcePoint(VectorLinePastQ.x, VectorLinePastQ.z)
+												end
 											end
 										end
 									end
@@ -5805,8 +5812,15 @@ function OnDraw()
 										DrawLine3D(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, ARGB(255, 0, 255, 0))
 										DrawCircle2(VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, (AxeRadius / 2), 1.5, ARGB(255, 0, 255, 0))
 										if settings.combosettings.qsetting.disablemovements == 2 then
-											DisableMove()
-											myHero:MoveTo(mousePos.x, mousePos.z)
+											if SAC then
+												if _G.AutoCarry.MyHero then
+													if _G.AutoCarry.Orbwalker then
+														_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(VectorLinePastQ)
+													end
+												end
+											elseif SxOrb then
+												_G.SxOrb:ForcePoint(VectorLinePastQ.x, VectorLinePastQ.z)
+											end
 										end
 									end
 								end
