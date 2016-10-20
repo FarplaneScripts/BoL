@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 2.3
+-- > > > Version 2.4
 
 --_______________________________________________________________________________
 
@@ -240,8 +240,16 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Reduced Frame Rate Starting from DrawCircleMinimap
 [x] Added Draw Enemy EndPaths on MiniMap (Circles and Lines)
 [x] Added Draven Critical Hits counter
+
+		21/10/2016 | 12:37PM
 [x] Changed the way movement under Axe Position works, [Old = stop movement under axePosition, New = move to vector of current movepath from axePosition]
 [x] Changed "Do not catch axe if Axe is under tower" from the axePosition to the closest vector from myHero [Draven]
+[x] Fixed Attack speed decimal % for Q attack disable.
+[x] Fixed E on Channels, Glapclosers and Engages. (Thanks DrPhoenix for spellnames array)
+[x] Changed Supported Champions scan.
+[x] Changed DrawMousePosition visuals
+[x] Reset user settings.
+[x] Added Predictions foir E and R casts... [Early Alpha stage, I am not very good with prediction integration..]
 
 
 
@@ -259,10 +267,6 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 Fake Movement clicks (ShowGreenClick() BoL Broken.)
 Fake Attack clicks (ShowRedClick() BoL Broken.)
 Local "recall" function
-Auto Potion + Scans for potion tick
-Mastery Badge Usage (After Kill?)
-Draw EndPos Point Waypoint on Minimap
-Override Orbwalk location to mousePos (SAC replaces mousePos with a normalized vector *300)
 MEC support for AOE spells [Currently no champions supported.]
 Spell Cast Save before buff runs out (example: Riven Q's) [Currently no champions supported.]
 Total killed minions + jungle minions visual (functions works again check here: [ http://puu.sh/rBnop/e68059bb97.jpg ])
@@ -276,7 +280,6 @@ Smart Level 2 Level up override based off the situation. [TOGGLE]
 Auto interrupt [Currently no champions supported.]
 Anti-Gapcloser [Currently no champions supported.]
 Time to Travel (to the end of Waypoints)
-EXP Range Circle
 Smart Ignite
 Auto Mikaels self
 Fix Flash after ward jump toggle.
@@ -326,12 +329,14 @@ DivinePrediction
 
 
 
+
 			[ Rejected ]
 
 Classes within the script.
 Packets.
 Champion Sprite (waypoint EndPos)
 FHPrediction [spaghetti code Xd {I actually just cannot be bothered, some1 else code this for me and np..}]
+Adoration Stacks Counter [the Buff cannot be found by: OnApplyBuff, OnRemoveBuff or OnUpdateBuff] therefore I cannot implement this.
 
 
 
@@ -364,7 +369,6 @@ Count R Buff Stacks
 
 			[ Draven ]
 
-Draw Axes under tower if toggle
 Q buff state tracker (countdown re-apply)
 Cast R support
 
@@ -466,8 +470,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 2.3
-local _SCRIPT_VERSION_MENU = "2.3"
+local _SCRIPT_VERSION = 2.4
+local _SCRIPT_VERSION_MENU = "2.4"
 local _PATCH = "6.21"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -581,6 +585,16 @@ if DravenLoaded then
 	axechecker = false
 	axechecker2 = false
 
+	RHasCast = false
+	
+	Draven_E_Delay = 0.25
+	Draven_E_Speed = 1400
+	Draven_E_Width = 160
+	
+	Draven_R_Delay = 1.0
+	Draven_R_Speed = 2000
+	Draven_R_Width = 150
+	
 	Draven_Q_Range = 620
 	Draven_W_Range = myHero.boundingRadius
 	Draven_E_Range = 1050
@@ -762,10 +776,12 @@ local StatikShankCharge = {
 	stacks = 0,
 	ready = false,
 	readytext = "false",
-	KircheisShardReady = false,
-	RapidFirecannonReady = false,
-	StatikShivReady = false
 }
+
+local RapidFirecannonREADY = false
+local StatikShivREADY = false
+local EnergyShardREADY = false
+
 
 local PotionNames = {
 	"RegenerationPotion",				-- Health Potion
@@ -781,18 +797,11 @@ local PotionNames = {
 local SpellEnages = {
 	["AatroxQ"] = true,
 	["AlZaharNetherGrasp"] = true,
-	["BandageToss"] = true,
-	["BlindMonkQTwo"] = true,
 	["CaitlynAceintheHole"] = true,
-	["DianaTeleport"] = true,
 	["GalioIdolOfDurand"] = true,
-	["Headbutt"] = true,
 	["InfiniteDuress"] = true,
-	["JarvanIVDragonStrike"] = true,
-	["JaxLeapStrike"] = true,
 	["JhinR"] = true,
 	["KatarinaR"] = true,
-	["KennenLightningRush"] = true,
 	["Landslide"] = true,
 	["LucianR"] = true,
 	["MissFortuneBulletTime"] = true,
@@ -800,19 +809,13 @@ local SpellEnages = {
 	["MonkeyKingSpinToWin"] = true,
 	["NocturneParanoia"] = true,
 	--["OlafRagnarok"] = true,        IF AZIR OR TRUNDLE ONLY
-	["PoppyE"] = true,
 	["RenektonSliceAndDice"] = true,
 	["RengarR"] = true,
-	["ShenE"] = true,
-	["ShyvanaTransformCast"] = true,
-	["SummonerFlash"] = true,
-	["TalonCutthroat"] = true,
 	["threshqleap"] = true,
 	["TwistedFateR"] = true,
 	["UdyrBearStance"] = true,
 	["UrgotSwap2"] = true,
 	["VelkozR"] = true,
-	["ViQ"] = true,
 	["ViR"] = true,
 	["VolibearQ"] = true,
 	["XerathLocusPulse"] = true,
@@ -820,6 +823,134 @@ local SpellEnages = {
 	["ZacE"] = true
 }
 
+local Dashes = {
+	"AatroxQ", -- Aatrox Q
+	"AhriTumble", -- Ahri R
+	"AkaliShadowDance", -- Akali R
+	"Arcane Shift", -- Ezreal E
+	"BandageToss", -- Amumu Q
+	"blindmonkqtwo", -- Lee Sin Q
+	"CarpetBomb", -- Corki W
+	"Crowstorm", -- Fiddlestick R
+	"Cutthroat", -- Talon E
+	"Death Mark", --Zed R
+	"DianaTeleport", -- Diana R
+	"Distortion", -- Leblanc W
+	"EliseSpiderQCast", -- Elise Q
+	"FioraQ", -- Fiora Q
+	"FizzPiercingStrike", -- Fizz Q
+	"Glacial Path", -- Lissandra E
+	"GragasE", -- Gragas E
+	"GravesMove", -- Graves E
+	"Headbutt", -- Alistar W
+	"HecarimUlt", -- Hecarim R
+	"IreliaGatotsu", -- Irelia Q
+	"jarvanAddition", -- Jarvan Dash
+	"jarvanivcataclysmattack", -- Jarvan R
+	"JarvanIVCataclysmAttack", -- Jarvan R
+	"JaxLeapStrike", -- Jax Q
+	"JayceToTheSkies", -- Jayce Q
+	"KhazixE", -- Kha'Zix E
+	"khazixeevo", -- Kha'Zix E evolved
+	"khazixelong", -- Kha'Zix E evolved
+	"LastBreath", -- Yasuo R
+	"LeblancSlide", -- Leblanc W
+	"LeblancSlideM", -- Leblanc R
+	"LeonaZenithBlade", -- Leona E
+	"Living Shadow", --Zed W
+	"LucianE", -- Lucian E
+	"MaokaiTrunkLine", -- Maokai W
+	"MonkeyKingNimbus", -- Wukong E
+	"Mimic: Distortion", -- Leblanc R
+	"NautilusAnchorDrag", -- Nautilus Q
+	"PantheonW", -- Pantheon W
+	"PoppyHeroicCharge", -- Poppy E
+	"Pounce", -- Nidalee W
+	"RenektonSliceAndDice", -- Renekton E
+	"Riftwalk", -- Kassadin R
+	"RivenFeint", -- Riven E
+	"RivenTriCleave", -- Riven E
+	"RocketJump", -- Tristana W
+	"SejuaniArcticAssault", -- Sejuani Q
+	"ShadowStep", -- Katarina E
+	"ShenShadowDash", -- Shen E
+	"Shunpo", -- Katarina E
+	"ShyvanaTransformCast", -- Shyvana R
+	"Slash", -- Tryndamere E
+	"UFSlash", -- Malphite R
+	"ViQ", -- Vi Q
+	"XenZhaoSweep", -- Xin Zhao E
+	"YasuoDashWrapper" -- Yasuo E
+}
+
+--[[
+	Total Array of supported champions [Anti-Engage, Dash or Channel]
+]]
+local SupportedEngageChampions = {
+	"Aatrox",
+	"Ahri",
+	"Akali",
+	"Ahri",
+	"Amumu",
+	"LeeSin",
+	"Corki",
+	"Fiddlesticks",
+	"Zed",
+	"Leblanc",
+	"Elise",
+	"Fiora",
+	"Fizz",
+	"Lissandra",
+	"Gragas",
+	"Graves",
+	"Hecarim",
+	"Irelia",
+	"Jayce",
+	"KhaZix",
+	"Leona",
+	"Lucian",
+	"Maokai",
+	"Nautilus",
+	"Pantheon",
+	"Nidalee",
+	"Kassadin",
+	"Riven",
+	"Tristana",
+	"Sejuani",
+	"Tryndamere",
+	"XinZhao",
+	"Alistar",
+	"WarWick",
+	"JarvanIV",
+	"Jax",
+	"Kennen",
+	"Malphite",
+	"MonkeyKing",
+	"Nocturne",
+	"Poppy",
+	"Renekton",
+	"Rengar",
+	"Shen",
+	"Shyvana",
+	"Talon",
+	"Thresh",
+	"Udyr",
+	"Vi",
+	"Volibear",
+	"Yasuo",
+	"Zac",
+	"Malzahar",
+	"Caitlyn",
+	"Galio",
+	"Jhin",
+	"Katarina",
+	"Lucian",
+	"MissFortune",
+	"Urgot",
+	"TwistedFate",
+	"Velkoz",
+	"Xerath"
+}
 --[[
 	minions
 ]]
@@ -1571,10 +1702,13 @@ function OnTick()
 			EnableAttacks()
 		elseif AxeLanding and not InsideAxeZone then
 			if settings.combosettings.qsetting.disableattacks then
-				if tablelength(ActiveAxes) >= 2 then
+				if tablelength(ActiveAxes) >= settings.combosettings.qsetting.disableattacksnumber then
 					for _, Zone in ipairs(ActiveAxes) do
 						if GetDistance(myHero, Zone) > myHero.boundingRadius + 50 then
-							local AttackSpeed = 0.679 * myHero.attackSpeed
+							local function roundToThirdDecimal(seconds)
+								return math.ceil(seconds * 1000) * 0.001
+							end
+							local AttackSpeed = roundToThirdDecimal(0.679 * myHero.attackSpeed)
 							if AttackSpeed >= settings.combosettings.qsetting.disableattacksspeed then
 								EnableMove()
 								DisableAttacks()
@@ -2288,7 +2422,7 @@ end
 ]]
 
 function OnLoad()
-	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_014")
+	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_017")
 			settings.ts = TargetSelector(TARGET_LESS_CAST, 800, DAMAGE_MAGIC, true)
 			settings.ts.name = "" .. MyChampion
 			settings:addTS(settings.ts)
@@ -2322,8 +2456,9 @@ function OnLoad()
 					})
 					settings.combosettings.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.combosettings.qsetting:addParam("info0", "Disable Attacks if outside Catch Zone and", SCRIPT_PARAM_INFO, "")
-					settings.combosettings.qsetting:addParam("disableattacks", "Draven has 2 Axes, if Above Attackspeed", SCRIPT_PARAM_ONOFF, true)
-					settings.combosettings.qsetting:addParam("disableattacksspeed", "                                  Attackspeed:", SCRIPT_PARAM_SLICE, 1, 0.7, 2.5, 1)
+					settings.combosettings.qsetting:addParam("disableattacks", "Draven has # Axes, if Above Attackspeed", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.qsetting:addParam("disableattacksnumber", "                               Set # Axes:", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
+					settings.combosettings.qsetting:addParam("disableattacksspeed", "                               Set Attackspeed:", SCRIPT_PARAM_SLICE, 1.2, 0.7, 2.5, 1)
 				end
 				if KatarinaLoaded then
 					settings.combosettings.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -2395,6 +2530,9 @@ function OnLoad()
 					settings.combosettings.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.combosettings.rsetting:addParam("UseRLowHp", "Ignore Safe Range if % HP", SCRIPT_PARAM_ONOFF, true)
 					settings.combosettings.rsetting:addParam("RLowHp", "    Set % HP", SCRIPT_PARAM_SLICE, 30, 0, 100, 0)
+				end
+				if DravenLoaded then
+					settings.combosettings.rsetting:addParam("Rstunned", "Auto Cast R on Stunned/Rooted Enemies", SCRIPT_PARAM_ONOFF, true)
 				end
 			if SupportedChampion then
 				settings.combosettings:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -2478,115 +2616,206 @@ function OnLoad()
 						settings.misc.disengage:addParam("toggle", "Enable:", SCRIPT_PARAM_ONOFF, true)
 						settings.misc.disengage:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						local FoundSupported = false
-						for _, enemy in ipairs(GetEnemyHeroes()) do
-							if ((enemy.charName == "Aatrox") or (enemy.charName == "Amumu") or (enemy.charName == "LeeSin") or (enemy.charName == "Diana") or (enemy.charName == "Alistar") or (enemy.charName == "WarWick") or (enemy.charName == "JarvanIV") or (enemy.charName == "Jax") or (enemy.charName == "Kennen") or (enemy.charName == "Malphite") or (enemy.charName == "MonkeyKing") or (enemy.charName == "Nocturne") or (enemy.charName == "Poppy") or(enemy.charName == "Renekton") or (enemy.charName == "Rengar") or (enemy.charName == "Shen") or (enemy.charName == "Shyvana") or (enemy.charName == "Talon") or (enemy.charName == "Thresh") or (enemy.charName == "Udyr") or (enemy.charName == "Vi") or (enemy.charName == "Volibear") or (enemy.charName == "Yasuo") or (enemy.charName == "Zac") or (enemy.charName == "Malzahar") or (enemy.charName == "Caitlyn") or (enemy.charName == "Galio") or (enemy.charName == "Jhin") or (enemy.charName == "Katarina") or (enemy.charName == "Lucian") or (enemy.charName == "MissFortune") or (enemy.charName == "Urgot") or (enemy.charName == "TwistedFate") or (enemy.charName == "Velkoz") or (enemy.charName == "Xerath")) then
-								FoundSupported = true
-								if enemy.charName == "Aatrox" then
-									settings.misc.disengage:addParam("i", "Found Aatrox Q!", SCRIPT_PARAM_INFO, "")
+						for _, enemy in pairs(GetEnemyHeroes()) do
+							for _, supported in pairs(SupportedEngageChampions) do
+								if enemy.charName == supported then
+									FoundSupported = true
 								end
-								if enemy.charName == "Amumu" then
-									settings.misc.disengage:addParam("i", "Found Amumu Q!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "LeeSin" then
-									settings.misc.disengage:addParam("i", "Found Lee Sin Second Q!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Diana" then
-									settings.misc.disengage:addParam("i", "Found Diana R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Alistar" then
-									settings.misc.disengage:addParam("i", "Found Alistar W!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "WarWick" then
-									settings.misc.disengage:addParam("i", "Found Warwick R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "JarvanIV" then
-									settings.misc.disengage:addParam("i", "Found Jarvan IV Q!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Jax" then
-									settings.misc.disengage:addParam("i", "Found Jax Q!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Kennen" then
-									settings.misc.disengage:addParam("i", "Found Kennen E!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Malphite" then
-									settings.misc.disengage:addParam("i", "Found Malphite R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "MonkeyKing" then
-									settings.misc.disengage:addParam("i", "Found Wukong E!", SCRIPT_PARAM_INFO, "")
-									settings.misc.disengage:addParam("i", "Found Wukong R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Nocturne" then
-									settings.misc.disengage:addParam("i", "Found Nocturne Second R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Poppy" then
-									settings.misc.disengage:addParam("i", "Found Poppy E!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Renekton" then
-									settings.misc.disengage:addParam("i", "Found Renekton E!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Rengar" then
-									settings.misc.disengage:addParam("i", "Found Rengar R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Shen" then
-									settings.misc.disengage:addParam("i", "Found Shen E!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Shyvana" then
-									settings.misc.disengage:addParam("i", "Found Shyvana R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Talon" then
-									settings.misc.disengage:addParam("i", "Found Talon E!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Thresh" then
-									settings.misc.disengage:addParam("i", "Found Thresh Second Q!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Udyr" then
-									settings.misc.disengage:addParam("i", "Found Udyr E!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Vi" then
-									settings.misc.disengage:addParam("i", "Found Vi Q!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Volibear" then
-									settings.misc.disengage:addParam("i", "Found Volibear Q!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Yasuo" then
-									settings.misc.disengage:addParam("i", "Found Yasuo Q3 After W!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Zac" then
-									settings.misc.disengage:addParam("i", "Found Zac E!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Malzahar" then
-									settings.misc.disengage:addParam("i", "Found Malzahar R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Caitlyn" then
-									settings.misc.disengage:addParam("i", "Found Caitlyn R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Galio" then
-									settings.misc.disengage:addParam("i", "Found Galio R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Jhin" then
-									settings.misc.disengage:addParam("i", "Found Jhin R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Katarina" then
-									settings.misc.disengage:addParam("i", "Found Katarina R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Lucian" then
-									settings.misc.disengage:addParam("i", "Found Lucian R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "MissFortune" then
-									settings.misc.disengage:addParam("i", "Found Miss Fortune R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Urgot" then
-									settings.misc.disengage:addParam("i", "Found Urgot R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "TwistedFate" then
-									settings.misc.disengage:addParam("i", "Found Twisted Fate R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Velkoz" then
-									settings.misc.disengage:addParam("i", "Found Velkoz R!", SCRIPT_PARAM_INFO, "")
-								end
-								if enemy.charName == "Xerath" then
-									settings.misc.disengage:addParam("i", "Found Xerath R!", SCRIPT_PARAM_INFO, "")
-								end
+							end
+							if enemy.charName == "Aatrox" then
+								settings.misc.disengage:addParam("i", "Found Aatrox Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Ahri" then
+								settings.misc.disengage:addParam("i", "Found Ahri R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Akali" then
+								settings.misc.disengage:addParam("i", "Found Akali R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Ahri" then
+								settings.misc.disengage:addParam("i", "Found Ezreal E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Amumu" then
+								settings.misc.disengage:addParam("i", "Found Amumu Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "LeeSin" then
+								settings.misc.disengage:addParam("i", "Found Lee Sin Second Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Corki" then
+								settings.misc.disengage:addParam("i", "Found Corki W!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Fiddlesticks" then
+								settings.misc.disengage:addParam("i", "Found FiddleSticks R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Zed" then
+								settings.misc.disengage:addParam("i", "Found Zed W!", SCRIPT_PARAM_INFO, "")
+								settings.misc.disengage:addParam("i", "Found Zed R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Leblanc" then
+								settings.misc.disengage:addParam("i", "Found LeBlanc W!", SCRIPT_PARAM_INFO, "")
+								settings.misc.disengage:addParam("i", "Found LeBlanc R (W)!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Elise" then
+								settings.misc.disengage:addParam("i", "Found Elise Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Fiora" then
+								settings.misc.disengage:addParam("i", "Found Fiora Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Fizz" then
+								settings.misc.disengage:addParam("i", "Found Fizz Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Lissandra" then
+								settings.misc.disengage:addParam("i", "Found Lissandra E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Gragas" then
+								settings.misc.disengage:addParam("i", "Found Gragas E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Graves" then
+								settings.misc.disengage:addParam("i", "Found Graves E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Hecarim" then
+								settings.misc.disengage:addParam("i", "Found Hecarim R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Irelia" then
+								settings.misc.disengage:addParam("i", "Found Irelia Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Jayce" then
+								settings.misc.disengage:addParam("i", "Found Jayce Q (Melee)!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "KhaZix" then
+								settings.misc.disengage:addParam("i", "Found Kha Zix E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Leona" then
+								settings.misc.disengage:addParam("i", "Found Leona E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Lucian" then
+								settings.misc.disengage:addParam("i", "Found Lucian E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Maokai" then
+								settings.misc.disengage:addParam("i", "Found Maokai W!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Nautilus" then
+								settings.misc.disengage:addParam("i", "Found Nautilus Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Pantheon" then
+								settings.misc.disengage:addParam("i", "Found Pantheon W!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Nidalee" then
+								settings.misc.disengage:addParam("i", "Found Nidalee W (Melee)!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Kassadin" then
+								settings.misc.disengage:addParam("i", "Found Kassadin R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Riven" then
+								settings.misc.disengage:addParam("i", "Found Riven E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Tristana" then
+								settings.misc.disengage:addParam("i", "Found Tristana W!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Sejuani" then
+								settings.misc.disengage:addParam("i", "Found Sejuani Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Tryndamere" then
+								settings.misc.disengage:addParam("i", "Found Tryndamere E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "XinZhao" then
+								settings.misc.disengage:addParam("i", "Found Xin Zhao R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Alistar" then
+								settings.misc.disengage:addParam("i", "Found Alistar W!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "WarWick" then
+								settings.misc.disengage:addParam("i", "Found Warwick R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "JarvanIV" then
+								settings.misc.disengage:addParam("i", "Found Jarvan IV Dash (Q)!", SCRIPT_PARAM_INFO, "")
+								settings.misc.disengage:addParam("i", "Found Jarvan IV R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Jax" then
+								settings.misc.disengage:addParam("i", "Found Jax Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Kennen" then
+								settings.misc.disengage:addParam("i", "Found Kennen E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Malphite" then
+								settings.misc.disengage:addParam("i", "Found Malphite R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "MonkeyKing" then
+								settings.misc.disengage:addParam("i", "Found Wukong E!", SCRIPT_PARAM_INFO, "")
+								settings.misc.disengage:addParam("i", "Found Wukong R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Nocturne" then
+								settings.misc.disengage:addParam("i", "Found Nocturne Second R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Poppy" then
+								settings.misc.disengage:addParam("i", "Found Poppy E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Renekton" then
+								settings.misc.disengage:addParam("i", "Found Renekton E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Rengar" then
+								settings.misc.disengage:addParam("i", "Found Rengar R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Shen" then
+								settings.misc.disengage:addParam("i", "Found Shen E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Shyvana" then
+								settings.misc.disengage:addParam("i", "Found Shyvana R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Talon" then
+								settings.misc.disengage:addParam("i", "Found Talon E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Thresh" then
+								settings.misc.disengage:addParam("i", "Found Thresh Second Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Udyr" then
+								settings.misc.disengage:addParam("i", "Found Udyr E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Vi" then
+								settings.misc.disengage:addParam("i", "Found Vi Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Volibear" then
+								settings.misc.disengage:addParam("i", "Found Volibear Q!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Yasuo" then
+								settings.misc.disengage:addParam("i", "Found Yasuo Q3 After W!", SCRIPT_PARAM_INFO, "")
+								settings.misc.disengage:addParam("i", "Found Yasuo E!", SCRIPT_PARAM_INFO, "")
+								settings.misc.disengage:addParam("i", "Found Yasuo R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Zac" then
+								settings.misc.disengage:addParam("i", "Found Zac E!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Malzahar" then
+								settings.misc.disengage:addParam("i", "Found Malzahar R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Caitlyn" then
+								settings.misc.disengage:addParam("i", "Found Caitlyn R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Galio" then
+								settings.misc.disengage:addParam("i", "Found Galio R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Jhin" then
+								settings.misc.disengage:addParam("i", "Found Jhin R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Katarina" then
+								settings.misc.disengage:addParam("i", "Found Katarina R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Lucian" then
+								settings.misc.disengage:addParam("i", "Found Lucian R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "MissFortune" then
+								settings.misc.disengage:addParam("i", "Found Miss Fortune R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Urgot" then
+								settings.misc.disengage:addParam("i", "Found Urgot R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "TwistedFate" then
+								settings.misc.disengage:addParam("i", "Found Twisted Fate R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Velkoz" then
+								settings.misc.disengage:addParam("i", "Found Velkoz R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Xerath" then
+								settings.misc.disengage:addParam("i", "Found Xerath R!", SCRIPT_PARAM_INFO, "")
 							end
 						end
 						if not FoundSupported then
@@ -3409,6 +3638,65 @@ function OnLoad()
 				settings.summoners:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.summoners:addParam("info1", "Come Back Later!", SCRIPT_PARAM_INFO, "")
 			end
+		settings:addSubMenu("Predictions", "pred")
+			if DravenLoaded then
+				settings.pred:addParam("usePredE", "E Prediction:", SCRIPT_PARAM_LIST, 3, {
+					[1] = "None",
+					[2] = "VPrediction",
+					[3] = "HPrediction"
+				})
+				settings.pred:addParam("predEchance", "                                   Hit Chance:", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+				settings.pred:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.pred:addParam("usePredR", "R Prediction:", SCRIPT_PARAM_LIST, 2, {
+					[1] = "None",
+					[2] = "VPrediction",
+					[3] = "HPrediction"
+				})
+				settings.pred:addParam("predRchance", "                                   Hit Chance:", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
+				settings.pred:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.pred:addParam("info0", "            1 = High   |   5 = Low", SCRIPT_PARAM_INFO, "")
+				settings.pred:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.pred:addParam("info1", "if you change Prediction, you will have to reload!", SCRIPT_PARAM_INFO, "")
+				if ((settings.pred.usePredE == 2) or (settings.pred.usePredR == 2)) then
+					require("VPrediction")
+					VPrediction = VPrediction()
+				end
+				if ((settings.pred.usePredE == 3) or (settings.pred.usePredR == 3)) then
+					require("HPrediction")
+					HPrediction = HPrediction()
+					if settings.pred.usePredE == 3 then
+						E_HPrediction = HPSkillshot({
+							type = "DelayLine",
+							delay = Draven_E_Delay,
+							range = Draven_E_Range,
+							speed = Draven_E_Speed,
+							collisionM = false,
+							collisionH = false,
+							width = Draven_E_Width,
+							IsVeryLowAccuracy = false
+						})
+					end
+					if settings.pred.usePredR == 3 then
+						R_HPrediction = HPSkillshot({
+							type = "DelayLine",
+							delay = Draven_R_Delay,
+							range = Draven_R_Range,
+							speed = Draven_R_Speed,
+							collisionM = false,
+							collisionH = true,
+							width = Draven_R_Width,
+							IsVeryLowAccuracy = false
+						})
+					end
+				end
+				if ((FileExist(LIB_PATH .. "/VPrediction.lua")) or (FileExist(LIB_PATH .. "/HPrediction.lua"))) then
+					PrintSpecialText("Found at least 1 Prediction")
+				else
+					PrintSpecialText("Found no Predictions.")
+				end
+			else
+				settings.pred:addParam("info0", "Currently no supported spells", SCRIPT_PARAM_INFO, "")
+			end
 		settings:addParam("targetselector","Left Click For Override Target Selection", SCRIPT_PARAM_ONOFF, false)
 		if KatarinaLoaded then
 			settings:addParam("hitandrun", "Hit & Run Key (^Click Target First^)", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("X"))
@@ -4230,15 +4518,18 @@ function Combo(target)
 			if settings.combosettings.esetting.ComboE then
 				if settings.combosettings.esetting.OnlyEif == 1 then
 					if GetDistance(myHero, target) < (Draven_E_Range) then
-						CastSpell(_E, target.x, target.z)
+						SpellCast("E", target)
+						--CastSpell(_E, target.x, target.z)
 					end
 				elseif settings.combosettings.esetting.OnlyEif == 2 then
 					if myHero.health / myHero.maxHealth <= settings.combosettings.esetting.eHP / 100 then
-						CastSpell(_E, target.x, target.z)
+						SpellCast("E", target)
+						--CastSpell(_E, target.x, target.z)
 					end
 				elseif settings.combosettings.esetting.OnlyEif == 3 then
 					if GetDistance(myHero, target) < settings.combosettings.esetting.eRange then
-						CastSpell(_E, target.x, target.z)
+						SpellCast("E", target)
+						--CastSpell(_E, target.x, target.z)
 					end
 				end
 			end
@@ -4549,6 +4840,48 @@ function SpellCast(spell, target)
 			end
 			if spell == "R" and target ~= nil and R_is_Ready then
 				CastSpell(_R, target)
+			end
+		elseif DravenLoaded then
+			if spell == "E" and target ~= nil and E_is_Ready then
+				if settings.pred.usePredE == 1 then
+					--PrintSpecialText("NoPred: Casted E")
+					CastSpell(_E, target.x, target.z)
+				elseif settings.pred.usePredE == 2 then
+					CastPosition, HitChance, Position = VPrediction:GetLineAOECastPosition(target, Draven_E_Delay, Draven_E_Width, Draven_E_Range, Draven_E_Speed, myHero, false)
+					if HitChance >= settings.pred.predEchance then
+						--PrintSpecialText("VPred: Casted E")
+						CastSpell(_E, CastPosition.x, CastPosition.z)
+					end
+				elseif settings.pred.usePredE == 3 then
+					local EPosition, EHitChance = HPrediction:GetPredict(E_HPrediction, target, myHero)
+					if EHitChance >= settings.pred.predEchance then
+						--PrintSpecialText("HPred: Casted E")
+						CastSpell(_E, EPosition.x, EPosition.z)
+					end
+				end
+			end
+			if spell == "R" and target ~= nil and R_is_Ready then
+				--PrintSpecialText("Recieved R Cast Command!")
+				if not RHasCast then
+					if GetDistance(myHero, target) < 2150 then
+						if settings.pred.usePredR == 1 then
+							-PrintSpecialText("NoPred: Casted R")
+							CastSpell(_R, target.x, target.z)
+						elseif settings.pred.usePredR == 2 then
+							CastPosition, HitChance, Position = VPrediction:GetLineAOECastPosition(target, Draven_R_Delay, Draven_R_Width, Draven_R_Range, Draven_R_Speed, myHero)
+							if HitChance >= settings.pred.predRchance then
+								--PrintSpecialText("VPred: Casted R")
+								CastSpell(_R, CastPosition.x, CastPosition.z)
+							end
+						elseif settings.pred.usePredR == 3 then
+							local RPosition, RHitChance = HPrediction:GetPredict(R_HPrediction, target, myHero)
+							if RHitChance >= settings.pred.predRchance then
+								--PrintSpecialText("HPred: Casted R")
+								CastSpell(_R, RPosition.x, RPosition.z)
+							end
+						end
+					end
+				end
 			end
 		else
 			if spell == "Q" and target ~= nil and Q_is_Ready then
@@ -5001,8 +5334,26 @@ function OnProcessSpell(unit, spell)
 			if SpellEnages[spell.name] ~= nil then
 				if unit.team ~= myHero.team and GetDistance(myHero, unit) <= Draven_E_Range then
 					if E_is_Ready then
-						CastSpell(_E, unit.x, unit.z)
+						SpellCast("E", unit)
+						--CastSpell(_E, unit.x, unit.z)
+						--print("DIS-ENGAGED!: " .. unit.charName .. "  |  " .. spell.name)
 					end
+				end
+			end
+			for _, Dash in pairs(Dashes) do
+				if GetDistance(myHero, unit) <= Draven_E_Range then
+					if spell.name == Dash then
+						if E_is_Ready then
+							SpellCast("E", unit)
+							--CastSpell(_E, unit.x, unit.z)
+							--print("SAVED!!!!: " .. unit.charName .. "  |  " .. spell.name)
+						end
+					end
+				end
+			end
+			if _Dev_Mode then
+				if spell.name ~= Dash or SpellEnages[spell.name] == nil then
+					PrintSpecialText("Found New Spell! <font color='#00FFFF'>" .. unit.charName .. "</font>  |  <font color='#00FF00'>" .. spell.name .. "</font>")
 				end
 			end
 		end
@@ -5032,6 +5383,28 @@ function OnApplyBuff(target, source, buff)
 		if buff.name == "Disarm" and target.charName == "Lulu" then
 			if ((settings.comboactive) or (settings.harassKey) or (settings.lastHit) or (settings.clearKey)) then
 				SACMovementIssue = true
+			end
+		end
+	end
+	if DravenLoaded then
+		if source and buff then
+			if settings.combosettings.rsetting.Rstunned then
+				if R_is_Ready and not RHasCast then
+					--for _, enemy in pairs(GetEnemyHeroes()) do
+						if source.team ~= myHero.team then
+							if ((buff.type == 5) or (buff.type == 8) or (buff.type == 11) or (buff.type == 21) or (buff.type == 24) or (buff.type == 28) or (buff.type == 29)) then
+								if source.name:find("Minion_") then
+									return
+								end
+								--PrintSpecialText("Detecting Enemy Has Been Impaired!!   " .. source.name)
+								--if GetDistance(myHero, source) < 2150 then
+									PrintSpecialText("Casting R on: " .. source.name)
+									SpellCast("R", source)
+								--end
+							end
+						end
+					--end
+				end
 			end
 		end
 	end
@@ -5317,7 +5690,8 @@ function OnCreateObj(obj)
 					end
 					if obj.team ~= TEAM_ENEMY then
 						if obj.name == "draven_r_missile_end_sound.troy" then
-							print("Ult has Ended!")
+							RHasCast = false
+							PrintSpecialText("Ult has Ended!")
 							Robj = nil
 						end
 					end
@@ -5328,7 +5702,7 @@ function OnCreateObj(obj)
 			end
 		end
 		if obj.name == "Item_RapidFirecannon_Ready.troy" then
-			RapidFirecannnonREADY = true
+			RapidFirecannonREADY = true
 		end
 		if obj.name == "Item_StatikkShiv_Ready.troy" then
 			StatikShivREADY = true
@@ -5450,7 +5824,7 @@ function OnDeleteObj(obj)
 				end
 				if obj.team ~= TEAM_ENEMY then
 					if obj.name == "Draven_R_cas.troy" then
-						print("Ult Can be cast again!")
+						PrintSpecialText("Ult Can be cast again!")
 						Robj = obj
 					end
 				end
@@ -5460,7 +5834,7 @@ function OnDeleteObj(obj)
 			end
 		end
 		if obj.name == "Item_RapidFirecannon_Ready.troy" then
-			RapidFirecannnonREADY = false
+			RapidFirecannonREADY = false
 		end
 		if obj.name == "Item_StatikkShiv_Ready.troy" then
 			StatikShivREADY = false
@@ -5618,11 +5992,11 @@ function OnDraw()
 			elseif not AttacksEnabled then
 				DrawText("False", 15, 385, 340, ARGB(255, 255, 0, 0))
 			end
-			local function roundToFirstDecimal(seconds)
+			local function roundToThirdDecimal(seconds)
 				return math.ceil(seconds * 1000) * 0.001
 			end
 			DrawText("Attacks Speed:", 15, 250, 355, ARGB(255, 255, 255, 255))
-			DrawText("" .. roundToFirstDecimal(0.679 * myHero.attackSpeed), 15, 385, 355, ARGB(255, 0, 255, 255))
+			DrawText("" .. roundToThirdDecimal(0.679 * myHero.attackSpeed), 15, 385, 355, ARGB(255, 0, 255, 255))
 
 
 
@@ -6684,7 +7058,7 @@ function OnDraw()
 	
 	--  Draw Mouse Pos (in World [3D])
 	if settings.draws.drawMouse then
-		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 30, 1, ARGB(255, 0, 255, 255))
+		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 20, 0.5, ARGB(255, 0, 255, 255))
 	end
 	
 	
