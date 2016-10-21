@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 2.4
+-- > > > Version 2.5
 
 --_______________________________________________________________________________
 
@@ -249,8 +249,9 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Changed Supported Champions scan.
 [x] Changed DrawMousePosition visuals
 [x] Reset user settings.
-[x] Added Predictions foir E and R casts... [Early Alpha stage, I am not very good with prediction integration..]
-
+[x] Added Predictions for E and R casts... [Early Alpha stage, I am not very good with prediction integration..]
+[x] Added Auto R on Stunned/Taunted/Snared/Suppressed/Feared/KnockUp'd Enemies
+[x] Reset user settings again ;)
 
 
 
@@ -470,8 +471,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 2.4
-local _SCRIPT_VERSION_MENU = "2.4"
+local _SCRIPT_VERSION = 2.5
+local _SCRIPT_VERSION_MENU = "2.5"
 local _PATCH = "6.21"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -4865,7 +4866,7 @@ function SpellCast(spell, target)
 				if not RHasCast then
 					if GetDistance(myHero, target) < 2150 then
 						if settings.pred.usePredR == 1 then
-							-PrintSpecialText("NoPred: Casted R")
+							--PrintSpecialText("NoPred: Casted R")
 							CastSpell(_R, target.x, target.z)
 						elseif settings.pred.usePredR == 2 then
 							CastPosition, HitChance, Position = VPrediction:GetLineAOECastPosition(target, Draven_R_Delay, Draven_R_Width, Draven_R_Range, Draven_R_Speed, myHero)
