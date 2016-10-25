@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 2.5
+-- > > > Version 2.6
 
 --_______________________________________________________________________________
 
@@ -24,13 +24,16 @@ Set to turn ON = " true "
 Set to turn OFF = " false "
 ]]--
 
-_AUTO_UPDATE = true				-- Automatic Updates Switch
-_W_CALCS = false				-- More W Calculation -> Draws
-_SKIN_CHANGER = true			-- Skin Changer Switch
-_IMMUNE_PRINTS = false			-- Print when Skills are being blocks due to immunities
+_AUTO_UPDATE = false						-- Automatic Updates Switch
+_AUTO_CLOSE_LOL_AFTER_GAME = false			-- false = Always is OFF by Default, true = Always is ON by Default. | Script does not save this data per champion.
+_W_CALCS = false							-- More W Calculation -> Draws (Katarina ONLY!)
+_SKIN_CHANGER = true						-- Skin Changer Switch
+_IMMUNE_PRINTS = false						-- Print when Skills are being blocks due to immunities
 
-_Draven_Dev = true				-- Developer mode for Draven
-_Dev_Mode = false				-- Developer mode
+_Draven_Dev = true							-- Developer mode for Draven
+_Twitch_Dev = true							-- Developer mode for Twitch
+
+_Dev_Mode = false							-- FULL Developer mode ( ^^^^ You do not need to enable this to use those)
 
 --[[
 			[ Champion Toggles ]
@@ -40,6 +43,7 @@ Enable or Diable supported champions here:
 Katarina_Switch = true			-- Disable this to prevent Katarina portion of the script from loading.
 Akali_Switch = true				-- Disable this to prevent Akali portion of the script from loading.
 Draven_Switch = true			-- Disable this to prevent Draven portion of the script from loading.
+Twitch_Switch = true			-- Disable this to prevent Twitch portion of the script from loading.
 
 --[[
 ======================================
@@ -250,8 +254,32 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 [x] Changed DrawMousePosition visuals
 [x] Reset user settings.
 [x] Added Predictions for E and R casts... [Early Alpha stage, I am not very good with prediction integration..]
-[x] Added Auto R on Stunned/Taunted/Snared/Suppressed/Feared/KnockUp'd Enemies
+[x] Added Auto R on Stunned/Taunted/Snared/Suppressed/Feared/KnockUp'd Enemies [Draven]
 [x] Reset user settings again ;)
+
+		26/10/2016 | 12:32PM
+[x] Added Twitch Support. (BETA)
+[x] Added Poro Sizes based of how many cookies they've eated
+[x] Changed the way AutoLevel works for some champions. [All will be added soon(tm)]
+[x] Tweaked Twitch settings.
+[x] Reset user settings again (when I do this, it is to prevent problems with the menu for users on updates when there has been something added between previous settings.)
+[x] Fixed Impairments Remover for Mercurial Scimitar [item name was incorrect]
+[x] Auto Move to mouse when PolyMorphed [Patch for SAC and more]
+[x] VPrediction support for Draven E and R
+[x] HPrediction support for Draven E and R
+[x] VPrediction support for Twitch W
+[x] Ward Tracker
+[x] Auto Dance after game. (This cannot be disabled)
+[x] Fixed Auto Surrender (scaner was not picking them up because the decimal was too long)
+[x] Added Disable All Draws Toggle. (All in one draws only.)
+[x] Fixed a RARE issue with Katarina W where Auto W Harass would still W while ulting.
+[x] Don't E harass if Exhausted [Twitch]
+[x] E Damage Calculation while exhausted [Twitch]
+[x] Added E Draws to Enemy Minions and Jungle Minions for Twitch [E/Passive]
+[x] A LOT more that I did not mention here.  Enjoy  ~Thanks to all the testers! (there were none .. :c )
+
+
+
 
 
 
@@ -267,7 +295,6 @@ Draven_Switch = true			-- Disable this to prevent Draven portion of the script f
 
 Fake Movement clicks (ShowGreenClick() BoL Broken.)
 Fake Attack clicks (ShowRedClick() BoL Broken.)
-Local "recall" function
 MEC support for AOE spells [Currently no champions supported.]
 Spell Cast Save before buff runs out (example: Riven Q's) [Currently no champions supported.]
 Total killed minions + jungle minions visual (functions works again check here: [ http://puu.sh/rBnop/e68059bb97.jpg ])
@@ -275,7 +302,6 @@ Kills | Deaths | Assists visual
 Make a callback on bugsplat and game.isover that opens and edits a file containing match stats? idk
 Clone Revealer
 KS Zac Passive (if this is possible)
-Auto Dance after game
 Spell Levels under Spell Cooldowns ...(i'll put this somewhere ... :s)
 Smart Level 2 Level up override based off the situation. [TOGGLE]
 Auto interrupt [Currently no champions supported.]
@@ -287,7 +313,6 @@ Fix Flash after ward jump toggle.
 Jungle KS TT Enemies.
 ThunderLords support
 Jungle Mobs for Map
-Use Poro BoundingBox to find how many cookies they've eaten!
 Blue Trinket Ward Jump Support
 Auto Smite
 Connected circles outline profile border
@@ -299,9 +324,6 @@ Wukong Decoy
 Auto Impairments Remover %HP Filter
 Auto Feeder
 VIP Spell Blocker
-
-EXTRA ASSISTANT!
-Continue SAC walking to mouse if PolyMorphed
 
 ... yes I know  I need to add predictions, but I hate predictions... so.. Soon(tm)
 VPrediction
@@ -318,11 +340,11 @@ Possibly fake recall spots near brush? (if it's not warded.)
 All Summoner Spells support.
 Sprites for skin changer possibly? + animations? idk . . . (not high priority atm)
 Tower Ranges
-Ward Tracker
 Jungle Timers
 Skin Changer for Allies and Enemies
 Random Delay [Humanizer(?)] to Auto Impairments
 Mastery Emote on Death?
+KPrediction
 SPrediction
 DivinePrediction
 
@@ -370,8 +392,11 @@ Count R Buff Stacks
 
 			[ Draven ]
 
-Q buff state tracker (countdown re-apply)
-Cast R support
+
+
+
+
+			[ Twitch ]
 
 
 
@@ -383,8 +408,7 @@ Cast R support
 ======================================
 
 Script has a high crash rate with Howling Abyss, this issue is currently being investigated.   You can work around this issue by Loading the game without BoL (or without the script) and then injecting (or double F9 with the script ticked).
-"spell particles are not being drawn" - this is because BoL is not fully updated and .spellOwner does not work!
-
+Impairments remover will use more than one impairments removement if available.
 
 
 
@@ -400,6 +424,7 @@ Script has a high crash rate with Howling Abyss, this issue is currently being i
 KatarinaLoaded = false
 AkaliLoaded = false
 DravenLoaded = false
+TwitchLoaded = false
 
 --  BoL Tools Tracker, please don't delete this .. <3
 assert(load(Base64Decode("G0x1YVIAAQQEBAgAGZMNChoKAAAAAAAAAAAAAQMeAAAABAAAAEYAQAClAAAAXUAAAUZAQAClQAAAXUAAAWWAAAAIQACBZcAAAAhAgIFGAEEApQABAF1AAAFGQEEAgYABAF1AAAFGgEEApUABAEqAgINGgEEApYABAEqAAIRGgEEApcABAEqAgIRGgEEApQACAEqAAIUfAIAACwAAAAQSAAAAQWRkVW5sb2FkQ2FsbGJhY2sABBQAAABBZGRCdWdzcGxhdENhbGxiYWNrAAQMAAAAVHJhY2tlckxvYWQABA0AAABCb2xUb29sc1RpbWUABBQAAABBZGRHYW1lT3ZlckNhbGxiYWNrAAQGAAAAY2xhc3MABA4AAABTY3JpcHRUcmFja2VyAAQHAAAAX19pbml0AAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAoAAABzZW5kRGF0YXMABAsAAABHZXRXZWJQYWdlAAkAAAACAAAAAwAAAAAAAwkAAAAFAAAAGABAABcAAIAfAIAABQAAAAxAQACBgAAAHUCAAR8AgAADAAAAAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAcAAAB1bmxvYWQAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAEAAAABQAAAAAAAwkAAAAFAAAAGABAABcAAIAfAIAABQAAAAxAQACBgAAAHUCAAR8AgAADAAAAAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAkAAABidWdzcGxhdAAAAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAUAAAAHAAAAAQAEDQAAAEYAwACAAAAAXYAAAUkAAABFAAAATEDAAMGAAABdQIABRsDAAKUAAADBAAEAXUCAAR8AgAAFAAAABA4AAABTY3JpcHRUcmFja2VyAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAUAAABsb2FkAAQMAAAARGVsYXlBY3Rpb24AAwAAAAAAQHpAAQAAAAYAAAAHAAAAAAADBQAAAAUAAAAMAEAAgUAAAB1AgAEfAIAAAgAAAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAgAAAB3b3JraW5nAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAACAAAAA0AAAAAAAksAAAABgBAAB2AgAAaQEAAF4AAgEGAAABfAAABF8AIgEbAQABHAMEAgUABAMaAQQDHwMEBEAFCAN0AAAFdgAAAhsBAAIcAQQHBQAEABoFBAAfBQQJQQUIAj0HCAE6BgQIdAQABnYAAAMbAQADHAMEBAUEBAEaBQQBHwcECjwHCAI6BAQDPQUIBjsEBA10BAAHdgAAAAAGAAEGBAgCAAQABwYECAAACgAEWAQICHwEAAR8AgAALAAAABA8AAABHZXRJbkdhbWVUaW1lcgADAAAAAAAAAAAECQAAADAwOjAwOjAwAAQHAAAAc3RyaW5nAAQHAAAAZm9ybWF0AAQGAAAAJTAyLmYABAUAAABtYXRoAAQGAAAAZmxvb3IAAwAAAAAAIKxAAwAAAAAAAE5ABAIAAAA6AAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAABAAAAAAAAMUAAAABgBAAB2AgAAHQEAAGwAAABdAA4AGAEAAHYCAAAeAQAAbAAAAFwABgAUAgAAMwEAAgYAAAB1AgAEXwACABQCAAAzAQACBAAEAHUCAAR8AgAAFAAAABAgAAABHZXRHYW1lAAQHAAAAaXNPdmVyAAQEAAAAd2luAAQSAAAAU2VuZFZhbHVlVG9TZXJ2ZXIABAYAAABsb29zZQAAAAAAAgAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAEQAAABEAAAACAAICAAAACkAAgB8AgAABAAAABAoAAABzY3JpcHRLZXkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEQAAABIAAAACAAUKAAAAhgBAAMAAgACdgAABGEBAARfAAICFAIAAjIBAAQABgACdQIABHwCAAAMAAAAEBQAAAHR5cGUABAcAAABzdHJpbmcABAoAAABzZW5kRGF0YXMAAAAAAAIAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABMAAAAiAAAAAgATPwAAAApAAICGgEAAnYCAAAqAgICGAEEAxkBBAAaBQQAHwUECQQECAB2BAAFGgUEAR8HBAoFBAgBdgQABhoFBAIfBQQPBgQIAnYEAAcaBQQDHwcEDAcICAN2BAAEGgkEAB8JBBEECAwAdggABFgECAt0AAAGdgAAACoCAgYaAQwCdgIAACoCAhgoAxIeGQEQAmwAAABdAAIAKgMSHFwAAgArAxIeGQEUAh4BFAQqAAIqFAIAAjMBFAQEBBgBBQQYAh4FGAMHBBgAAAoAAQQIHAIcCRQDBQgcAB0NAAEGDBwCHw0AAwcMHAAdEQwBBBAgAh8RDAFaBhAKdQAACHwCAACEAAAAEBwAAAGFjdGlvbgAECQAAAHVzZXJuYW1lAAQIAAAAR2V0VXNlcgAEBQAAAGh3aWQABA0AAABCYXNlNjRFbmNvZGUABAkAAAB0b3N0cmluZwAEAwAAAG9zAAQHAAAAZ2V0ZW52AAQVAAAAUFJPQ0VTU09SX0lERU5USUZJRVIABAkAAABVU0VSTkFNRQAEDQAAAENPTVBVVEVSTkFNRQAEEAAAAFBST0NFU1NPUl9MRVZFTAAEEwAAAFBST0NFU1NPUl9SRVZJU0lPTgAECwAAAGluZ2FtZVRpbWUABA0AAABCb2xUb29sc1RpbWUABAYAAABpc1ZpcAAEAQAAAAAECQAAAFZJUF9VU0VSAAMAAAAAAADwPwMAAAAAAAAAAAQJAAAAY2hhbXBpb24ABAcAAABteUhlcm8ABAkAAABjaGFyTmFtZQAECwAAAEdldFdlYlBhZ2UABA4AAABib2wtdG9vbHMuY29tAAQXAAAAL2FwaS9ldmVudHM/c2NyaXB0S2V5PQAECgAAAHNjcmlwdEtleQAECQAAACZhY3Rpb249AAQLAAAAJmNoYW1waW9uPQAEDgAAACZib2xVc2VybmFtZT0ABAcAAAAmaHdpZD0ABA0AAAAmaW5nYW1lVGltZT0ABAgAAAAmaXNWaXA9AAAAAAACAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAjAAAAJwAAAAMACiEAAADGQEAAAYEAAN2AAAHHwMAB3YCAAArAAIDHAEAAzADBAUABgACBQQEA3UAAAscAQADMgMEBQcEBAIABAAHBAQIAAAKAAEFCAgBWQYIC3UCAAccAQADMgMIBQcECAIEBAwDdQAACxwBAAMyAwgFBQQMAgYEDAN1AAAIKAMSHCgDEiB8AgAASAAAABAcAAABTb2NrZXQABAgAAAByZXF1aXJlAAQHAAAAc29ja2V0AAQEAAAAdGNwAAQIAAAAY29ubmVjdAADAAAAAAAAVEAEBQAAAHNlbmQABAUAAABHRVQgAAQSAAAAIEhUVFAvMS4wDQpIb3N0OiAABAUAAAANCg0KAAQLAAAAc2V0dGltZW91dAADAAAAAAAAAAAEAgAAAGIAAwAAAPyD15dBBAIAAAB0AAQKAAAATGFzdFByaW50AAQBAAAAAAQFAAAARmlsZQAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAA="), nil, "bt", _ENV))()
@@ -421,12 +446,12 @@ local MyUser = GetUser()
 ]]
 
 function PrintSpecialText(msg)
-	print("<font color='#FF00FF'>[" .. MyChampion .. " Reborn] <font color='#00FF00'>-</font></font><font color='#FFFFFF'> " .. msg .. "</font>")
+	print("<font color='#00FF00'>[" .. MyChampion .. " Reborn] <font color='#FFFF00'>-</font></font><font color='#FFFFFF'> " .. msg .. "</font>")
 end
 
 function PrintLoadedMSG()
 	SupportedChampion = true
-	PrintSpecialText("Loaded <font color='#00FF00'>" .. MyChampion .. "</font>, enjoy the game <font color='#00FFFF'>" .. MyUser .. "</font>!")
+	PrintSpecialText("Loaded <font color='#FFFF00'>" .. MyChampion .. "</font>, enjoy the game <font color='#00FFFF'>" .. MyUser .. "</font>!")
 end
 
 if MyChampion == "Katarina" and Katarina_Switch then
@@ -438,6 +463,9 @@ elseif MyChampion == "Akali" and Akali_Switch then
 elseif MyChampion == "Draven" and Draven_Switch then
 	DravenLoaded = true
 	PrintLoadedMSG()
+elseif MyChampion == "Twitch" and Twitch_Switch then
+	TwitchLoaded = true
+	PrintLoadedMSG()
 else
 	SupportedChampion = false
 	PrintSpecialText("Chamption spells currently not supported: <font color='#00FF00'>" .. MyChampion .. "</font>!")
@@ -446,7 +474,7 @@ end
 
 DelayAction(function()
 	print(" ")
-	print("<font color='#00FFFF'> <font color='#FF00FF'><b><u>                       " .. MyChampion .. " Reborn                       </b></u></font><font color='#00FFFF'></font></font>")
+	print("<font color='#00FFFF'> <font color='#00FF00'><b><u>                       " .. MyChampion .. " Reborn                       </b></u></font><font color='#00FFFF'></font></font>")
 	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> Welcome <b><u><font color='#00FF00'>" .. MyUser .. "</font></b></u> Thank you for your support.  <font color='#00FF00'>GLHF!</font><font color='#00FFFF'></font></font>")
 	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> <font color='#00FF00'>ChangeLog</font> at my GitHub.<font color='#00FFFF'></font></font>")
 	print("<font color='#FFFFFF'> <font color='#00FFFF'> • </font> Any suggestions/feedback please leave a post on the topic!</font>")
@@ -471,8 +499,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 2.5
-local _SCRIPT_VERSION_MENU = "2.5"
+local _SCRIPT_VERSION = 2.6
+local _SCRIPT_VERSION_MENU = "2.6"
 local _PATCH = "6.21"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -484,6 +512,12 @@ local CurrentMap = GetGame().map.shortName
 
 local lastTimeTickCalled = 0
 local TargetsWithQ = {}
+local DrawBars = {}
+local DeadlyVenom = {}
+local DeadlyVenomMinions = {}
+local DeadlyVenomJungle = {}
+--local MinionHasToxin = false
+local iHaveBeenExhausted = false
 local PotionTicking = false
 local isMe_Recalling = false
 local ScriptHasUpdated = false
@@ -600,6 +634,29 @@ if DravenLoaded then
 	Draven_W_Range = myHero.boundingRadius
 	Draven_E_Range = 1050
 	Draven_R_Range = 15000
+end
+
+--[[
+	Special Twitch Vars
+]]
+if TwitchLoaded then
+	channelingQ = false
+	stealthQ = false
+	VisibleSelf = true
+	stealthLocation = 0
+	
+	etext = false
+	
+	ValidR = false
+	
+	Twitch_W_Delay = 0.25
+	Twitch_W_Speed = 1750
+	Twitch_W_Width = 300
+	
+	Twitch_Q_Range = myHero.boundingRadius
+	Twitch_W_Range = 950
+	Twitch_E_Range = 1200
+	Twitch_R_Range = 850
 end
 
 --[[
@@ -755,7 +812,7 @@ local items = {
 		range = 4900
 		},
 	[3139] = {
-		name = "MercurialScimitar",
+		name = "ItemMercurial",
 		range = 4900
 		},
 	[3222] = {
@@ -799,6 +856,7 @@ local SpellEnages = {
 	["AatroxQ"] = true,
 	["AlZaharNetherGrasp"] = true,
 	["CaitlynAceintheHole"] = true,
+	["VarusQ"] = true,
 	["GalioIdolOfDurand"] = true,
 	["InfiniteDuress"] = true,
 	["JhinR"] = true,
@@ -806,7 +864,9 @@ local SpellEnages = {
 	["Landslide"] = true,
 	["LucianR"] = true,
 	["MissFortuneBulletTime"] = true,
+	["FallenOne"] = true,
 	["MonkeyKingNimbus"] = true,
+	["Pantheon_LeapBash"] = true,
 	["MonkeyKingSpinToWin"] = true,
 	["NocturneParanoia"] = true,
 	--["OlafRagnarok"] = true,        IF AZIR OR TRUNDLE ONLY
@@ -814,12 +874,14 @@ local SpellEnages = {
 	["RengarR"] = true,
 	["threshqleap"] = true,
 	["TwistedFateR"] = true,
+	["ShenStandUnited"] = true,
 	["UdyrBearStance"] = true,
 	["UrgotSwap2"] = true,
 	["VelkozR"] = true,
 	["ViR"] = true,
 	["VolibearQ"] = true,
 	["XerathLocusPulse"] = true,
+	["RengarLeap"] = true,
 	["YasuoRKnockUpComboW"] = true,
 	["ZacE"] = true
 }
@@ -832,7 +894,9 @@ local Dashes = {
 	"BandageToss", -- Amumu Q
 	"blindmonkqtwo", -- Lee Sin Q
 	"CarpetBomb", -- Corki W
-	"Crowstorm", -- Fiddlestick R
+	"Crowstorm", -- Fiddlesticks R
+	"Drain", -- Fiddlesticks W
+	"slashCast", -- Trynd E
 	"Cutthroat", -- Talon E
 	"Death Mark", --Zed R
 	"DianaTeleport", -- Diana R
@@ -847,6 +911,7 @@ local Dashes = {
 	"HecarimUlt", -- Hecarim R
 	"IreliaGatotsu", -- Irelia Q
 	"jarvanAddition", -- Jarvan Dash
+	"JarvanIVDragonStrike", -- Jarvan Q
 	"jarvanivcataclysmattack", -- Jarvan R
 	"JarvanIVCataclysmAttack", -- Jarvan R
 	"JaxLeapStrike", -- Jax Q
@@ -862,9 +927,9 @@ local Dashes = {
 	"LucianE", -- Lucian E
 	"MaokaiTrunkLine", -- Maokai W
 	"MonkeyKingNimbus", -- Wukong E
-	"Mimic: Distortion", -- Leblanc R
 	"NautilusAnchorDrag", -- Nautilus Q
 	"PantheonW", -- Pantheon W
+	"Pantheon_GrandSkyfall_Jump", -- Pantheon R
 	"PoppyHeroicCharge", -- Poppy E
 	"Pounce", -- Nidalee W
 	"RenektonSliceAndDice", -- Renekton E
@@ -879,6 +944,7 @@ local Dashes = {
 	"ShyvanaTransformCast", -- Shyvana R
 	"Slash", -- Tryndamere E
 	"UFSlash", -- Malphite R
+	"QuinnE", -- Quinn E
 	"ViQ", -- Vi Q
 	"XenZhaoSweep", -- Xin Zhao E
 	"YasuoDashWrapper" -- Yasuo E
@@ -1104,6 +1170,49 @@ function GetWDmg_Katarina(target)
 	end
 end
 
+function GetEDmg_Twitch(target)
+	if myHero:GetSpellData(_E).level < 1 then
+		return 0
+	end
+	if E_is_Ready then
+		if DeadlyVenom[target.networkID] ~= nil then
+			local BaseDamage = { 20, 35, 50, 65, 80}
+			local StackDamage = { 15, 20, 25, 30, 35}
+			local trueDmg = BaseDamage[myHero:GetSpellData(_E).level] + (((StackDamage[myHero:GetSpellData(_E).level]) + ((myHero.ap * (1 + myHero.apPercent)) * 0.2) + (myHero.addDamage * 0.25)) * DeadlyVenom[target.networkID].stacks)
+			if iHaveBeenExhausted then
+				FinalDmg = ((trueDmg * (100 / (100 + target.armor))) * 0.6)
+			else
+				FinalDmg = trueDmg * (100 / (100 + target.armor))
+			end
+			return FinalDmg
+		elseif DeadlyVenomMinions[target.networkID] ~= nil then
+			local BaseDamage = { 20, 35, 50, 65, 80}
+			local StackDamage = { 15, 20, 25, 30, 35}
+			local trueDmg = BaseDamage[myHero:GetSpellData(_E).level] + (((StackDamage[myHero:GetSpellData(_E).level]) + ((myHero.ap * (1 + myHero.apPercent)) * 0.2) + (myHero.addDamage * 0.25)) * DeadlyVenomMinions[target.networkID].stacks)
+			if iHaveBeenExhausted then
+				FinalDmg = ((trueDmg * (100 / (100 + target.armor))) * 0.6)
+			else
+				FinalDmg = trueDmg * (100 / (100 + target.armor))
+			end
+			return FinalDmg
+		elseif DeadlyVenomJungle[target.networkID] ~= nil then
+			local BaseDamage = { 20, 35, 50, 65, 80}
+			local StackDamage = { 15, 20, 25, 30, 35}
+			local trueDmg = BaseDamage[myHero:GetSpellData(_E).level] + (((StackDamage[myHero:GetSpellData(_E).level]) + ((myHero.ap * (1 + myHero.apPercent)) * 0.2) + (myHero.addDamage * 0.25)) * DeadlyVenomJungle[target.networkID].stacks)
+			if iHaveBeenExhausted then
+				FinalDmg = ((trueDmg * (100 / (100 + target.armor))) * 0.6)
+			else
+				FinalDmg = trueDmg * (100 / (100 + target.armor))
+			end
+			return FinalDmg
+		else
+			return 0
+		end
+	else
+		return 0
+	end
+end
+
 function GetLudensDmg(target)
 	local totalAP = myHero.ap * (1 + myHero.apPercent)
 	local LudensDMG = (totalAP * 0.1) + 100
@@ -1265,6 +1374,20 @@ function ImmuneToDeathKS(target)
 end
 
 --[[
+	Count Grouped Enemies
+]]
+function CountEntitiesInRange(entity, range)
+	count = 0
+	for i = 1, heroManager.iCount do
+		currentEnemy = heroManager:GetHero(i)
+		if currentEnemy.team ~= myHero.team and range >= GetDistance(currentEnemy, entity) and not currentEnemy.dead and currentEnemy.visible then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+--[[
 	CastItem and CheckItemReady functions
 ]]
 function CastItem(itemID, var1, var2)
@@ -1363,13 +1486,13 @@ function SlotDevMode(slot)
 	elseif slot == 5 then
 		SlotMulti = 15
 	end
-	DrawText("Slot [" .. slot .. "]", 15, 700, 200 - SlotMulti, ARGB(255, 255, 255, 255))
-	DrawText("< " .. myHero:GetSpellData(slot).name .. " >", 15, 750, 200 - SlotMulti, ARGB(255, 0, 255, 255))
-	DrawText("Ready:", 15, 1200, 200 - SlotMulti, ARGB(255, 255, 255, 255))
+	DrawTextFilter("Slot [" .. slot .. "]", 15, 700, 200 - SlotMulti, ARGB(255, 255, 255, 255))
+	DrawTextFilter("< " .. myHero:GetSpellData(slot).name .. " >", 15, 750, 200 - SlotMulti, ARGB(255, 0, 255, 255))
+	DrawTextFilter("Ready:", 15, 1200, 200 - SlotMulti, ARGB(255, 255, 255, 255))
 	if myHero:CanUseSpell(slot) == READY then
-		DrawText("true", 15, 1250, 200 - SlotMulti, ARGB(255, 0, 255, 0))
+		DrawTextFilter("true", 15, 1250, 200 - SlotMulti, ARGB(255, 0, 255, 0))
 	else
-		DrawText("false", 15, 1250, 200 - SlotMulti, ARGB(255, 255, 0, 0))
+		DrawTextFilter("false", 15, 1250, 200 - SlotMulti, ARGB(255, 255, 0, 0))
 	end
 end
 
@@ -1617,8 +1740,14 @@ end
 --[[
 	WndMsg (Windows Keypresses)
 ]]
-function OnWndMsg(mouse, key)
-	if mouse == WM_LBUTTONDOWN then
+function OnWndMsg(Type, Key)
+	if TwitchLoaded then
+		if myHero:GetSpellData(_Q).level >= 4 and Type == KEY_DOWN and settings.misc.AlwaysQB and Q_is_Ready and Key == GetKey("B") then
+			PrintSpecialText("Attempting to Recall invisible!")
+			CastSpell(_Q)
+		end
+	end
+	if Type == WM_LBUTTONDOWN then
 		if PopUp then
 			PopUp = false
 		end
@@ -1883,7 +2012,7 @@ function OnTick()
 	else
 		Wup = false
 	end
-	if AkaliLoaded then
+	if AkaliLoaded or TwitchLoaded then
 		if settings.draws.wsetting.DrawW2 and W_is_Ready then
 			W2up = true
 		else
@@ -1913,8 +2042,12 @@ function OnTick()
 	
 	--  Auto FF@20
 	if settings.misc.autoFF then
-		local GameTime = (GetInGameTimer() / 60)
-		if ((GameTime == 20) or (GameTime == 23) or (GameTime == 26) or (GameTime == 29) or (GameTime == 32) or (GameTime == 35) or (GameTime == 38) or (GameTime == 41) or (GameTime == 44) or (GameTime == 47) or (GameTime == 50) or (GameTime == 53) or (GameTime == 56) or (GameTime == 59) or (GameTime == 62)) then
+		local function roundToFirstDecimal(seconds)
+			return math.ceil(seconds * 10) * 0.1
+		end
+		local GameTime = (roundToFirstDecimal(GetInGameTimer() / 60))
+		--print("TIMER" .. GameTime)
+		if ((GameTime == 21) or (GameTime == 24) or (GameTime == 27) or (GameTime == 30) or (GameTime == 33) or (GameTime == 36) or (GameTime == 39) or (GameTime == 42) or (GameTime == 45) or (GameTime == 48) or (GameTime == 51) or (GameTime == 54) or (GameTime == 57) or (GameTime == 60) or (GameTime == 63)) then
 			SendChat("/ff")
 		end
 	end
@@ -2080,7 +2213,99 @@ function OnTick()
 		if settings.clearKey then
 			MainClearLane()
 		end
-		
+	
+	--[[
+		Special Twitch OnTick
+	]]
+		if TwitchLoaded then
+			
+			--  
+			for _, target in pairs(GetEnemyHeroes()) do
+				if DeadlyVenom[target.networkID] ~= nil then
+					if DeadlyVenom[target.networkID].stacks > 6 then
+						DeadlyVenom[target.networkID].stacks = 6
+					end
+					if DeadlyVenom[target.networkID].stacks > 0 then
+						if os.clock() >= DeadlyVenom[target.networkID].time then
+							DeadlyVenom[target.networkID] = {
+								stacks = 0,
+								time = 0
+							}
+							RemoveCooldownLine(target)
+						end
+					end
+				end
+			end
+			for _, target in pairs(minionManager(MINION_ENEMY, 99999).objects) do
+				if DeadlyVenomMinions[target.networkID] ~= nil then
+					if DeadlyVenomMinions[target.networkID].stacks > 6 then
+						DeadlyVenomMinions[target.networkID].stacks = 6
+					end
+					if DeadlyVenomMinions[target.networkID].stacks > 0 then
+						if os.clock() >= DeadlyVenomMinions[target.networkID].time then
+							DeadlyVenomMinions[target.networkID] = {
+								stacks = 0,
+								time = 0,
+								name = nil
+							}
+							RemoveCooldownLine(target)
+						end
+					end
+				end
+			end
+			for _, target in pairs(minionManager(MINION_JUNGLE, 99999).objects) do
+				if DeadlyVenomJungle[target.networkID] ~= nil then
+					if DeadlyVenomJungle[target.networkID].stacks > 6 then
+						DeadlyVenomJungle[target.networkID].stacks = 6
+					end
+					if DeadlyVenomJungle[target.networkID].stacks > 0 then
+						if os.clock() >= DeadlyVenomJungle[target.networkID].time then
+							DeadlyVenomJungle[target.networkID] = {
+								stacks = 0,
+								time = 0,
+								name = nil
+							}
+							RemoveCooldownLine(target)
+						end
+					end
+				end
+			end
+			
+			--  Safe Range W Key
+			if settings.misc.safeWKey then
+				if GetDistance(myHero, mousePos) > Twitch_W_Range then
+					Wcast = myHero + (Vector(mousePos) - myHero):normalized() * Twitch_W_Range
+					CastSpell(_W, Wcast.x, Wcast.z)
+				end
+			end
+			
+			--  Auto Q if Low HP
+			if Q_is_Ready and settings.combosettings.qsetting.UseQLowHp and myHero.health / myHero.maxHealth <= settings.combosettings.qsetting.QLowHp / 100 then
+				CastSpell(_Q)
+			end
+			
+			--  Stealth Status
+			if StealthProcess then
+				if myHero.health < StealthProcess.hp then
+					if os.clock() > StealthProcess.started + 4.5 then
+						StealthProcess = {
+							started = StealthProcess.started,
+							last = StealthProcess.started + 4.5,
+							hp = myHero.health
+						}
+					else
+						StealthProcess = {
+							started = StealthProcess.started,
+							last = os.clock(),
+							hp = myHero.health
+						}
+					end
+				else
+					StealthProcess.hp = myHero.health
+				end
+			end
+		end
+	
 	--[[
 		Special Draven OnTick
 	]]
@@ -2423,8 +2648,15 @@ end
 ]]
 
 function OnLoad()
-	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_017")
-			settings.ts = TargetSelector(TARGET_LESS_CAST, 800, DAMAGE_MAGIC, true)
+	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_020")
+			if ((AkaliLoaded) or (KatarinaLoaded)) then
+				theDmgarangement = DAMAGE_MAGIC
+			elseif ((DravenLoaded) or (TwitchLoaded)) then
+				theDmgarangement = DAMAGE_PHYSICAL
+			else
+				theDmgarangement = DAMAGE_MAGIC
+			end
+			settings.ts = TargetSelector(TARGET_LESS_CAST, 800, theDmgarangement, true)
 			settings.ts.name = "" .. MyChampion
 			settings:addTS(settings.ts)
 		settings:addSubMenu("Combo", "combosettings")
@@ -2437,9 +2669,17 @@ function OnLoad()
 					settings.combosettings.itemsettings:addParam("HextechProtobelt", "Use Hextech Protobelt-01", SCRIPT_PARAM_ONOFF, true)
 			settings.combosettings:addSubMenu("                    ~ Q Settings ~", "qsetting")
 				if SupportedChampion then
-					settings.combosettings.qsetting:addParam("ComboQ", "Use Q in Combo", SCRIPT_PARAM_ONOFF, true)
+					if not TwitchLoaded then
+						settings.combosettings.qsetting:addParam("ComboQ", "Use Q in Combo", SCRIPT_PARAM_ONOFF, true)
+					end
 				elseif not SupportedChampion then
 					settings.combosettings.qsetting:addParam("info0", "No Supported Q settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
+				end
+				if TwitchLoaded then
+					settings.combosettings.qsetting:addParam("UseQ", "Use Q if number of enemies", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.qsetting:addParam("QEnemies", "    Set number of enemies to Q", SCRIPT_PARAM_SLICE, 3, 0, 5, 0)
+					settings.combosettings.qsetting:addParam("UseQLowHp", "Use Q On Low Health", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.qsetting:addParam("QLowHp", "    Set Low Health %", SCRIPT_PARAM_SLICE, 30, 0, 100, 0)
 				end
 				if DravenLoaded then
 					settings.combosettings.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -2475,6 +2715,9 @@ function OnLoad()
 				elseif not SupportedChampion then
 					settings.combosettings.wsetting:addParam("info0", "No Supported W settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 				end
+				if TwitchLoaded then
+					settings.combosettings.wsetting:addParam("WEnemies", "    Use W - number of enemies [DISABLED]", SCRIPT_PARAM_SLICE, 1, 0, 5, 0)
+				end
 				if DravenLoaded then
 					settings.combosettings.wsetting:addParam("manaW", " ....if Mana Above %:", SCRIPT_PARAM_SLICE, 70, 0, 100, 0)
 				end
@@ -2485,7 +2728,9 @@ function OnLoad()
 				end
 			settings.combosettings:addSubMenu("                    ~ E Settings ~", "esetting")
 				if SupportedChampion then
-					settings.combosettings.esetting:addParam("ComboE", "Use E in Combo", SCRIPT_PARAM_ONOFF, true)
+					if not TwitchLoaded then
+						settings.combosettings.esetting:addParam("ComboE", "Use E in Combo", SCRIPT_PARAM_ONOFF, true)
+					end
 				elseif not SupportedChampion then
 					settings.combosettings.esetting:addParam("info0", "No Supported E settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 				end
@@ -2495,6 +2740,15 @@ function OnLoad()
 				end
 				if AkaliLoaded then
 					settings.combosettings.esetting:addParam("EWaitQ", "Wait for Q Proc before E Cast", SCRIPT_PARAM_ONOFF, true)
+				end
+				if TwitchLoaded then
+					settings.combosettings.esetting:addParam("UseE", "Use E On number of Passive Stacks", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.esetting:addParam("EStacks", "    Set number of Passive Stacks:", SCRIPT_PARAM_SLICE, 6, 1, 6, 0)
+					settings.combosettings.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.combosettings.esetting:addParam("OutOfRange", "Use E if target is Leaving E Range", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.esetting:addParam("EStacksLeave", "    Min Passive Stacks if Leaving:", SCRIPT_PARAM_SLICE, 4, 1, 6, 0)
+					settings.combosettings.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.combosettings.esetting:addParam("EStacksExhaust", "Don't E on # of Stacks if Exhausted", SCRIPT_PARAM_ONOFF, true)
 				end
 				if DravenLoaded then
 					settings.combosettings.esetting:addParam("OnlyEif", "Only E if:", SCRIPT_PARAM_LIST, 2, {
@@ -2508,7 +2762,9 @@ function OnLoad()
 				end
 			settings.combosettings:addSubMenu("                    ~ R Settings ~", "rsetting")
 				if SupportedChampion then
-					settings.combosettings.rsetting:addParam("CastR", "Use R in Combo", SCRIPT_PARAM_ONOFF, true)
+					if not TwitchLoaded then
+						settings.combosettings.rsetting:addParam("CastR", "Use R in Combo", SCRIPT_PARAM_ONOFF, true)
+					end
 				elseif not SupportedChampion then
 					settings.combosettings.rsetting:addParam("info0", "No Supported R settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 				end
@@ -2532,6 +2788,10 @@ function OnLoad()
 					settings.combosettings.rsetting:addParam("UseRLowHp", "Ignore Safe Range if % HP", SCRIPT_PARAM_ONOFF, true)
 					settings.combosettings.rsetting:addParam("RLowHp", "    Set % HP", SCRIPT_PARAM_SLICE, 30, 0, 100, 0)
 				end
+				if TwitchLoaded then
+					settings.combosettings.rsetting:addParam("UseR", "Use R on grouped enemies", SCRIPT_PARAM_ONOFF, true)
+					settings.combosettings.rsetting:addParam("REnemies", "    Set number of grouped enemies:", SCRIPT_PARAM_SLICE, 3, 1, 5, 0)
+				end
 				if DravenLoaded then
 					settings.combosettings.rsetting:addParam("Rstunned", "Auto Cast R on Stunned/Rooted Enemies", SCRIPT_PARAM_ONOFF, true)
 				end
@@ -2552,23 +2812,33 @@ function OnLoad()
 		settings.combosettings:addParam("info0", "Apologies, but this menu was getting cluttered.", SCRIPT_PARAM_INFO, "")
 		settings:addSubMenu("Harass", "harass")
 		if SupportedChampion then
-			settings.harass:addParam("harassq", "Use Q in Harass", SCRIPT_PARAM_ONOFF, true)
-			settings.harass:addParam("harassqToggle", "Auto Q Harass Toggle", SCRIPT_PARAM_ONKEYTOGGLE, false, GetKey("H"))
-			settings.harass:addParam("noQundertower", "Don't Q Harass Under Tower", SCRIPT_PARAM_ONOFF, true)
-			if KatarinaLoaded then
-				settings.harass:addParam("DynamicQMinionBounce", "Dynamic Q Harass off minion(s)", SCRIPT_PARAM_ONOFF, true)
-				settings.harass:addParam("procQ", "Detonate Q Mark", SCRIPT_PARAM_ONOFF, false)
+			if not TwitchLoaded then
+				settings.harass:addParam("harassq", "Use Q in Harass", SCRIPT_PARAM_ONOFF, true)
+				settings.harass:addParam("harassqToggle", "Auto Q Harass Toggle", SCRIPT_PARAM_ONKEYTOGGLE, false, GetKey("H"))
+				settings.harass:addParam("noQundertower", "Don't Q Harass Under Tower", SCRIPT_PARAM_ONOFF, true)
+				if KatarinaLoaded then
+					settings.harass:addParam("DynamicQMinionBounce", "Dynamic Q Harass off minion(s)", SCRIPT_PARAM_ONOFF, true)
+					settings.harass:addParam("procQ", "Detonate Q Mark", SCRIPT_PARAM_ONOFF, false)
+					settings.harass:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.harass:addParam("harassw", "Auto W When in Range", SCRIPT_PARAM_ONOFF, true)
+					settings.harass:addParam("noWundertower", "Don't W Harass Under Tower", SCRIPT_PARAM_ONOFF, true)
+				end
 				settings.harass:addParam("space", "", SCRIPT_PARAM_INFO, "")
-				settings.harass:addParam("harassw", "Auto W When in Range", SCRIPT_PARAM_ONOFF, true)
-				settings.harass:addParam("noWundertower", "Don't W Harass Under Tower", SCRIPT_PARAM_ONOFF, true)
+				settings.harass:addParam("harasse", "Use E in Harass", SCRIPT_PARAM_ONOFF, false)
+				if AkaliLoaded then
+					settings.harass:addParam("EWaitQ", "Never E if Q is on target", SCRIPT_PARAM_ONOFF, true)
+				end
+				if KatarinaLoaded then
+					settings.harass:addParam("info0", "     Note: all harass settings do not break ult.", SCRIPT_PARAM_INFO, "")
+				end
 			end
-			settings.harass:addParam("space", "", SCRIPT_PARAM_INFO, "")
-			settings.harass:addParam("harasse", "Use E in Harass", SCRIPT_PARAM_ONOFF, false)
-			if AkaliLoaded then
-				settings.harass:addParam("EWaitQ", "Never E if Q is on target", SCRIPT_PARAM_ONOFF, true)
-			end
-			if KatarinaLoaded then
-				settings.harass:addParam("info0", "     Note: all harass settings do not break ult.", SCRIPT_PARAM_INFO, "")
+			if TwitchLoaded then
+				settings.harass:addParam("harassw", "Use W in Harass", SCRIPT_PARAM_ONOFF, true)
+				settings.harass:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.harass:addParam("harasse", "Use E On number of stacks", SCRIPT_PARAM_ONOFF, true)
+				settings.harass:addParam("EStacks", "     Set number of E stacks:", SCRIPT_PARAM_SLICE, 4, 1, 6, 0)
+				settings.harass:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.harass:addParam("EStacksExhaust", "Don't E for Harass if Exhausted", SCRIPT_PARAM_ONOFF, true)
 			end
 		else
 			settings.harass:addParam("info0", "               Coming Soon (tm)", SCRIPT_PARAM_INFO, "")
@@ -2645,6 +2915,7 @@ function OnLoad()
 								settings.misc.disengage:addParam("i", "Found Corki W!", SCRIPT_PARAM_INFO, "")
 							end
 							if enemy.charName == "Fiddlesticks" then
+								settings.misc.disengage:addParam("i", "Found FiddleSticks W!", SCRIPT_PARAM_INFO, "")
 								settings.misc.disengage:addParam("i", "Found FiddleSticks R!", SCRIPT_PARAM_INFO, "")
 							end
 							if enemy.charName == "Zed" then
@@ -2699,9 +2970,16 @@ function OnLoad()
 							end
 							if enemy.charName == "Pantheon" then
 								settings.misc.disengage:addParam("i", "Found Pantheon W!", SCRIPT_PARAM_INFO, "")
+								settings.misc.disengage:addParam("i", "Found Pantheon R!", SCRIPT_PARAM_INFO, "")
 							end
 							if enemy.charName == "Nidalee" then
 								settings.misc.disengage:addParam("i", "Found Nidalee W (Melee)!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Karthus" then
+								settings.misc.disengage:addParam("i", "Found Karthus R!", SCRIPT_PARAM_INFO, "")
+							end
+							if enemy.charName == "Varus" then
+								settings.misc.disengage:addParam("i", "Found Varus Q (charge)!", SCRIPT_PARAM_INFO, "")
 							end
 							if enemy.charName == "Kassadin" then
 								settings.misc.disengage:addParam("i", "Found Kassadin R!", SCRIPT_PARAM_INFO, "")
@@ -2734,6 +3012,9 @@ function OnLoad()
 							if enemy.charName == "Jax" then
 								settings.misc.disengage:addParam("i", "Found Jax Q!", SCRIPT_PARAM_INFO, "")
 							end
+							if enemy.charName == "Quinn" then
+								settings.misc.disengage:addParam("i", "Found Quinn E!", SCRIPT_PARAM_INFO, "")
+							end
 							if enemy.charName == "Kennen" then
 								settings.misc.disengage:addParam("i", "Found Kennen E!", SCRIPT_PARAM_INFO, "")
 							end
@@ -2758,6 +3039,7 @@ function OnLoad()
 							end
 							if enemy.charName == "Shen" then
 								settings.misc.disengage:addParam("i", "Found Shen E!", SCRIPT_PARAM_INFO, "")
+								settings.misc.disengage:addParam("i", "Found Shen R!", SCRIPT_PARAM_INFO, "")
 							end
 							if enemy.charName == "Shyvana" then
 								settings.misc.disengage:addParam("i", "Found Shyvana R!", SCRIPT_PARAM_INFO, "")
@@ -2824,7 +3106,7 @@ function OnLoad()
 						end
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				end
-			settings.misc:addParam("autoFF", "Auto Surrender every 3 minutes", SCRIPT_PARAM_ONOFF, true)
+			settings.misc:addParam("autoFF", "Auto Surrender every 3 minutes", SCRIPT_PARAM_ONOFF, false)
 			settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			if ((SupportedChampion) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
 				if ((KatarinaLoaded) or (MyChampion == "Jax") or (MyChampion == "LeeSin")) then
@@ -2871,6 +3153,13 @@ function OnLoad()
 					settings.misc:addParam("AutoWSlow", "Auto W if Slowed", SCRIPT_PARAM_ONOFF, true)
 					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				end
+				if TwitchLoaded then
+					settings.misc:addParam("AlwaysQB", "Use Q on Recall (Stealth Recall [lvl4+])", SCRIPT_PARAM_ONOFF, true)
+					settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.misc:addParam("safeWKey", "Max Range Secure Key", SCRIPT_PARAM_ONKEYDOWN, false, GetKey("W"))
+					settings.misc:addParam("safeinfo", "    Please make sure this is bound", SCRIPT_PARAM_INFO, "")
+					settings.misc:addParam("safeinfo2", "    to your Vendom Clask key.", SCRIPT_PARAM_INFO, "")
+				end
 				settings.misc:addParam("AutoPots", "Auto use Smart Health Pots", SCRIPT_PARAM_ONOFF, true)
 				settings.misc:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.misc:addParam("UseZLowHp", "Use Zhonyas on Low HP", SCRIPT_PARAM_ONOFF, true)
@@ -2887,7 +3176,11 @@ function OnLoad()
 						[2] = "Assists",
 						[3] = "Both"
 					})
-			settings.misc:addParam("AutoClose", "Auto Close LoL.exe when Game is Over", SCRIPT_PARAM_ONOFF, true)
+			if not _AUTO_CLOSE_LOL_AFTER_GAME then
+				settings.misc:addParam("AutoClose", "Auto Close LoL.exe when Game is Over", SCRIPT_PARAM_ONOFF, false)
+			elseif _AUTO_CLOSE_LOL_AFTER_GAME then
+				settings.misc:addParam("AutoClose", "Auto Close LoL.exe when Game is Over", SCRIPT_PARAM_ONOFF, true)
+			end
 			if GetGame().map.shortName == "howlingAbyss" then
 				settings.misc:addParam("enablePoro", "Enable Auto Poro-Snax", SCRIPT_PARAM_ONOFF, true)
 			end
@@ -3053,9 +3346,44 @@ function OnLoad()
 						settings.killsteal.jungleR:addParam("space", "", SCRIPT_PARAM_INFO, "")
 						settings.killsteal.jungleR:addParam("others", "   Others", SCRIPT_PARAM_ONOFF, false)
 				end
+				if TwitchLoaded then
+					settings.killsteal:addSubMenu("Jungle KS E Settings", "jungleE")
+						settings.killsteal.jungleE:addParam("enable", "Enable E KS Jungle", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
+						settings.killsteal.jungleE:addParam("dragon", "   Dragon (All Types Supported)", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("baron", "   Baron", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("herald", "   Rift Herald", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
+						settings.killsteal.jungleE:addParam("blue", "   Blue Buff", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("bluemini", "   Sentry (Blue Buff Guards)", SCRIPT_PARAM_ONOFF, false)
+						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
+						settings.killsteal.jungleE:addParam("red", "   Red Buff", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("redmini", "   Cinderling (Red Buff Guards)", SCRIPT_PARAM_ONOFF, false)
+						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
+						settings.killsteal.jungleE:addParam("wolf", "   Greater Murk Wolf (Big Wolf)", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("wolfmini", "   Murk Wolf (Small Wolves)", SCRIPT_PARAM_ONOFF, false)
+						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
+						settings.killsteal.jungleE:addParam("raptor", "   Crimson Raptor (Big Raptor)", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("raptormini", "   Raptor (Small Raptors)", SCRIPT_PARAM_ONOFF, false)
+						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
+						settings.killsteal.jungleE:addParam("krug", "   Ancient Krug (Big Krug)", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("krugmini", "   Krug", SCRIPT_PARAM_ONOFF, false)
+						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
+						settings.killsteal.jungleE:addParam("skuttle", "   Skuttle Crab", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("gromp", "   Gromp", SCRIPT_PARAM_ONOFF, true)
+						settings.killsteal.jungleE:addParam("space", "", SCRIPT_PARAM_INFO, "")
+						settings.killsteal.jungleE:addParam("others", "   Others", SCRIPT_PARAM_ONOFF, true)
+				end
 				settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.killsteal:addParam("infospace", "                   ~ Kill Steal ~", SCRIPT_PARAM_INFO, "")
-				settings.killsteal:addParam("killswitch", "Kill Steal (Enemies)", SCRIPT_PARAM_ONOFF, true)
+				if not TwitchLoaded then
+					settings.killsteal:addParam("killswitch", "Kill Steal (Enemies)", SCRIPT_PARAM_ONOFF, true)
+				end
+				if TwitchLoaded then
+					settings.killsteal:addParam("killswitch", "Killsteal with E (Champions)", SCRIPT_PARAM_ONOFF, true)
+					settings.killsteal:addParam("space", "", SCRIPT_PARAM_INFO, "")
+					settings.killsteal:addParam("info0", "All Damage Calculation supports Exhaust.", SCRIPT_PARAM_INFO, "")
+				end
 				if KatarinaLoaded then
 					settings.killsteal:addParam("stopRks", "Stop R to Kill Steal", SCRIPT_PARAM_ONOFF, true)
 					settings.killsteal:addParam("wards", "Use WardJump + Q Kill Steal", SCRIPT_PARAM_ONOFF, true)
@@ -3116,7 +3444,23 @@ function OnLoad()
 		settings:addSubMenu("Auto Level", "autolvl")
 			settings.autolvl:addParam("LVLEnable", "Auto Level Enable", SCRIPT_PARAM_ONOFF, true)
 			settings.autolvl:addParam("Disablelvl", "Disable Level up in Spawn Fountain.", SCRIPT_PARAM_ONOFF, true)
-			settings.autolvl:addParam("sequenceSpells1", "Level 1 - 3:", SCRIPT_PARAM_LIST, 1, {
+			if MyChampion == "Katarina" then
+				StartLevelFirst = 2
+				StartLevelLast = 1
+			elseif MyChampion == "Akali" then
+				StartLevelFirst = 1
+				StartLevelLast = 2
+			elseif MyChampion == "Draven" then
+				StartLevelFirst = 1
+				StartLevelLast = 1
+			elseif MyChampion == "Twitch" then
+				StartLevelFirst = 5
+				StartLevelLast = 6
+			else
+				StartLevelFirst = 1
+				StartLevelLast = 1
+			end
+			settings.autolvl:addParam("sequenceSpells1", "Level 1 - 3:", SCRIPT_PARAM_LIST, StartLevelFirst, {
 				[1] = "Q-W-E",
 				[2] = "Q-E-W",
 				[3] = "W-Q-E",
@@ -3124,7 +3468,7 @@ function OnLoad()
 				[5] = "E-W-Q",
 				[6] = "E-Q-W"
 			})
-			settings.autolvl:addParam("sequenceSpells2", "Level 4 - 18:", SCRIPT_PARAM_LIST, 1, {
+			settings.autolvl:addParam("sequenceSpells2", "Level 4 - 18:", SCRIPT_PARAM_LIST, StartLevelLast, {
 				[1] = "R-Q-W-E",
 				[2] = "R-Q-E-W",
 				[3] = "R-W-Q-E",
@@ -3235,11 +3579,23 @@ function OnLoad()
 						255,
 						0
 					})
-					settings.draws.qsetting:addParam("AXEpositionColor2", "Axe Position Color [back]", SCRIPT_PARAM_COLOR, {
+					settings.draws.qsetting:addParam("AXEpositionColor2", "Axe Position Color [return]", SCRIPT_PARAM_COLOR, {
 						255,
 						0,
 						255,
 						255
+					})
+			end
+			if TwitchLoaded then
+				settings.draws.qsetting:addParam("DrawVisi", "Draw Invisibility", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.qsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.qsetting:addParam("stealthTimer", "Draw Stealth Countdown", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.qsetting:addParam("stealthDistance", "Draw Stealth Distance Circle", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.qsetting:addParam("stealthDistancecolor", "Stealth Distance Colour", SCRIPT_PARAM_COLOR, {
+						255,
+						255,
+						0,
+						0
 					})
 			end
 		else
@@ -3314,6 +3670,30 @@ function OnLoad()
 						255
 					})
 			end
+			if TwitchLoaded then
+				settings.draws.wsetting:addParam("DrawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.wsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.wsetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+				settings.draws.wsetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 7, 0)
+					settings.draws.wsetting:addParam("Wcolor", "W Range Color", SCRIPT_PARAM_COLOR, {
+						100,
+						 32,
+						178,
+						170
+					})
+				settings.draws.wsetting:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
+				settings.draws.wsetting:addParam("DrawW2", "Draw W Radius", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.wsetting:addParam("DrawWtext", "Draw W Radius Text", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.wsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.wsetting:addParam("widthw2", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+				settings.draws.wsetting:addParam("snapw2", "Quality", SCRIPT_PARAM_SLICE, 2, 1, 7, 0)
+					settings.draws.wsetting:addParam("Wcolor2", "W Radius and Text Color", SCRIPT_PARAM_COLOR, {
+						100,
+						255,
+						255,
+						0
+					})
+			end
 		else
 			settings.draws.wsetting:addParam("info0", "No Supported W settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
 		end
@@ -3346,7 +3726,7 @@ function OnLoad()
 				settings.draws.esetting:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.draws.esetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
-				settings.draws.esetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
+				settings.draws.esetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 2, 1, 3, 0)
 						settings.draws.esetting:addParam("color", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							128,
@@ -3365,6 +3745,18 @@ function OnLoad()
 							0,
 							128
 						})
+			end
+			if TwitchLoaded then
+				settings.draws.esetting:addParam("DrawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.esetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.esetting:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+				settings.draws.esetting:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 7, 0)
+					settings.draws.esetting:addParam("Ecolor", "E Range Color", SCRIPT_PARAM_COLOR, {
+						255,
+						128,
+						0,
+						128
+					})
 			end
 		else
 			settings.draws.esetting:addParam("info0", "No Supported E settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
@@ -3423,6 +3815,11 @@ function OnLoad()
 							255,
 							255
 						})
+			end
+			if TwitchLoaded then
+				settings.draws.rsetting:addParam("Beta", "Draw Beta R Projectile", SCRIPT_PARAM_ONOFF, false)
+				settings.draws.rsetting:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.rsetting:addParam("info0", "This is super broken ..lol", SCRIPT_PARAM_INFO, "")
 			end
 		else
 			settings.draws.rsetting:addParam("info0", "No Supported R settings for " .. MyChampion, SCRIPT_PARAM_INFO, "")
@@ -3573,12 +3970,65 @@ function OnLoad()
 					settings.draws.autoPoro:addParam("space", "", SCRIPT_PARAM_INFO, "")
 					settings.draws.autoPoro:addParam("width", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
 					settings.draws.autoPoro:addParam("snap", "Quality", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
+						settings.draws.autoPoro:addParam("colourText", "Colour Text", SCRIPT_PARAM_COLOR, {
+							255,
+							255,
+							0,
+							0
+						})
 						settings.draws.autoPoro:addParam("colour", "Colour", SCRIPT_PARAM_COLOR, {
 							255,
 							72,
 							255,
 							0
 						})
+			end
+			if TwitchLoaded then
+				settings.draws:addSubMenu("Other Twitch Drawings", "otherTwitch")
+				settings.draws.otherTwitch:addParam("DrawAA", "Draw AA Range", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.otherTwitch:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("AAwidth", "Width", SCRIPT_PARAM_SLICE, 2, 1, 5, 0)
+				settings.draws.otherTwitch:addParam("AAsnap", "Quality", SCRIPT_PARAM_SLICE, 3, 1, 5, 0)
+				settings.draws.otherTwitch:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("info0", "Enemy Champions:", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("PassiveStacks", "Draw Passive Stack Number", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.otherTwitch:addParam("PassiveStacksOutline", "Draw Outline to Text", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.otherTwitch:addParam("PassiveStackscolor", "Passive Stack Number Colour", SCRIPT_PARAM_COLOR, {
+						255,
+						180,
+						255,
+						0
+					})
+				settings.draws.otherTwitch:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("poisonBar", "Draw Poison Countdown Bar", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.otherTwitch:addParam("poisonTimer", "Draw Poison Stack Time", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.otherTwitch:addParam("PassiveStacksCountdowncolor", "Poison Time Colour", SCRIPT_PARAM_COLOR, {
+						255,
+						0,
+						255,
+						255
+					})
+				settings.draws.otherTwitch:addParam("lineoffset", "Draw Bar Global Offset:", SCRIPT_PARAM_LIST, 4, {
+					[1] = "None",
+					[2] = "Lower",
+					[3] = "Higher",
+					[4] = "Even Higher"
+				})
+				settings.draws.otherTwitch:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("info1", "Enemy Minions:", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("enemyminions", "Draw Stacks, Time and Damage", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.otherTwitch:addParam("info2", "Jungle Minions:", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("jungleminions", "Draw Stacks, Time and Damage", SCRIPT_PARAM_ONOFF, true)
+				settings.draws.otherTwitch:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("aabreaks", "Draw Breaks in HP Bar (Auto Attack DMG)", SCRIPT_PARAM_ONOFF, false)
+				settings.draws.otherTwitch:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("particles", "Draw Particles", SCRIPT_PARAM_ONOFF, true)
+					settings.draws.otherTwitch:addParam("particlescolor", "Particles Colour", SCRIPT_PARAM_COLOR, {
+						255,
+						255,
+						0,
+						255
+					})
 			end
 			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws:addParam("wards", "Ward Tracker", SCRIPT_PARAM_ONOFF, true)
@@ -3595,8 +4045,9 @@ function OnLoad()
 			settings.draws:addParam("drawEXP", "Draw Experience/Vision Range", SCRIPT_PARAM_ONOFF, true)
 			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws:addParam("Alpha", "Background Alpha for PermaShow", SCRIPT_PARAM_SLICE, 255, 0, 255, 0)
-			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
 			settings.draws:addParam("NamesEnabled", "Are In Game Names Enabled?", SCRIPT_PARAM_ONOFF, true)
+			settings.draws:addParam("space", "", SCRIPT_PARAM_INFO, "")
+			settings.draws:addParam("DisableDraws", "     > > > DISABLE ALL DRAWS < < <", SCRIPT_PARAM_ONOFF, false)
 		if _G.Reborn_Loaded then
 			SAC = true
 			CheckSAC = true
@@ -3695,6 +4146,40 @@ function OnLoad()
 				else
 					PrintSpecialText("Found no Predictions.")
 				end
+			elseif TwitchLoaded then
+				require("VPrediction")
+				VPrediction = VPrediction()
+				if VIP_USER then
+					settings.pred:addParam("Mode","Prediction Mode",SCRIPT_PARAM_LIST, 1,{
+						"VPrediction"
+					})
+					settings.pred:addParam("VPHitChance","VPrediction HitChance",SCRIPT_PARAM_LIST, 3,{
+						"[0] Target Position",
+						"[1] Low Hitchance",
+						"[2] High Hitchance",
+						"[3] Target slowed/close",
+						"[4] Target immobile",
+						"[5] Target Dashing"
+					})
+					settings.pred:addParam("VIPHitChance","VIP HitChance: ",SCRIPT_PARAM_SLICE, 0.7, 0.1, 1, 2)
+				else
+					settings.pred:addParam("Mode","Prediction Mode",SCRIPT_PARAM_LIST, 1,{
+						"VPrediction"
+					})
+					settings.pred:addParam("VPHitChance","VPrediction HitChance",SCRIPT_PARAM_LIST, 3,{
+						"[0] Target Position",
+						"[1] Low Hitchance",
+						"[2] High Hitchance",
+						"[3] Target slowed/close",
+						"[4] Target immobile",
+						"[5] Target Dashing"
+					})
+				end
+				if FileExist(LIB_PATH .. "/VPrediction.lua") then
+					PrintSpecialText("Found VPrediction!")
+				else
+					PrintSpecialText("Found no Predictions.")
+				end
 			else
 				settings.pred:addParam("info0", "Currently no supported spells", SCRIPT_PARAM_INFO, "")
 			end
@@ -3741,7 +4226,7 @@ function OnLoad()
 		settings:addParam("farplane", "" .. MyChampion .. " Reborn By:", SCRIPT_PARAM_INFO, "Farplane")
 		if _SKIN_CHANGER then
 			if KatarinaLoaded then
-				settings:addParam("selectedChampionSkin", "Skin Changer", SCRIPT_PARAM_LIST, 1, {
+				settings:addParam("selectedChampionSkin", "Skin Changer", SCRIPT_PARAM_LIST, 9, {
 					[1] = "Off",
 					[2] = "Original",
 					[3] = "Mercenary",
@@ -3755,7 +4240,7 @@ function OnLoad()
 					[11] = "Project"
 				})
 			elseif AkaliLoaded then
-				settings:addParam("selectedChampionSkin", "Skin Changer", SCRIPT_PARAM_LIST, 1, {
+				settings:addParam("selectedChampionSkin", "Skin Changer", SCRIPT_PARAM_LIST, 7, {
 					[1] = "Off",
 					[2] = "Original",
 					[3] = "Crimson",
@@ -3778,6 +4263,19 @@ function OnLoad()
 					[7] = "Beast Hunter",
 					[8] = "Draven Draven"
 				})
+				--  TwitchOK
+			elseif TwitchLoaded then
+				settings:addParam("selectedChampionSkin", "Skin Changer", SCRIPT_PARAM_LIST, 5, {
+				[1] = "Off",
+				[2] = "Original",
+				[3] = "Kingpin",
+				[4] = "Whistler Village",
+				[5] = "Medieval",
+				[6] = "Gangster",
+				[7] = "Vandal",
+				[8] = "Pickpocket",
+				[9] = "SSW"
+			})
 			else
 				settings:addParam("selectedChampionSkin", "Skin Changer", SCRIPT_PARAM_LIST, 1, {
 					[1] = "Off",
@@ -3822,6 +4320,15 @@ function OnLoad()
 		LastUltPosText = "OnLoad().pos"
 	end
 	GetMinimapRatio()
+	--  TwitchOK
+	if TwitchLoaded then
+		for _, target in pairs(GetEnemyHeroes()) do
+			DeadlyVenom[target.networkID] = {
+				stacks = 0,
+				time = 0
+			}
+		end
+	end
 end
 
 --[[
@@ -3863,212 +4370,42 @@ end
 
 function KillSteal()
 	if SupportedChampion then
-		for _, target in pairs(GetEnemyHeroes()) do
-			if ValidTarget(target, TargetSelectorRange) then
-				if KatarinaLoaded then
-					DmgTable = {
-						Q = Q_is_Ready and getDmg("Q", target, myHero) or 0,
-						W = W_is_Ready and GetWDmg_Katarina(target) or 0,
-						E = E_is_Ready and getDmg("E", target, myHero) or 0,
-						R = R_is_Ready and getDmg("R", target, myHero) or 0
-					}
-				else
-					DmgTable = {
-						Q = Q_is_Ready and getDmg("Q", target, myHero) or 0,
-						W = 0,
-						E = E_is_Ready and getDmg("E", target, myHero) or 0,
-						R = R_is_Ready and getDmg("R", target, myHero) or 0
-					}
-				end
-				local ExtraDmg = 0
-				if TargetsWithQ[target.networkID] ~= nil then
-					ExtraDmg = ExtraDmg + getDmg("Q", target, myHero, 2)
-				end
-				local LudensDmg = 0
-				if Ludens.ready then
-					LudensDmg = GetLudensDmg(target)
-				else
-					LudensDmg = 0
-				end
-				local CutlassDMG = 0
-				if CheckItemREADY(3144) then
-					CutlassDMG = GetCutlassDmg(target)
-				else
-					CutlassDMG = 0
-				end
-				local GunbladeDMG = 0
-				if CheckItemREADY(3146) then
-					GunbladeDMG = GetGunbladeDmg(target)
-				else
-					GunbladeDMG = 0
-				end
-				local GLP800DMG = 0
-				if CheckItemREADY(3030) then
-					GLP800DMG = GetGLP800Dmg(target)
-				else
-					GLP800DMG = 0
-				end
-				local HextechProtobelt01DMG = 0
-				if CheckItemREADY(3152) then
-					HextechProtobelt01DMG = GetHextechProtobelt01DMG(target)
-				else
-					HextechProtobelt01DMG = 0
-				end
-				local IcebornDMG = 0
-				if CheckItemREADY(3025) then
-					IcebornDMG = GetIcebornDMG(target)
-				else
-					IcebornDMG = 0
-				end
-				local SheenDMG = 0
-				if CheckItemREADY(3057) then
-					SheenDMG = GetSheenDMG(target)
-				else
-					SheenDMG = 0
-				end
-				local TriForceDMG = 0
-				if CheckItemREADY(3078) then
-					TriForceDMG = GetTriForceDMG(target)
-				else
-					TriForceDMG = 0
-				end
-				local LichBaneDMG = 0
-				if CheckItemREADY(3100) then
-					LichBaneDMG = GetLichBaneDMG(target)
-				else
-					LichBaneDMG = 0
-				end
-				if not ImmuneToDeathKS(target) then
-					if DmgTable.E + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health + ExtraDmg then
-						if KatarinaLoaded then
-							if settings.killsteal.stopRks and KatUlting then
-								KatUlting = false
-							end
-						end
-						if CheckItemREADY(3144) then
-							CastItem(3144, target)
-						end
-						if CheckItemREADY(3146) then
-							CastItem(3146, target)
-						end
-						if CheckItemREADY(3030) then
-							CastItem(3030, target)
-						end
-						if CheckItemREADY(3152) then
-							CastItem(3152, target)
-						end
-						SpellCast("E3", target)
-					elseif DmgTable.Q + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health + ExtraDmg then
-						if KatarinaLoaded then
-							if settings.killsteal.stopRks and KatUlting then
-								KatUlting = false
-							end
-						end
-						if CheckItemREADY(3144) then
-							CastItem(3144, target)
-						end
-						if CheckItemREADY(3146) then
-							CastItem(3146, target)
-						end
-						if CheckItemREADY(3030) then
-							CastItem(3030, target)
-						end
-						if CheckItemREADY(3152) then
-							CastItem(3152, target)
-						end
-						SpellCast("Q", target)
-					elseif DmgTable.W + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health + ExtraDmg then
-						if KatarinaLoaded then
-							if settings.killsteal.stopRks and KatUlting then
-								KatUlting = false
-							end
-						end
-						if CheckItemREADY(3144) then
-							CastItem(3144, target)
-						end
-						if CheckItemREADY(3146) then
-							CastItem(3146, target)
-						end
-						if CheckItemREADY(3030) then
-							CastItem(3030, target)
-						end
-						if CheckItemREADY(3152) then
-							CastItem(3152, target)
-						end
-						SpellCast("W", target)
-					elseif DmgTable.Q + DmgTable.W + ExtraDmg + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and GetDistance(target) <= Katarina_W_Range then
-						if KatarinaLoaded then
-							if settings.killsteal.stopRks and KatUlting then
-								KatUlting = false
-							end
-						end
-						SpellCast("Q", target)
-						if CheckItemREADY(3144) then
-							CastItem(3144, target)
-						end
-						if CheckItemREADY(3146) then
-							CastItem(3146, target)
-						end
-						if CheckItemREADY(3030) then
-							CastItem(3030, target)
-						end
-						if CheckItemREADY(3152) then
-							CastItem(3152, target)
-						end
-						SpellCast("W", target)
-					elseif DmgTable.E + DmgTable.W + ExtraDmg + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
-						if KatarinaLoaded then
-							if settings.killsteal.stopRks and KatUlting then
-								KatUlting = false
-							end
-						end
-						SpellCast("E3", target)
-						if CheckItemREADY(3144) then
-							CastItem(3144, target)
-						end
-						if CheckItemREADY(3146) then
-							CastItem(3146, target)
-						end
-						if CheckItemREADY(3030) then
-							CastItem(3030, target)
-						end
-						if CheckItemREADY(3152) then
-							CastItem(3152, target)
-						end
-						SpellCast("W", target)
-					elseif DmgTable.Q + DmgTable.W + DmgTable.E + ExtraDmg + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
-						if KatarinaLoaded then
-							if settings.killsteal.stopRks and KatUlting then
-								KatUlting = false
-							end
-						end
-						if CheckItemREADY(3144) then
-							CastItem(3144, target)
-						end
-						if CheckItemREADY(3146) then
-							CastItem(3146, target)
-						end
-						if CheckItemREADY(3030) then
-							CastItem(3030, target)
-						end
-						if CheckItemREADY(3152) then
-							CastItem(3152, target)
-						end
-						SpellCast("Q", target)
-						SpellCast("E3", target)
-						SpellCast("W", target)
+		if not TwitchLoaded then
+			for _, target in pairs(GetEnemyHeroes()) do
+				if ValidTarget(target, TargetSelectorRange) then
+					if KatarinaLoaded then
+						DmgTable = {
+							Q = Q_is_Ready and getDmg("Q", target, myHero) or 0,
+							W = W_is_Ready and GetWDmg_Katarina(target) or 0,
+							E = E_is_Ready and getDmg("E", target, myHero) or 0,
+							R = R_is_Ready and getDmg("R", target, myHero) or 0
+						}
+					elseif AkaliLoaded then
+						DmgTable = {
+							Q = Q_is_Ready and getDmg("Q", target, myHero) or 0,
+							W = 0,
+							E = E_is_Ready and getDmg("E", target, myHero) or 0,
+							R = R_is_Ready and getDmg("R", target, myHero) or 0
+						}
+					elseif DravenLoaded then
+						DmgTable = {
+							Q = 0,
+							W = 0,
+							E = E_is_Ready and getDmg("E", target, myHero) or 0,
+							R = R_is_Ready and getDmg("R", target, myHero) or 0
+						}
+					else
+						DmgTable = {
+							Q = 0,
+							W = 0,
+							E = E_is_Ready and getDmg("E", target, myHero) or 0,
+							R = R_is_Ready and getDmg("R", target, myHero) or 0
+						}
 					end
-				elseif ImmuneToDeathKS(target) then
-					if _IMMUNE_PRINTS then
-						PrintSpecialText("Blocking KS Cast on: <font color='#00FFFF'>" .. target.charName .."</font>")
-					end
-				end
-			elseif ValidTarget(target, 1250) then
-				if KatarinaLoaded then
-					local DmgTable = {
-						Q = Q_is_Ready and getDmg("Q", target, myHero) or 0,
-					}
 					local ExtraDmg = 0
+					if TargetsWithQ[target.networkID] ~= nil then
+						ExtraDmg = ExtraDmg + getDmg("Q", target, myHero, 2)
+					end
 					local LudensDmg = 0
 					if Ludens.ready then
 						LudensDmg = GetLudensDmg(target)
@@ -4099,32 +4436,272 @@ function KillSteal()
 					else
 						HextechProtobelt01DMG = 0
 					end
+					local IcebornDMG = 0
+					if CheckItemREADY(3025) then
+						IcebornDMG = GetIcebornDMG(target)
+					else
+						IcebornDMG = 0
+					end
+					local SheenDMG = 0
+					if CheckItemREADY(3057) then
+						SheenDMG = GetSheenDMG(target)
+					else
+						SheenDMG = 0
+					end
+					local TriForceDMG = 0
+					if CheckItemREADY(3078) then
+						TriForceDMG = GetTriForceDMG(target)
+					else
+						TriForceDMG = 0
+					end
+					local LichBaneDMG = 0
+					if CheckItemREADY(3100) then
+						LichBaneDMG = GetLichBaneDMG(target)
+					else
+						LichBaneDMG = 0
+					end
 					if not ImmuneToDeathKS(target) then
-						if E_is_Ready and settings.killsteal.wards and (GetDistance(target) > Katarina_Q_Range) then
-							if target.health <= DmgTable.Q + ExtraDmg + LudensDmg + CutlassDMG + GunbladeDMG then
+						if DmgTable.E + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health + ExtraDmg then
+							if KatarinaLoaded then
 								if settings.killsteal.stopRks and KatUlting then
 									KatUlting = false
 								end
-								jumpPos = myHero + (Vector(target) - myHero):normalized() * 500
-								PlaceWard(jumpPos.x, jumpPos.z)
-								if CheckItemREADY(3144) then
-									CastItem(3144, target)
+							end
+							if CheckItemREADY(3144) then
+								CastItem(3144, target)
+							end
+							if CheckItemREADY(3146) then
+								CastItem(3146, target)
+							end
+							if CheckItemREADY(3030) then
+								CastItem(3030, target)
+							end
+							if CheckItemREADY(3152) then
+								CastItem(3152, target)
+							end
+							if KatarinaLoaded then
+								SpellCast("E3", target)
+							else
+								SpellCast("E", target)
+							end
+						elseif DmgTable.Q + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health + ExtraDmg then
+							if KatarinaLoaded then
+								if settings.killsteal.stopRks and KatUlting then
+									KatUlting = false
 								end
-								if CheckItemREADY(3146) then
-									CastItem(3146, target)
-								end
-								if CheckItemREADY(3030) then
-									CastItem(3030, target)
-								end
+							end
+							if CheckItemREADY(3144) then
+								CastItem(3144, target)
+							end
+							if CheckItemREADY(3146) then
+								CastItem(3146, target)
+							end
+							if CheckItemREADY(3030) then
+								CastItem(3030, target)
+							end
+							if CheckItemREADY(3152) then
+								CastItem(3152, target)
+							end
+							if not DravenLoaded then
 								SpellCast("Q", target)
-								if CheckItemREADY(3152) then
-									CastItem(3152, target)
+							end
+						elseif DmgTable.W + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health + ExtraDmg then
+							if KatarinaLoaded then
+								if settings.killsteal.stopRks and KatUlting then
+									KatUlting = false
 								end
+							end
+							if CheckItemREADY(3144) then
+								CastItem(3144, target)
+							end
+							if CheckItemREADY(3146) then
+								CastItem(3146, target)
+							end
+							if CheckItemREADY(3030) then
+								CastItem(3030, target)
+							end
+							if CheckItemREADY(3152) then
+								CastItem(3152, target)
+							end
+							if not DravenLoaded then
+								SpellCast("W2", target)
+							end
+						elseif DmgTable.Q + DmgTable.W + ExtraDmg + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and GetDistance(target) <= Katarina_W_Range then
+							if KatarinaLoaded then
+								if settings.killsteal.stopRks and KatUlting then
+									KatUlting = false
+								end
+							end
+							if not DravenLoaded then
+								SpellCast("Q", target)
+							end
+							if CheckItemREADY(3144) then
+								CastItem(3144, target)
+							end
+							if CheckItemREADY(3146) then
+								CastItem(3146, target)
+							end
+							if CheckItemREADY(3030) then
+								CastItem(3030, target)
+							end
+							if CheckItemREADY(3152) then
+								CastItem(3152, target)
+							end
+							if not DravenLoaded then
+								SpellCast("W2", target)
+							end
+						elseif DmgTable.E + DmgTable.W + ExtraDmg + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
+							if KatarinaLoaded then
+								if settings.killsteal.stopRks and KatUlting then
+									KatUlting = false
+								end
+							end
+							if not DravenLoaded then
+								SpellCast("E3", target)
+							end
+							if CheckItemREADY(3144) then
+								CastItem(3144, target)
+							end
+							if CheckItemREADY(3146) then
+								CastItem(3146, target)
+							end
+							if CheckItemREADY(3030) then
+								CastItem(3030, target)
+							end
+							if CheckItemREADY(3152) then
+								CastItem(3152, target)
+							end
+							if not DravenLoaded then
+								SpellCast("W2", target)
+							end
+						elseif DmgTable.Q + DmgTable.W + DmgTable.E + ExtraDmg + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
+							if KatarinaLoaded then
+								if settings.killsteal.stopRks and KatUlting then
+									KatUlting = false
+								end
+							end
+							if CheckItemREADY(3144) then
+								CastItem(3144, target)
+							end
+							if CheckItemREADY(3146) then
+								CastItem(3146, target)
+							end
+							if CheckItemREADY(3030) then
+								CastItem(3030, target)
+							end
+							if CheckItemREADY(3152) then
+								CastItem(3152, target)
+							end
+							if not DravenLoaded then
+								SpellCast("Q", target)
+								SpellCast("E3", target)
+								SpellCast("W2", target)
 							end
 						end
 					elseif ImmuneToDeathKS(target) then
 						if _IMMUNE_PRINTS then
-							PrintSpecialText("Blocking KS - WARD Cast on: <font color='#00FFFF'>" .. target.charName .."</font>")
+							PrintSpecialText("Blocking KS Cast on: <font color='#00FFFF'>" .. target.charName .."</font>")
+						end
+					end
+				elseif ValidTarget(target, 1250) then
+					if KatarinaLoaded then
+						local DmgTable = {
+							Q = Q_is_Ready and getDmg("Q", target, myHero) or 0,
+						}
+						local ExtraDmg = 0
+						local LudensDmg = 0
+						if Ludens.ready then
+							LudensDmg = GetLudensDmg(target)
+						else
+							LudensDmg = 0
+						end
+						local CutlassDMG = 0
+						if CheckItemREADY(3144) then
+							CutlassDMG = GetCutlassDmg(target)
+						else
+							CutlassDMG = 0
+						end
+						local GunbladeDMG = 0
+						if CheckItemREADY(3146) then
+							GunbladeDMG = GetGunbladeDmg(target)
+						else
+							GunbladeDMG = 0
+						end
+						local GLP800DMG = 0
+						if CheckItemREADY(3030) then
+							GLP800DMG = GetGLP800Dmg(target)
+						else
+							GLP800DMG = 0
+						end
+						local HextechProtobelt01DMG = 0
+						if CheckItemREADY(3152) then
+							HextechProtobelt01DMG = GetHextechProtobelt01DMG(target)
+						else
+							HextechProtobelt01DMG = 0
+						end
+						if not ImmuneToDeathKS(target) then
+							if E_is_Ready and settings.killsteal.wards and (GetDistance(target) > Katarina_Q_Range) then
+								if target.health <= DmgTable.Q + ExtraDmg + LudensDmg + CutlassDMG + GunbladeDMG then
+									if settings.killsteal.stopRks and KatUlting then
+										KatUlting = false
+									end
+									jumpPos = myHero + (Vector(target) - myHero):normalized() * 500
+									PlaceWard(jumpPos.x, jumpPos.z)
+									if CheckItemREADY(3144) then
+										CastItem(3144, target)
+									end
+									if CheckItemREADY(3146) then
+										CastItem(3146, target)
+									end
+									if CheckItemREADY(3030) then
+										CastItem(3030, target)
+									end
+									SpellCast("Q", target)
+									if CheckItemREADY(3152) then
+										CastItem(3152, target)
+									end
+								end
+							end
+						elseif ImmuneToDeathKS(target) then
+							if _IMMUNE_PRINTS then
+								PrintSpecialText("Blocking KS - WARD Cast on: <font color='#00FFFF'>" .. target.charName .."</font>")
+							end
+						end
+					end
+				end
+				if DravenLoaded then
+					--print("ok")
+					if DmgTable.R + DmgTable.E > target.health and E_is_Ready and R_is_Ready then
+						if GetDistance(myHero, target) < Draven_E_Range - 100 then
+							--PrintSpecialText("KS R + E")
+							if not RHasCast then
+								CastSpell(_R, target.x, target.z)
+							end
+							CastSpell(_E, target.x, target.z)
+						end
+					elseif DmgTable.R > target.health and R_is_Ready then
+						if GetDistance(myHero, target) < 2150 then
+							--PrintSpecialText("KS R")
+							CastSpell(_R, target.x, target.z)
+						end
+					elseif DmgTable.E > target.health and E_is_Ready then
+						if GetDistance(myHero, target) < Draven_E_Range - 100 then
+							--PrintSpecialText("KS E")
+							CastSpell(_E, target.x, target.z)
+						end
+					end
+				end
+			end
+		end
+		if TwitchLoaded then
+			for _, target in pairs(GetEnemyHeroes()) do
+				if ValidTarget(target) and GetDistance(myHero, target) <= Twitch_E_Range then
+					if DeadlyVenom[target.networkID] ~= nil then
+						if GetEDmg_Twitch(target) > target.health then
+							if _Dev_Mode then
+								PrintSpecialText("Script Killsteal E!")
+							end
+							CastSpell(_E)
 						end
 					end
 				end
@@ -4133,7 +4710,7 @@ function KillSteal()
 	end
 end
 
-function GetDrawText(target)
+function GetDrawTextFilter(target)
 	if KatarinaLoaded then
 		DmgTable = {
 			Q2 = getDmg("Q", target, myHero, 2),
@@ -4143,13 +4720,21 @@ function GetDrawText(target)
 			R = getDmg("R", target, myHero)
 		}
 	elseif AkaliLoaded then
-	 DmgTable = {
-		Q2 = getDmg("Q", target, myHero, 2),
-		Q = getDmg("Q", target, myHero),
-		W = 0,
-		E = getDmg("E", target, myHero),
-		R = getDmg("R", target, myHero),
-	}
+		 DmgTable = {
+			Q2 = getDmg("Q", target, myHero, 2),
+			Q = getDmg("Q", target, myHero),
+			W = 0,
+			E = getDmg("E", target, myHero),
+			R = getDmg("R", target, myHero),
+		}
+	elseif AkaliLoaded then
+		 DmgTable = {
+			Q2 = 0,
+			Q = 0,
+			W = 0,
+			E = getDmg("E", target, myHero),
+			R = getDmg("R", target, myHero),
+		}
 	else
 		DmgTable = {
 			Q2 = 0,
@@ -4179,65 +4764,85 @@ function GetDrawText(target)
 	end
 	local IcebornDMG = 0
 	if CheckItemREADY(3025) then
-		IcebornDMG = self:GetIcebornDMG(target)
+		IcebornDMG = GetIcebornDMG(target)
 	else
 		IcebornDMG = 0
 	end
 	local SheenDMG = 0
 	if CheckItemREADY(3057) then
-		SheenDMG = self:GetSheenDMG(target)
+		SheenDMG = GetSheenDMG(target)
 	else
 		SheenDMG = 0
 	end
 	local TriForceDMG = 0
 	if CheckItemREADY(3078) then
-		TriForceDMG = self:GetTriForceDMG(target)
+		TriForceDMG = GetTriForceDMG(target)
 	else
 		TriForceDMG = 0
 	end
 	local LichBaneDMG = 0
 	if CheckItemREADY(3100) then
-		LichBaneDMG = self:GetLichBaneDMG(target)
+		LichBaneDMG = GetLichBaneDMG(target)
 	else
 		LichBaneDMG = 0
 	end
 	if SupportedChampion then
-		if LudensDmg + GunbladeDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3146) then
-			return "Hextech Gunblade", ARGB(255, 0, 255, 0)
-		elseif DmgTable.E + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
-			return "E", ARGB(255, 0, 255, 0)
-		elseif DmgTable.E + LudensDmg + CutlassDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3144) then
-			return "E + Bilgewater Cutlass", ARGB(255, 0, 255, 0)
-		elseif DmgTable.E + LudensDmg + GunbladeDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3146) then
-			return "E + Hextech Gunblade", ARGB(255, 0, 255, 0)
-		elseif DmgTable.Q + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
-			return "Q", ARGB(255, 0, 255, 0)
-		elseif DmgTable.Q + LudensDmg + CutlassDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3144) then
-			return "Q + Bilgewater Cutlass", ARGB(255, 0, 255, 0)
-		elseif DmgTable.Q + LudensDmg + GunbladeDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3146) then
-			return "Q + Hextech Gunblade", ARGB(255, 0, 255, 0)
-		elseif DmgTable.W + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
-			return "W", ARGB(255, 0, 255, 0)
-		elseif DmgTable.W + LudensDmg + CutlassDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3144) then
-			return "W + Bilgewater Cutlass", ARGB(255, 0, 255, 0)
-		elseif DmgTable.W + LudensDmg + GunbladeDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3146)then
-			return "W + Hextech Gunblade", ARGB(255, 0, 255, 0)
-		elseif DmgTable.Q + DmgTable.W + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
-			return "Q + W", ARGB(255, 128, 255, 0)
-		elseif DmgTable.E + DmgTable.W + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
-			return "E + W", ARGB(255, 128, 255, 0)
-		elseif DmgTable.Q + DmgTable.W + DmgTable.E + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
-			return "Q + W + E", ARGB(255, 200, 255, 0)
-		elseif DmgTable.Q + DmgTable.Q2 + DmgTable.W + DmgTable.E + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
-			return "(Q + Passive) + W + E", ARGB(255, 225, 225, 0)
-		elseif DmgTable.Q + DmgTable.Q2 + DmgTable.W + DmgTable.E + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG + getDmg('IGNITE', target, myHero) > target.health then
-			return "(Q + Passive) + W + E + Ignite", ARGB(255, 225, 175, 0)
-		elseif DmgTable.Q + DmgTable.W + DmgTable.E + (DmgTable.R *10) + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and R_is_Ready then
-			if KatarinaLoaded then
-				return "Q + W + E + Ult (".. string.format('%4.1f', (target.health -  DmgTable.Q + DmgTable.W + DmgTable.E) * (1/(DmgTable.R*10))) .. " Seconds)", ARGB(255, 255, 69, 0)
+		if not DravenLoaded and not TwitchLoaded then
+			if LudensDmg + GunbladeDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3146) then
+				return "Hextech Gunblade", ARGB(255, 0, 255, 0)
+			elseif DmgTable.E + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
+				return "E", ARGB(255, 0, 255, 0)
+			elseif DmgTable.E + LudensDmg + CutlassDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3144) then
+				return "E + Bilgewater Cutlass", ARGB(255, 0, 255, 0)
+			elseif DmgTable.E + LudensDmg + GunbladeDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3146) then
+				return "E + Hextech Gunblade", ARGB(255, 0, 255, 0)
+			elseif DmgTable.Q + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
+				return "Q", ARGB(255, 0, 255, 0)
+			elseif DmgTable.Q + LudensDmg + CutlassDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3144) then
+				return "Q + Bilgewater Cutlass", ARGB(255, 0, 255, 0)
+			elseif DmgTable.Q + LudensDmg + GunbladeDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3146) then
+				return "Q + Hextech Gunblade", ARGB(255, 0, 255, 0)
+			elseif DmgTable.W + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
+				return "W", ARGB(255, 0, 255, 0)
+			elseif DmgTable.W + LudensDmg + CutlassDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3144) then
+				return "W + Bilgewater Cutlass", ARGB(255, 0, 255, 0)
+			elseif DmgTable.W + LudensDmg + GunbladeDMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and CheckItemREADY(3146)then
+				return "W + Hextech Gunblade", ARGB(255, 0, 255, 0)
+			elseif DmgTable.Q + DmgTable.W + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
+				return "Q + W", ARGB(255, 128, 255, 0)
+			elseif DmgTable.E + DmgTable.W + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
+				return "E + W", ARGB(255, 128, 255, 0)
+			elseif DmgTable.Q + DmgTable.W + DmgTable.E + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
+				return "Q + W + E", ARGB(255, 200, 255, 0)
+			elseif DmgTable.Q + DmgTable.Q2 + DmgTable.W + DmgTable.E + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health then
+				return "(Q + Passive) + W + E", ARGB(255, 225, 225, 0)
+			elseif DmgTable.Q + DmgTable.Q2 + DmgTable.W + DmgTable.E + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG + getDmg('IGNITE', target, myHero) > target.health then
+				return "(Q + Passive) + W + E + Ignite", ARGB(255, 225, 175, 0)
+			elseif DmgTable.Q + DmgTable.W + DmgTable.E + (DmgTable.R *10) + LudensDmg + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG > target.health and R_is_Ready then
+				if KatarinaLoaded then
+					return "Q + W + E + Ult (".. string.format('%4.1f', (target.health -  DmgTable.Q + DmgTable.W + DmgTable.E) * (1/(DmgTable.R*10))) .. " Seconds)", ARGB(255, 255, 69, 0)
+				end
+			else
+				return "Can't Kill Yet", ARGB(255, 255, 0, 0)
 			end
-		else
-			return "Can't Kill Yet", ARGB(255, 255, 0, 0)
+		end
+		if DravenLoaded then
+			if DmgTable.E > target.health and E_is_Ready then
+				return "E", ARGB(255, 0, 255, 0)
+			elseif DmgTable.R > target.health and R_is_Ready then
+				return "R", ARGB(255, 200, 255, 0)
+			elseif DmgTable.E + DmgTable.R > target.health and R_is_Ready and E_is_Ready then
+				return "E + R", ARGB(255, 225, 225, 0)
+			else
+				return "Can't Kill Yet", ARGB(255, 255, 0, 0)
+			end
+		end
+		if TwitchLoaded then
+			if GetEDmg_Twitch(target) > target.health then
+				return "E", ARGB(255, 0, 255, 0)
+			else
+				return "Can't Kill Yet", ARGB(255, 255, 0, 0)
+			end
 		end
 	else
 		if LudensDmg + GunbladeDMG > target.health then
@@ -4287,25 +4892,25 @@ function GetMyDmg(target)
 	end
 	local IcebornDMG = 0
 	if CheckItemREADY(3025) then
-		IcebornDMG = self:GetIcebornDMG(target)
+		IcebornDMG = GetIcebornDMG(target)
 	else
 		IcebornDMG = 0
 	end
 	local SheenDMG = 0
 	if CheckItemREADY(3057) then
-		SheenDMG = self:GetSheenDMG(target)
+		SheenDMG = GetSheenDMG(target)
 	else
 		SheenDMG = 0
 	end
 	local TriForceDMG = 0
 	if CheckItemREADY(3078) then
-		TriForceDMG = self:GetTriForceDMG(target)
+		TriForceDMG = GetTriForceDMG(target)
 	else
 		TriForceDMG = 0
 	end
 	local LichBaneDMG = 0
 	if CheckItemREADY(3100) then
-		LichBaneDMG = self:GetLichBaneDMG(target)
+		LichBaneDMG = GetLichBaneDMG(target)
 	else
 		LichBaneDMG = 0
 	end
@@ -4356,6 +4961,22 @@ function GetMyDmg(target)
 					return getDmg("R", target, myHero) + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG
 				elseif ExtraDMG then
 					return getDmg("Q", target, myHero, 2) + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG
+				else
+					return 0
+				end
+			elseif DravenLoaded then
+				if R_is_Ready and E_is_Ready then
+					return getDmg("R", target, myHero) + getDmg("E", target, myHero) + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG
+				elseif R_is_Ready then
+					return getDmg("R", target, myHero) + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG
+				elseif E_is_Ready then
+					return getDmg("E", target, myHero) + LudensDmg + CutlassDMG + GunbladeDMG + GLP800DMG + HextechProtobelt01DMG + IcebornDMG + SheenDMG + TriForceDMG + LichBaneDMG
+				else
+					return 0
+				end
+			elseif TwitchLoaded then
+				if E_is_Ready then
+					return GetEDmg_Twitch(target)
 				else
 					return 0
 				end
@@ -4535,6 +5156,43 @@ function Combo(target)
 				end
 			end
 		end
+		if TwitchLoaded then
+			if settings.combosettings.qsetting.UseQ and Q_is_Ready and CountEnemyHeroInRange(1000) >= settings.combosettings.qsetting.QEnemies then
+				CastSpell(_Q)
+			end
+			if settings.combosettings.esetting.UseE and E_is_Ready then
+				for _, target in pairs(GetEnemyHeroes()) do 
+					if DeadlyVenom[target.networkID] ~= nil then
+						if GetDistance(myHero, target) <= Twitch_E_Range and DeadlyVenom[target.networkID].stacks >= settings.combosettings.esetting.EStacks then
+							if settings.combosettings.esetting.EStacksExhaust then
+								if not iHaveBeenExhausted then
+									CastSpell(_E)
+								end
+							elseif not settings.combosettings.esetting.EStacksExhaust then
+								CastSpell(_E)
+							end
+						end
+						if settings.combosettings.esetting.OutOfRange then
+							if DeadlyVenom[target.networkID].stacks >= settings.combosettings.esetting.EStacksLeave and GetDistance(myHero, target) > (Twitch_E_Range - 150) then
+								if settings.combosettings.esetting.EStacksExhaust then
+									if not iHaveBeenExhausted then
+										CastSpell(_E)
+									end
+								elseif not settings.combosettings.esetting.EStacksExhaust then
+									CastSpell(_E)
+								end
+							end
+						end
+					end
+				end
+			end
+			if settings.combosettings.wsetting.ComboW and GetDistanceSqr(myHero, target) <= Twitch_W_Range * Twitch_W_Range then
+				WCircularCast(target)
+			end
+			if settings.combosettings.rsetting.UseR and R_is_Ready and GetDistance(myHero, target) <= Twitch_R_Range and CountEntitiesInRange(target, 350) >= settings.combosettings.rsetting.REnemies then
+				CastSpell(_R)
+			end
+		end
 	end
 end
 
@@ -4592,6 +5250,26 @@ function harass(target)
 				end
 			elseif TargetsWithQ[target.networkID] ~= nil then
 				SpellCast("E", target)
+			end
+		end
+	end
+	if TwitchLoaded then
+		if settings.harass.harassw and GetDistanceSqr(myHero, target) <= Twitch_W_Range * Twitch_W_Range then
+			WCircularCast(target)
+		end
+		if settings.harass.harasse and E_is_Ready then
+			if GetDistance(myHero, target) <= Twitch_E_Range then
+				if DeadlyVenom[target.networkID] ~= nil then
+					if DeadlyVenom[target.networkID].stacks >= settings.harass.EStacks then
+						if settings.harass.EStacksExhaust then
+							if not iHaveBeenExhausted then
+								CastSpell(_E)
+							end
+						elseif not settings.harass.EStacksExhaust then
+							CastSpell(_E)
+						end
+					end
+				end
 			end
 		end
 	end
@@ -4769,6 +5447,17 @@ function MainStealCamp()
 			end
 		end
 	end
+	if TwitchLoaded then
+		for _, target in pairs(minionManager(MINION_JUNGLE, Twitch_E_Range).objects) do
+			if ValidTarget(target) and target ~= nil and not target.dead then
+				if DeadlyVenomJungle[target.networkID] ~= nil then
+					if target.health <= GetEDmg_Twitch(target) then
+						SpellCast("Ejungle", target)
+					end
+				end
+			end
+		end
+	end
 end
 
 --		  ██████  ██▓███  ▓█████  ██▓     ██▓           ▄████▄   ▄▄▄        ██████ ▄▄▄█████▓ ██▓ ███▄    █   ▄████ 
@@ -4803,6 +5492,13 @@ function SpellCast(spell, target)
 					W_Position = myHero
 				end
 				if GetDistance(W_Position, target) < Katarina_W_Range then
+					if not KatUlting then
+						CastSpell(_W)
+					end
+				end
+			end
+			if spell == "W2" and target ~= nil and W_is_Ready then
+				if GetDistance(myHero, target) < Katarina_W_Range then
 					CastSpell(_W)
 				end
 			end
@@ -5079,76 +5775,121 @@ function SpellCast(spell, target)
 		if spell == "Ejungle" and target ~= nil and E_is_Ready then
 			if settings.killsteal.jungleE.dragon then
 				if ((target.charName == "SRU_Dragon_Fire") or (target.charName == "SRU_Dragon_Water") or (target.charName == "SRU_Dragon_Air") or (target.charName == "SRU_Dragon_Earth") or (target.charName == "SRU_Dragon_Elder")) then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.baron then
 				if target.charName == "SRU_Baron" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.herald then
 				if target.charName == "SRU_RiftHerald" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.blue then
 				if target.charName == "SRU_Blue" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.bluemini then
 				if target.charName == "SRU_BlueMini" or target.charName == "SRU_BlueMini2" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.red then
 				if target.charName == "SRU_Red" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.redmini then
 				if target.charName == "SRU_RedMini" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.wolf then
 				if target.charName == "SRU_Murkwolf" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.wolfmini then
 				if target.charName == "SRU_MurkwolfMini" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.raptor then
 				if target.charName == "SRU_Razorbeak" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.raptormini then
 				if target.charName == "SRU_RazorbeakMini" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.krug then
 				if target.charName == "SRU_Krug" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.krugmini then
 				if target.charName == "SRU_KrugMini" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.skuttle then
 				if target.charName == "Sru_Crab" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
 			if settings.killsteal.jungleE.gromp then
 				if target.charName == "SRU_Gromp" then
+					if TwitchLoaded and _Twitch_Dev then
+						PrintSpecialText("Twitch Killsteal E: <font color='#FF0000'>" .. target.charName .. "</font>")
+					end
 					CastSpell(_E, target)
 				end
 			end
@@ -5245,6 +5986,34 @@ function SpellCast(spell, target)
 	elseif ImmuneToDeath(target) then
 		if _IMMUNE_PRINTS then
 			PrintSpecialText("Blocking Normal Cast on: <font color='#00FFFF'>" .. target.charName .."</font>")
+		end
+	end
+end
+
+function WCircularCast(target)
+	if VIP_USER then
+		local mainCastPosition, mainHitChance, points, mainPosition = VPrediction:GetCircularAOECastPosition(target, Twitch_W_Delay, Twitch_W_Width, Twitch_W_Range, Twitch_W_Speed, myHero)
+		if mainCastPosition ~= nil and mainHitChance > 2 and points > 1 then
+			CastSpell(_W, mainCastPosition.x, mainCastPosition.z)
+		else
+			if settings.pred.Mode == 1 then
+				local CastPosition, HitChance, points = VPrediction:GetCircularCastPosition(target, Twitch_W_Delay, Twitch_W_Width, Twitch_W_Range, Twitch_W_Speed, myHero)
+				if CastPosition ~= nil and HitChance >= (settings.pred.VPHitChance - 1) then
+					CastSpell(_W, CastPosition.x, CastPosition.z)
+				end
+			end
+		end
+	else
+		if settings.pred.Mode == 1 then
+			local mainCastPosition, mainHitChance, points, mainPosition = VPrediction:GetCircularAOECastPosition(target, Twitch_W_Delay, Twitch_W_Width, Twitch_W_Range, Twitch_W_Speed, myHero)
+			if mainCastPosition ~= nil and mainHitChance > 2 and points > 1 then
+				CastSpell(_W, CastPosition.x, CastPosition.z)
+			else
+				local CastPosition,HitChance,points = VPrediction:GetCircularCastPosition(target, Twitch_W_Delay, Twitch_W_Width, Twitch_W_Range, Twitch_W_Speed, myHero)
+				if CastPosition ~= nil and HitChance >= (settings.pred.VPHitChance - 1) then
+					CastSpell(_W, CastPosition.x, CastPosition.z)
+				end
+			end
 		end
 	end
 end
@@ -5359,6 +6128,18 @@ function OnProcessSpell(unit, spell)
 			end
 		end
 	end
+	if TwitchLoaded then
+		if unit and spell and unit.isMe and spell.name == myHero:GetSpellData(_Q).name then
+			StealthProcess = {
+				started = os.clock(),
+				last = os.clock(),
+				hp = myHero.health
+			}
+		end
+		if unit and spell and unit.isMe and spell.name == myHero:GetSpellData(_R).name then
+			ValidR = true
+		end
+	end
 	if spell.name == myHero:GetSpellData(_Q).name then
 		Qwind = spell.windUpTime
 	elseif spell.name == myHero:GetSpellData(_W).name then
@@ -5399,7 +6180,7 @@ function OnApplyBuff(target, source, buff)
 								end
 								--PrintSpecialText("Detecting Enemy Has Been Impaired!!   " .. source.name)
 								--if GetDistance(myHero, source) < 2150 then
-									PrintSpecialText("Casting R on: " .. source.name)
+									--PrintSpecialText("Casting R on: " .. source.name)
 									SpellCast("R", source)
 								--end
 							end
@@ -5445,8 +6226,11 @@ function OnApplyBuff(target, source, buff)
 		end
 		if target.type == myHero.type then
 			--PrintSpecialText("<font color='#00FFFF'>Buff Type: </font>" .. buff.type)
-			if buff.name == "SummonerExhaust" and settings.misc.impaired.exhaust then
-				RemoveImpaired("Exhaust")
+			if buff.name == "SummonerExhaust" then
+				iHaveBeenExhausted = true
+				if settings.misc.impaired.exhaust then
+					RemoveImpaired("Exhaust")
+				end
 			end
 			if buff.type == 5 and settings.misc.impaired.stun then
 				RemoveImpaired("Stun")
@@ -5548,6 +6332,47 @@ function OnUpdateBuff(target, buff, stacks)
 			WAttackBuff = true
 		end
 	end
+	if TwitchLoaded then
+		if target and buff and buff.name then
+			if target.type == myHero.type then
+				if buff.name == "TwitchDeadlyVenom" then
+					DeadlyVenom[target.networkID] = {
+						stacks = DeadlyVenom[target.networkID].stacks + 1,
+						time = os.clock() + 6
+					}
+				end
+				if buff.name == "TwitchVenomCaskDebuff" then
+					DeadlyVenom[target.networkID] = {
+						stacks = DeadlyVenom[target.networkID].stacks + 1,
+						time = os.clock() + 6
+					}
+				end
+			end
+			if target.type ~= myHero.type then
+				if buff.name == "TwitchDeadlyVenom" then
+					if DeadlyVenomMinions[target.networkID] ~= nil then
+						if DeadlyVenomMinions[target.networkID].stacks == 6 then
+							DeadlyVenomMinions[target.networkID].time = os.clock() + 6
+						end
+					end
+				end
+				if buff.name == "TwitchDeadlyVenom" then
+					if DeadlyVenomJungle[target.networkID] ~= nil then
+						if DeadlyVenomJungle[target.networkID].stacks == 6 then
+							DeadlyVenomJungle[target.networkID].time = os.clock() + 6
+						end
+					end
+				end
+			end
+		end
+		if target and target.isMe then
+			if buff.name == "TwitchHideInShadows" then
+				VisibleSelf = false
+				stealthLocation = os.clock()
+				StealthProcess = nil
+			end
+		end
+	end
 end
 
 function OnRemoveBuff(target, buff)
@@ -5561,6 +6386,11 @@ function OnRemoveBuff(target, buff)
 	if target and buff and buff.name then
 		if buff.name == "Disarm" then
 			SACMovementIssue = false
+		end
+	end
+	if target.type == myHero.type then
+		if buff.name == "SummonerExhaust" then
+			iHaveBeenExhausted = false
 		end
 	end
 	if KatarinaLoaded then
@@ -5603,6 +6433,42 @@ function OnRemoveBuff(target, buff)
 			if buff.name == "DravenSpinning" then
 				EndQTime = os.clock()
 				QTimer = false
+			end
+		end
+	end
+	if TwitchLoaded then
+		if target and buff and buff.name then
+			if buff.name == "TwitchDeadlyVenom" then
+				if target.type == myHero.type then
+					DeadlyVenom[target.networkID] = {
+						stacks = 0,
+						time = 0
+					}
+				end
+				--[[if target.type ~= myHero.type then
+					if DeadlyVenomMinions[target.networkID] ~= nil then
+						DeadlyVenomMinions[target.networkID] = {
+							stacks = 0,
+							time = 0
+						}
+					end
+					if DeadlyVenomJungle[target.networkID] ~= nil then
+						DeadlyVenomJungle[target.networkID] = {
+							stacks = 0,
+							time = 0
+						}
+					end
+				end]]
+			end
+		end
+		if target and buff then
+			if target.isMe and buff.name == "TwitchHideInShadows" then
+				VisibleSelf = true
+				stealthLocation = 0
+				RemoveCooldownLine(target)
+			end
+			if target.isMe and buff.name == "TwitchFullAutomatic" then
+				ValidR = false
 			end
 		end
 	end
@@ -5702,6 +6568,40 @@ function OnCreateObj(obj)
 				end
 			end
 		end
+		if TwitchLoaded then
+			if obj then
+				for _, target in pairs(minionManager(MINION_ENEMY, 99999).objects) do
+					if obj.name:lower():find("twitch_poison_counter_01") then
+						MinionPoisonTracker(target, obj, 1)
+					elseif obj.name:lower():find("twitch_poison_counter_02") then
+						MinionPoisonTracker(target, obj, 2)
+					elseif obj.name:lower():find("twitch_poison_counter_03") then
+						MinionPoisonTracker(target, obj, 3)
+					elseif obj.name:lower():find("twitch_poison_counter_04") then
+						MinionPoisonTracker(target, obj, 4)
+					elseif obj.name:lower():find("twitch_poison_counter_05") then
+						MinionPoisonTracker(target, obj, 5)
+					elseif obj.name:lower():find("twitch_poison_counter_06") then
+						MinionPoisonTracker(target, obj, 6)
+					end
+				end
+				for _, target in pairs(minionManager(MINION_JUNGLE, 99999).objects) do
+					if obj.name:lower():find("twitch_poison_counter_01") then
+						JunglePoisonTracker(target, obj, 1)
+					elseif obj.name:lower():find("twitch_poison_counter_02") then
+						JunglePoisonTracker(target, obj, 2)
+					elseif obj.name:lower():find("twitch_poison_counter_03") then
+						JunglePoisonTracker(target, obj, 3)
+					elseif obj.name:lower():find("twitch_poison_counter_04") then
+						JunglePoisonTracker(target, obj, 4)
+					elseif obj.name:lower():find("twitch_poison_counter_05") then
+						JunglePoisonTracker(target, obj, 5)
+					elseif obj.name:lower():find("twitch_poison_counter_06") then
+						JunglePoisonTracker(target, obj, 6)
+					end
+				end
+			end
+		end
 		if obj.name == "Item_RapidFirecannon_Ready.troy" then
 			RapidFirecannonREADY = true
 		end
@@ -5767,6 +6667,26 @@ function OnCreateObj(obj)
 				end
 			end
 		end
+	end
+end
+
+function MinionPoisonTracker(target, obj, stack)
+	if ValidTarget(target) and target.visible and not target.dead and GetDistance(target, obj) < (target.boundingRadius * 2) then
+		DeadlyVenomMinions[target.networkID] = {
+			stacks = stack,
+			time = os.clock() + 6,
+			name = target.charName
+		}
+	end
+end
+
+function JunglePoisonTracker(target, obj, stack)
+	if ValidTarget(target) and target.visible and not target.dead and GetDistance(target, obj) < (target.boundingRadius * 2) then
+		DeadlyVenomJungle[target.networkID] = {
+			stacks = stack,
+			time = os.clock() + 6,
+			name = target.charName
+		}
 	end
 end
 
@@ -5904,6 +6824,14 @@ end
 --		░       ░           ░  ░    ░     ░           ░       ░    
 --		░       
 
+function StealthTime()
+	if myHero:GetSpellData(_Q).level > 0 then
+		return 3 + myHero:GetSpellData(_Q).level
+	else
+		return 0
+	end
+end
+
 function WTime(multi)
 	if AkaliLoaded then
 		return myHero:GetSpellData(_W).level > 0 and (1 * multi) or 0
@@ -5920,7 +6848,7 @@ function OnDraw()
 
 	--  Draws When Script has Updated
 	if ScriptHasUpdated then
-		DrawText3D("> > Script Successfully Updated, please reload by pressing F9 twice!!", myHero.x - 50, myHero.y, myHero.z + 50, 30, ARGB(255, 0, 255, 0), true)
+		DrawText3DFilter("> > Script Successfully Updated, please reload by pressing F9 twice!!", myHero.x - 50, myHero.y, myHero.z + 50, 30, ARGB(255, 0, 255, 0), true)
 	end
 	
 	--  Dev Mode for Draven Devs
@@ -5933,86 +6861,86 @@ function OnDraw()
 			else
 				temptimertime = "unknown"
 			end
-			DrawText("Last Q Buff Time:", 15, 250, 235, ARGB(255, 255, 255, 255))
+			DrawTextFilter("Last Q Buff Time:", 15, 250, 235, ARGB(255, 255, 255, 255))
 			if temptimertime then
-				DrawText("" .. temptimertime, 15, 385, 235, ARGB(255, 0, 255, 0))
+				DrawTextFilter("" .. temptimertime, 15, 385, 235, ARGB(255, 0, 255, 0))
 			end
-			DrawText("Current Axes:                   "..Axes.stacks.."/2", 15, 250, 250, ARGB(255, 255, 255, 255))
-			DrawText("Axe is Ready to Throw:", 15, 250, 265, ARGB(255, 255, 255, 255))
+			DrawTextFilter("Current Axes:                   "..Axes.stacks.."/2", 15, 250, 250, ARGB(255, 255, 255, 255))
+			DrawTextFilter("Axe is Ready to Throw:", 15, 250, 265, ARGB(255, 255, 255, 255))
 			if Axefound then
 				ReadyColor = ARGB(255, 0, 255, 0)
 			else
 				ReadyColor = ARGB(255, 255, 0, 0)
 			end
-			DrawText("" .. Axes.readytext, 15, 385, 265, ReadyColor)
-			DrawText("Movement Status:", 15, 250, 280, ARGB(255, 255, 255, 255))
+			DrawTextFilter("" .. Axes.readytext, 15, 385, 265, ReadyColor)
+			DrawTextFilter("Movement Status:", 15, 250, 280, ARGB(255, 255, 255, 255))
 			if myHero.dead then
-				DrawText("Dead", 15, 385, 280, ARGB(255, 255, 0, 0))
+				DrawTextFilter("Dead", 15, 385, 280, ARGB(255, 255, 0, 0))
 			elseif MovementOverride then
-				DrawText("nil", 15, 385, 280, ARGB(255, 0, 255, 255))
+				DrawTextFilter("nil", 15, 385, 280, ARGB(255, 0, 255, 255))
 			elseif not MovementOverride and SAC or SxOrb then
-				DrawText("Override", 15, 385, 280, ARGB(255, 255, 255, 0))
+				DrawTextFilter("Override", 15, 385, 280, ARGB(255, 255, 255, 0))
 			elseif SAC then
-				DrawText("Loading SAC", 15, 385, 280, ARGB(255, 255, 255, 0))
+				DrawTextFilter("Loading SAC", 15, 385, 280, ARGB(255, 255, 255, 0))
 			elseif SxOrb then
-				DrawText("Loading SxOrb", 15, 385, 280, ARGB(255, 255, 255, 0))
+				DrawTextFilter("Loading SxOrb", 15, 385, 280, ARGB(255, 255, 255, 0))
 			else
-				DrawText("No Orbwalker Detected", 15, 385, 280, ARGB(255, 255, 255, 0))
+				DrawTextFilter("No Orbwalker Detected", 15, 385, 280, ARGB(255, 255, 255, 0))
 			end
-			DrawText("Catching Status:", 15, 250, 295, ARGB(255, 255, 255, 255))
+			DrawTextFilter("Catching Status:", 15, 250, 295, ARGB(255, 255, 255, 255))
 			if myHero.dead then
-				DrawText("Dead", 15, 385, 295, ARGB(255, 255, 0, 0))
+				DrawTextFilter("Dead", 15, 385, 295, ARGB(255, 255, 0, 0))
 			elseif not MovementOverride and AxeLanding then
-				DrawText("Catching", 15, 385, 295, ARGB(255, 0, 255, 0))
+				DrawTextFilter("Catching", 15, 385, 295, ARGB(255, 0, 255, 0))
 			elseif MovementOverride and InsideAxeZone then
-				DrawText("Picking Up", 15, 385, 295, ARGB(255, 255, 255, 0))
+				DrawTextFilter("Picking Up", 15, 385, 295, ARGB(255, 255, 255, 0))
 			else
-				DrawText("Idle", 15, 385, 295, ARGB(255, 255, 0, 0))
+				DrawTextFilter("Idle", 15, 385, 295, ARGB(255, 255, 0, 0))
 			end
-			DrawText("Inside Axe Zone:", 15, 250, 310, ARGB(255, 255, 255, 255))
+			DrawTextFilter("Inside Axe Zone:", 15, 250, 310, ARGB(255, 255, 255, 255))
 			if myHero.dead then
-				DrawText("Dead", 15, 385, 310, ARGB(255, 255, 0, 0))
+				DrawTextFilter("Dead", 15, 385, 310, ARGB(255, 255, 0, 0))
 			elseif InsideAxeZone then
-				DrawText("True", 15, 385, 310, ARGB(255, 0, 255, 0))
+				DrawTextFilter("True", 15, 385, 310, ARGB(255, 0, 255, 0))
 			elseif not InsideAxeZone then
-				DrawText("False", 15, 385, 310, ARGB(255, 255, 0, 0))
+				DrawTextFilter("False", 15, 385, 310, ARGB(255, 255, 0, 0))
 			end
-			DrawText("Movement Enabled:", 15, 250, 325, ARGB(255, 255, 255, 255))
+			DrawTextFilter("Movement Enabled:", 15, 250, 325, ARGB(255, 255, 255, 255))
 			if myHero.dead then
-				DrawText("Dead", 15, 385, 325, ARGB(255, 255, 0, 0))
+				DrawTextFilter("Dead", 15, 385, 325, ARGB(255, 255, 0, 0))
 			elseif MovementEnabled then
-				DrawText("True", 15, 385, 325, ARGB(255, 0, 255, 0))
+				DrawTextFilter("True", 15, 385, 325, ARGB(255, 0, 255, 0))
 			elseif not MovementEnabled then
-				DrawText("False", 15, 385, 325, ARGB(255, 255, 0, 0))
+				DrawTextFilter("False", 15, 385, 325, ARGB(255, 255, 0, 0))
 			end
-			DrawText("Attacks Enabled:", 15, 250, 340, ARGB(255, 255, 255, 255))
+			DrawTextFilter("Attacks Enabled:", 15, 250, 340, ARGB(255, 255, 255, 255))
 			if myHero.dead then
-				DrawText("Dead", 15, 385, 340, ARGB(255, 255, 0, 0))
+				DrawTextFilter("Dead", 15, 385, 340, ARGB(255, 255, 0, 0))
 			elseif AttacksEnabled then
-				DrawText("True", 15, 385, 340, ARGB(255, 0, 255, 0))
+				DrawTextFilter("True", 15, 385, 340, ARGB(255, 0, 255, 0))
 			elseif not AttacksEnabled then
-				DrawText("False", 15, 385, 340, ARGB(255, 255, 0, 0))
+				DrawTextFilter("False", 15, 385, 340, ARGB(255, 255, 0, 0))
 			end
 			local function roundToThirdDecimal(seconds)
 				return math.ceil(seconds * 1000) * 0.001
 			end
-			DrawText("Attacks Speed:", 15, 250, 355, ARGB(255, 255, 255, 255))
-			DrawText("" .. roundToThirdDecimal(0.679 * myHero.attackSpeed), 15, 385, 355, ARGB(255, 0, 255, 255))
+			DrawTextFilter("Attacks Speed:", 15, 250, 355, ARGB(255, 255, 255, 255))
+			DrawTextFilter("" .. roundToThirdDecimal(0.679 * myHero.attackSpeed), 15, 385, 355, ARGB(255, 0, 255, 255))
 
 
 
 
-			DrawText("W Buff  | Current Count:", 15, 250, 385, ARGB(255, 255, 255, 255))
-			DrawText("" .. DravenWCount, 15, 385, 385, ARGB(255, 0, 255, 255))
-			DrawText("Highest Count:", 15, 400, 385, ARGB(255, 255, 255, 255))
-			DrawText("" .. DravenWCountHighest, 15, 485, 385, ARGB(255, 255, 255, 0))
-			DrawText("Total:", 15, 500, 385, ARGB(255, 255, 255, 255))
-			DrawText(" " .. DravenWCountToal, 15, 530, 385, ARGB(255, 0, 255, 0))
+			DrawTextFilter("W Buff  | Current Count:", 15, 250, 385, ARGB(255, 255, 255, 255))
+			DrawTextFilter("" .. DravenWCount, 15, 385, 385, ARGB(255, 0, 255, 255))
+			DrawTextFilter("Highest Count:", 15, 400, 385, ARGB(255, 255, 255, 255))
+			DrawTextFilter("" .. DravenWCountHighest, 15, 485, 385, ARGB(255, 255, 255, 0))
+			DrawTextFilter("Total:", 15, 500, 385, ARGB(255, 255, 255, 255))
+			DrawTextFilter(" " .. DravenWCountToal, 15, 530, 385, ARGB(255, 0, 255, 0))
 			
 			
 			
-			DrawText("Total Critical Hits:", 15, 250, 415, ARGB(255, 255, 255, 255))
-			DrawText("" .. CritCount, 15, 385, 415, ARGB(255, 0, 255, 255))
+			DrawTextFilter("Total Critical Hits:", 15, 250, 415, ARGB(255, 255, 255, 255))
+			DrawTextFilter("" .. CritCount, 15, 385, 415, ARGB(255, 0, 255, 255))
 		end
 	end
 	
@@ -6020,60 +6948,60 @@ function OnDraw()
 	if _Dev_Mode then
 		
 		--  Shank Draws
-		DrawText("Shank Charges: " .. StatikShankCharge.stacks .. "/100", 15, 250, 155, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 250, 170, ARGB(255, 255, 255, 255))
-		DrawText("" .. StatikShankCharge.readytext, 15, 290, 170, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Shank Charges: " .. StatikShankCharge.stacks .. "/100", 15, 250, 155, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Ready:", 15, 250, 170, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. StatikShankCharge.readytext, 15, 290, 170, ARGB(255, 255, 255, 0))
 		
 		--  Ludens Echo Draws
-		DrawText("Luden's Echo Stacks: " .. Ludens.stacks .. "/100", 15, 250, 200, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 250, 215, ARGB(255, 255, 255, 255))
-		DrawText("" .. Ludens.readytext, 15, 290, 215, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Luden's Echo Stacks: " .. Ludens.stacks .. "/100", 15, 250, 200, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Ready:", 15, 250, 215, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. Ludens.readytext, 15, 290, 215, ARGB(255, 255, 255, 0))
 		
 		--  Draws Base
-		DrawCircle2(BlueSpawn.x, BlueSpawn.y, BlueSpawn.z, 2, SpawnRange, 3, ARGB(255, 0, 180, 255))
-		DrawLine3D(myHero.x, myHero.y, myHero.z, BlueSpawn.x, myHero.y, BlueSpawn.z, 2, ARGB(255, 0, 180, 255))
-		DrawCircle2(PurpleSpawn.x, PurpleSpawn.y, PurpleSpawn.z, 2, SpawnRange, 3, ARGB(255, 255, 0, 255))
-		DrawLine3D(myHero.x, myHero.y, myHero.z, PurpleSpawn.x, myHero.y, PurpleSpawn.z, 2, ARGB(255, 255, 0, 255))
+		DrawCircle2Filter(BlueSpawn.x, BlueSpawn.y, BlueSpawn.z, 2, SpawnRange, 3, ARGB(255, 0, 180, 255))
+		DrawLine3DFilter(myHero.x, myHero.y, myHero.z, BlueSpawn.x, myHero.y, BlueSpawn.z, 2, ARGB(255, 0, 180, 255))
+		DrawCircle2Filter(PurpleSpawn.x, PurpleSpawn.y, PurpleSpawn.z, 2, SpawnRange, 3, ARGB(255, 255, 0, 255))
+		DrawLine3DFilter(myHero.x, myHero.y, myHero.z, PurpleSpawn.x, myHero.y, PurpleSpawn.z, 2, ARGB(255, 255, 0, 255))
 		
 		--  Draws Slots
-		DrawText(".charName:", 25, 700, 60, ARGB(255, 255, 255, 255))
-		DrawText("" .. MyChampion, 25, 820, 60, ARGB(255, 255, 255, 0))
-		DrawText("Slot", 15, 700, 85, ARGB(255, 255, 255, 255))
-		DrawText("GetSpellData(slot).name", 15, 750, 85, ARGB(255, 0, 255, 255))
-		DrawText("getItem(slot)", 15, 950, 85, ARGB(255, 255, 255, 255))
-		DrawText(".name", 15, 1025, 85, ARGB(255, 255, 0, 0))
-		DrawText(".id", 15, 1100, 85, ARGB(255, 255, 255, 0))
-		DrawText("Slot [0]", 15, 700, 110, ARGB(255, 255, 255, 255))
-		DrawText("< " .. myHero:GetSpellData(_Q).name .. " >", 15, 750, 110, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 1200, 110, ARGB(255, 255, 255, 255))
+		DrawTextFilter(".charName:", 25, 700, 60, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. MyChampion, 25, 820, 60, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Slot", 15, 700, 85, ARGB(255, 255, 255, 255))
+		DrawTextFilter("GetSpellData(slot).name", 15, 750, 85, ARGB(255, 0, 255, 255))
+		DrawTextFilter("getItem(slot)", 15, 950, 85, ARGB(255, 255, 255, 255))
+		DrawTextFilter(".name", 15, 1025, 85, ARGB(255, 255, 0, 0))
+		DrawTextFilter(".id", 15, 1100, 85, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Slot [0]", 15, 700, 110, ARGB(255, 255, 255, 255))
+		DrawTextFilter("< " .. myHero:GetSpellData(_Q).name .. " >", 15, 750, 110, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Ready:", 15, 1200, 110, ARGB(255, 255, 255, 255))
 		if myHero:CanUseSpell(_Q) == READY then
-			DrawText("true", 15, 11250, 110, ARGB(255, 0, 255, 0))
+			DrawTextFilter("true", 15, 11250, 110, ARGB(255, 0, 255, 0))
 		else
-			DrawText("false", 15, 1250, 110, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, 1250, 110, ARGB(255, 255, 0, 0))
 		end
-		DrawText("Slot [1]", 15, 700, 125, ARGB(255, 255, 255, 255))
-		DrawText("< " .. myHero:GetSpellData(_W).name .. " >", 15, 750, 125, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 1200, 125, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Slot [1]", 15, 700, 125, ARGB(255, 255, 255, 255))
+		DrawTextFilter("< " .. myHero:GetSpellData(_W).name .. " >", 15, 750, 125, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Ready:", 15, 1200, 125, ARGB(255, 255, 255, 255))
 		if myHero:CanUseSpell(_W) == READY then
-			DrawText("true", 15, 1250, 125, ARGB(255, 0, 255, 0))
+			DrawTextFilter("true", 15, 1250, 125, ARGB(255, 0, 255, 0))
 		else
-			DrawText("false", 15, 1250, 125, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, 1250, 125, ARGB(255, 255, 0, 0))
 		end
-		DrawText("Slot [2]", 15, 700, 140, ARGB(255, 255, 255, 255))
-		DrawText("< " .. myHero:GetSpellData(_E).name .. " >", 15, 750, 140, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 1200, 140, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Slot [2]", 15, 700, 140, ARGB(255, 255, 255, 255))
+		DrawTextFilter("< " .. myHero:GetSpellData(_E).name .. " >", 15, 750, 140, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Ready:", 15, 1200, 140, ARGB(255, 255, 255, 255))
 		if myHero:CanUseSpell(_E) == READY then
-			DrawText("true", 15, 1250, 140, ARGB(255, 0, 255, 0))
+			DrawTextFilter("true", 15, 1250, 140, ARGB(255, 0, 255, 0))
 		else
-			DrawText("false", 15, 1250, 140, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, 1250, 140, ARGB(255, 255, 0, 0))
 		end
-		DrawText("Slot [3]", 15, 700, 155, ARGB(255, 255, 255, 255))
-		DrawText("< " .. myHero:GetSpellData(_R).name .. " >", 15, 750, 155, ARGB(255, 0, 255, 255))
-		DrawText("Ready:", 15, 1200, 155, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Slot [3]", 15, 700, 155, ARGB(255, 255, 255, 255))
+		DrawTextFilter("< " .. myHero:GetSpellData(_R).name .. " >", 15, 750, 155, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Ready:", 15, 1200, 155, ARGB(255, 255, 255, 255))
 		if myHero:CanUseSpell(_R) == READY then
-			DrawText("true", 15, 1250, 155, ARGB(255, 0, 255, 0))
+			DrawTextFilter("true", 15, 1250, 155, ARGB(255, 0, 255, 0))
 		else
-			DrawText("false", 15, 1250, 155, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, 1250, 155, ARGB(255, 255, 0, 0))
 		end
 		if FlashSlot ~= nil then
 			SlotDevMode(FlashSlot)
@@ -6110,17 +7038,17 @@ function OnDraw()
 			devmulti = 0
 		end
 		for slot = ITEM_1, ITEM_7 do
-			DrawText("Slot [" .. slot .. "]", 15, 700, 200 + devmulti, ARGB(255, 255, 255, 255))
-			DrawText("< " .. myHero:GetSpellData(slot).name .. " >", 15, 750, 200 + devmulti, ARGB(255, 0, 255, 255))
+			DrawTextFilter("Slot [" .. slot .. "]", 15, 700, 200 + devmulti, ARGB(255, 255, 255, 255))
+			DrawTextFilter("< " .. myHero:GetSpellData(slot).name .. " >", 15, 750, 200 + devmulti, ARGB(255, 0, 255, 255))
 			if myHero:getItem(slot) then
-				DrawText("< " .. myHero:getItem(slot).name .. " >", 15, 950, 200 + devmulti, ARGB(255, 255, 0, 0))
-				DrawText("< " .. myHero:getItem(slot).id .. " >", 15, 1100, 200 + devmulti, ARGB(255, 255, 255, 0))
+				DrawTextFilter("< " .. myHero:getItem(slot).name .. " >", 15, 950, 200 + devmulti, ARGB(255, 255, 0, 0))
+				DrawTextFilter("< " .. myHero:getItem(slot).id .. " >", 15, 1100, 200 + devmulti, ARGB(255, 255, 255, 0))
 			end
-			DrawText("Ready:", 15, 1200, 200 + devmulti, ARGB(255, 255, 255, 255))
+			DrawTextFilter("Ready:", 15, 1200, 200 + devmulti, ARGB(255, 255, 255, 255))
 			if myHero:CanUseSpell(slot) == READY then
-				DrawText("true", 15, 1250, 200 + devmulti, ARGB(255, 0, 255, 0))
+				DrawTextFilter("true", 15, 1250, 200 + devmulti, ARGB(255, 0, 255, 0))
 			else
-				DrawText("false", 15, 1250, 200 + devmulti, ARGB(255, 255, 0, 0))
+				DrawTextFilter("false", 15, 1250, 200 + devmulti, ARGB(255, 255, 0, 0))
 			end
 			devmulti = devmulti + 15
 		end
@@ -6139,12 +7067,12 @@ function OnDraw()
 		if not myHero.dead then
 			if settings.draws.qsetting.DrawAXEposition then
 				if AAobj and not AxeLanding then
-					DrawCircle2(AAobj.x, AAobj.y, AAobj.z, 2, 30, 1.5, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor)))
-					DrawLine3D(myHero.x, myHero.y, myHero.z, AAobj.x, AAobj.y, AAobj.z, 2, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor)))
+					DrawCircle2Filter(AAobj.x, AAobj.y, AAobj.z, 2, 30, 1.5, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor)))
+					DrawLine3DFilter(myHero.x, myHero.y, myHero.z, AAobj.x, AAobj.y, AAobj.z, 2, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor)))
 				end
 				if AAobj and AxeLanding then
-					DrawCircle2(AAobj.x, AAobj.y, AAobj.z, 2, 30, 1.5, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor2)))
-					DrawLine3D(myHero.x, myHero.y, myHero.z, AAobj.x, AAobj.y, AAobj.z, 2, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor2)))
+					DrawCircle2Filter(AAobj.x, AAobj.y, AAobj.z, 2, 30, 1.5, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor2)))
+					DrawLine3DFilter(myHero.x, myHero.y, myHero.z, AAobj.x, AAobj.y, AAobj.z, 2, ARGB(table.unpack(settings.draws.qsetting.AXEpositionColor2)))
 				end
 				if AxeLanding then
 					local IndexPath = myHero:GetPath(myHero.pathIndex)
@@ -6153,17 +7081,17 @@ function OnDraw()
 						if settings.combosettings.qsetting.tower then
 							if UnderTurret(VectorPickUp) then
 								local AxePosScreen = WorldToScreen(D3DXVECTOR3(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z))
-								DrawCircle2(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, 4, AxeRadius, 1.5, ARGB(255, 255, 0, 0))
-								DrawText("This Axe is under Tower!", 20, AxePosScreen.x + 2, AxePosScreen.y - 2, ARGB(255, 0, 0, 0))
-								DrawText("This Axe is under Tower!", 20, AxePosScreen.x, AxePosScreen.y, ARGB(255, 255, 0, 0))
+								DrawCircle2Filter(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, 4, AxeRadius, 1.5, ARGB(255, 255, 0, 0))
+								DrawTextFilter("This Axe is under Tower!", 20, AxePosScreen.x + 2, AxePosScreen.y - 2, ARGB(255, 0, 0, 0))
+								DrawTextFilter("This Axe is under Tower!", 20, AxePosScreen.x, AxePosScreen.y, ARGB(255, 255, 0, 0))
 							else
 								if settings.combosettings.qsetting.disablemovements == 2 then
 									if IndexPath then
 										if GetDistance(myHero, AxeLandingPos) < AxeRadius then
 											if GetDistance(IndexPath, AxeLandingPos) > (AxeRadius - 20) then
 												local VectorLinePastQ = AxeLandingPos + (Vector(IndexPath) - AxeLandingPos):normalized() * (AxeRadius - 20)
-												DrawLine3D(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, ARGB(255, 0, 255, 0))
-												DrawCircle2(VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, (AxeRadius / 2), 1.5, ARGB(255, 0, 255, 0))
+												DrawLine3DFilter(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, ARGB(255, 0, 255, 0))
+												DrawCircle2Filter(VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, (AxeRadius / 2), 1.5, ARGB(255, 0, 255, 0))
 												if SAC then
 													if _G.AutoCarry.MyHero then
 														if _G.AutoCarry.Orbwalker then
@@ -6177,13 +7105,13 @@ function OnDraw()
 										end
 									end
 								end
-								DrawCircle2(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, 2, AxeRadius, 1.5, ARGB(255, 0, 255, 255))
+								DrawCircle2Filter(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, 2, AxeRadius, 1.5, ARGB(255, 0, 255, 255))
 								DrawHDArrow3DVector(myHero, AxeLandingPos, 2, ARGB(255, 0, 255, 0), ARGB(255, 0, 0, 0), 100)
 								if AxeObject then
-									DrawLine3D(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, AxeObject.x, AxeObject.y, AxeObject.z, 2, ARGB(255, 0, 255, 255))
+									DrawLine3DFilter(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, AxeObject.x, AxeObject.y, AxeObject.z, 2, ARGB(255, 0, 255, 255))
 								end
 								if GetDistance(myHero, AxeLandingPos) > myHero.boundingRadius + 55 then
-									DrawCircle2(VectorPickUp.x, VectorPickUp.y, VectorPickUp.z, 2, myHero.boundingRadius, 1.5, ARGB(255, 255, 0, 0))
+									DrawCircle2Filter(VectorPickUp.x, VectorPickUp.y, VectorPickUp.z, 2, myHero.boundingRadius, 1.5, ARGB(255, 255, 0, 0))
 									CollectAxe = true
 								else
 									CollectAxe = false
@@ -6194,8 +7122,8 @@ function OnDraw()
 								if GetDistance(myHero, AxeLandingPos) < AxeRadius then
 									if GetDistance(IndexPath, AxeLandingPos) > AxeRadius then
 										local VectorLinePastQ = AxeLandingPos + (Vector(IndexPath) - AxeLandingPos):normalized() * (AxeRadius)
-										DrawLine3D(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, ARGB(255, 0, 255, 0))
-										DrawCircle2(VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, (AxeRadius / 2), 1.5, ARGB(255, 0, 255, 0))
+										DrawLine3DFilter(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, ARGB(255, 0, 255, 0))
+										DrawCircle2Filter(VectorLinePastQ.x, VectorLinePastQ.y, VectorLinePastQ.z, 4, (AxeRadius / 2), 1.5, ARGB(255, 0, 255, 0))
 										if settings.combosettings.qsetting.disablemovements == 2 then
 											if SAC then
 												if _G.AutoCarry.MyHero then
@@ -6210,13 +7138,13 @@ function OnDraw()
 									end
 								end
 							end
-							DrawCircle2(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, 2, AxeRadius, 1.5, ARGB(255, 0, 255, 255))
+							DrawCircle2Filter(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, 2, AxeRadius, 1.5, ARGB(255, 0, 255, 255))
 							DrawHDArrow3DVector(myHero, AxeLandingPos, 2, ARGB(255, 0, 255, 0), ARGB(255, 0, 0, 0), 100)
 							if AxeObject then
-								DrawLine3D(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, AxeObject.x, AxeObject.y, AxeObject.z, 2, ARGB(255, 0, 255, 255))
+								DrawLine3DFilter(AxeLandingPos.x, AxeLandingPos.y, AxeLandingPos.z, AxeObject.x, AxeObject.y, AxeObject.z, 2, ARGB(255, 0, 255, 255))
 							end
 							if GetDistance(myHero, AxeLandingPos) > myHero.boundingRadius + 55 then
-								DrawCircle2(VectorPickUp.x, VectorPickUp.y, VectorPickUp.z, 2, myHero.boundingRadius, 1.5, ARGB(255, 255, 0, 0))
+								DrawCircle2Filter(VectorPickUp.x, VectorPickUp.y, VectorPickUp.z, 2, myHero.boundingRadius, 1.5, ARGB(255, 255, 0, 0))
 								CollectAxe = true
 							else
 								CollectAxe = false
@@ -6238,10 +7166,10 @@ function OnDraw()
 					if GetDistance(enemy, enemy.endPath) > enemy.boundingRadius then
 						if enemy.endPath then
 							if settings.draws.map.waypointsline then
-								DrawLine(GetMinimapX(enemy.x) - GetMinimapRatio(), GetMinimapY(enemy.z) - GetMinimapRatio(), GetMinimapX(enemy.endPath.x) - GetMinimapRatio(), GetMinimapY(enemy.endPath.z) - GetMinimapRatio(), 2, ARGB(table.unpack(settings.draws.map.colourwaypoints)))
+								DrawLineFilter(GetMinimapX(enemy.x) - GetMinimapRatio(), GetMinimapY(enemy.z) - GetMinimapRatio(), GetMinimapX(enemy.endPath.x) - GetMinimapRatio(), GetMinimapY(enemy.endPath.z) - GetMinimapRatio(), 2, ARGB(table.unpack(settings.draws.map.colourwaypoints)))
 							end
 							if settings.draws.map.waypointscircle then
-								DrawCircleMinimap(enemy.endPath.x, enemy.endPath.y, enemy.endPath.z, 200, 2, ARGB(table.unpack(settings.draws.map.colourwaypoints)), 1)
+								DrawCircleMinimapFilter(enemy.endPath.x, enemy.endPath.y, enemy.endPath.z, 200, 2, ARGB(table.unpack(settings.draws.map.colourwaypoints)), 1)
 							end
 						end
 					end
@@ -6253,23 +7181,23 @@ function OnDraw()
 					if not myHero.dead then
 						if TotalDistance < settings.draws.map.max then
 							if settings.draws.map.circle then
-								DrawCircle2(enemy.x, enemy.y, enemy.z, 2, TotalDistance, 8, ARGB(table.unpack(settings.draws.map.colourdistance)))
+								DrawCircle2Filter(enemy.x, enemy.y, enemy.z, 2, TotalDistance, 8, ARGB(table.unpack(settings.draws.map.colourdistance)))
 							end
 							if settings.draws.map.circle then
-								DrawCircleMinimap(enemy.x, enemy.y, enemy.z, TotalDistance, 2, ARGB(table.unpack(settings.draws.map.colourdistance)), 15)
+								DrawCircleMinimapFilter(enemy.x, enemy.y, enemy.z, TotalDistance, 2, ARGB(table.unpack(settings.draws.map.colourdistance)), 15)
 							end
 							if settings.draws.map.timer then
-								DrawText(tostring(math.floor(MissingTime[i])), 20, GetMinimapX(enemy.x) - 6 * GetMinimapRatio(), GetMinimapY(enemy.z) - 6 * GetMinimapRatio(), ARGB(255, 255, 255, 0))
+								DrawTextFilter(tostring(math.floor(MissingTime[i])), 20, GetMinimapX(enemy.x) - 6 * GetMinimapRatio(), GetMinimapY(enemy.z) - 6 * GetMinimapRatio(), ARGB(255, 255, 255, 0))
 							end
 						else
 							if settings.draws.map.circle then
-								DrawCircle2(enemy.x, enemy.y, enemy.z, 2, settings.draws.map.max, 8, ARGB(table.unpack(settings.draws.map.colourmax)))
+								DrawCircle2Filter(enemy.x, enemy.y, enemy.z, 2, settings.draws.map.max, 8, ARGB(table.unpack(settings.draws.map.colourmax)))
 							end
 							if settings.draws.map.circleMap then
-								DrawCircleMinimap(enemy.x, enemy.y, enemy.z, settings.draws.map.max, 2, ARGB(table.unpack(settings.draws.map.colourmax)), 15)
+								DrawCircleMinimapFilter(enemy.x, enemy.y, enemy.z, settings.draws.map.max, 2, ARGB(table.unpack(settings.draws.map.colourmax)), 15)
 							end
 							if settings.draws.map.timer then
-								DrawText(tostring(math.floor(MissingTime[i])), 20, GetMinimapX(enemy.x) - 6 * GetMinimapRatio(), GetMinimapY(enemy.z) - 6 * GetMinimapRatio(), ARGB(255, 255, 0, 0))
+								DrawTextFilter(tostring(math.floor(MissingTime[i])), 20, GetMinimapX(enemy.x) - 6 * GetMinimapRatio(), GetMinimapY(enemy.z) - 6 * GetMinimapRatio(), ARGB(255, 255, 0, 0))
 							end
 						end
 						if settings.draws.map.textinfo then
@@ -6277,15 +7205,15 @@ function OnDraw()
 								if (TotalDistance < GetDistance(enemy, myHero)) and (TotalDistance < settings.draws.map.max) then
 									VectorToMapLine = enemy + (Vector(myHero) - enemy):normalized() * TotalDistance
 									local VectorScreen = WorldToScreen(D3DXVECTOR3(VectorToMapLine.x, VectorToMapLine.y, VectorToMapLine.z))
-									DrawLine(VectorScreen.x + 90, VectorScreen.y - 10, VectorScreen.x + 90, VectorScreen.y + 50, 200, ARGB(120, 0, 0, 0))
-									DrawText("" .. enemy.charName .. "", 20, VectorScreen.x, VectorScreen.y, ARGB(255, 0, 255, 0))
-									DrawText("Missing for:     Seconds", 20, VectorScreen.x, VectorScreen.y + 20, ARGB(255, 255, 255, 255))
-									DrawText("" .. tostring(math.floor(MissingTime[i])), 20, VectorScreen.x + 95, VectorScreen.y + 20, ARGB(255, 255, 255, 0))
+									DrawLineFilter(VectorScreen.x + 90, VectorScreen.y - 10, VectorScreen.x + 90, VectorScreen.y + 50, 200, ARGB(120, 0, 0, 0))
+									DrawTextFilter("" .. enemy.charName .. "", 20, VectorScreen.x, VectorScreen.y, ARGB(255, 0, 255, 0))
+									DrawTextFilter("Missing for:     Seconds", 20, VectorScreen.x, VectorScreen.y + 20, ARGB(255, 255, 255, 255))
+									DrawTextFilter("" .. tostring(math.floor(MissingTime[i])), 20, VectorScreen.x + 95, VectorScreen.y + 20, ARGB(255, 255, 255, 0))
 								elseif (TotalDistance > GetDistance(enemy, myHero)) or (TotalDistance > settings.draws.map.max) then
-									DrawLine(WINDOW_W / 5 + MissingMulti, 35, WINDOW_W / 5 + 200 + MissingMulti, 35, 50, ARGB(120, 0, 0, 0))
-									DrawText("" .. enemy.charName .. "", 20, WINDOW_W / 5 + 5 + MissingMulti, 15, ARGB(255, 0, 255, 0))
-									DrawText("Missing for:     Seconds", 20, WINDOW_W / 5 + 5 + MissingMulti, 35, ARGB(255, 255, 255, 255))
-									DrawText("" .. tostring(math.floor(MissingTime[i])), 20, WINDOW_W / 5 + 100 + MissingMulti, 35, ARGB(255, 255, 255, 0))
+									DrawLineFilter(WINDOW_W / 5 + MissingMulti, 35, WINDOW_W / 5 + 200 + MissingMulti, 35, 50, ARGB(120, 0, 0, 0))
+									DrawTextFilter("" .. enemy.charName .. "", 20, WINDOW_W / 5 + 5 + MissingMulti, 15, ARGB(255, 0, 255, 0))
+									DrawTextFilter("Missing for:     Seconds", 20, WINDOW_W / 5 + 5 + MissingMulti, 35, ARGB(255, 255, 255, 255))
+									DrawTextFilter("" .. tostring(math.floor(MissingTime[i])), 20, WINDOW_W / 5 + 100 + MissingMulti, 35, ARGB(255, 255, 255, 0))
 									MissingMulti = MissingMulti + 210
 								end
 							end
@@ -6298,8 +7226,8 @@ function OnDraw()
 
 	--  Screen Res Testing
 	--[[local MEPOS = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z)) 
-	DrawLine(WINDOW_W / 1.17, WINDOW_H / 65, WINDOW_W, WINDOW_H / 65, 35, ARGB(255, 0, 0, 0))
-	DrawText("[" .. WINDOW_W .. "x" .. WINDOW_H .. "]", 15, WINDOW_W / 1.04, WINDOW_H / 100, ARGB(255, 255, 255, 255))]]
+	DrawLineFilter(WINDOW_W / 1.17, WINDOW_H / 65, WINDOW_W, WINDOW_H / 65, 35, ARGB(255, 0, 0, 0))
+	DrawTextFilter("[" .. WINDOW_W .. "x" .. WINDOW_H .. "]", 15, WINDOW_W / 1.04, WINDOW_H / 100, ARGB(255, 255, 255, 255))]]
 	
 	--  Enemy Ward Tracker
 	local num = 1
@@ -6310,9 +7238,9 @@ function OnDraw()
 				i = 1
 				while (ward[4 + i]) do
 					if ward[5 + i] then
-						DrawLine3D(ward[4+i][1], ward[4+i][2], ward[4+i][3], ward[5+i][1], ward[5+i][2], ward[5+i][3], 3, ARGB(BlinkMultiplier(1), 255, 255, 255))
+						DrawLine3DFilter(ward[4+i][1], ward[4+i][2], ward[4+i][3], ward[5+i][1], ward[5+i][2], ward[5+i][3], 3, ARGB(BlinkMultiplier(1), 255, 255, 255))
 					else
-						DrawLine3D(ward[4+i][1], ward[4+i][2], ward[4+i][3], ward[5][1], ward[5][2], ward[5][3], 3, ARGB(BlinkMultiplier(1), 255, 255, 255))
+						DrawLine3DFilter(ward[4+i][1], ward[4+i][2], ward[4+i][3], ward[5][1], ward[5][2], ward[5][3], 3, ARGB(BlinkMultiplier(1), 255, 255, 255))
 					end
 					i = i + 1
 				end
@@ -6326,11 +7254,11 @@ function OnDraw()
 			if ward ~= nil and ward.x ~= nil and ward.y ~= nil and ward.z ~= nil then
 				local remainingTime = time - math.ceil(GetGameTimer())
 				local textpos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z)) 
-				DrawLine(textpos.x + 8, textpos.y - 20, textpos.x + 8, textpos.y + 35, 80, ARGB(120, 0, 0, 0))				
-				DrawText("Trinket", 16, textpos.x - 30, textpos.y - 15, ARGB(255, 0, 255, 0))
-				DrawText("" .. TimerText(math.ceil(remainingTime)), 16, textpos.x - 30, textpos.y, ARGB(255, 0, 255, 0))
-				DrawText("HP: " .. ward.health .. "/" .. ward.maxHealth, 16, textpos.x - 30, textpos.y + 15, ARGB(255, 0, 255, 0))
-				DrawCircle3D(ward.x, ward.y, ward.z, 80, 2, ARGB(255, 0, 255, 0), 15)
+				DrawLineFilter(textpos.x + 8, textpos.y - 20, textpos.x + 8, textpos.y + 35, 80, ARGB(120, 0, 0, 0))				
+				DrawTextFilter("Trinket", 16, textpos.x - 30, textpos.y - 15, ARGB(255, 0, 255, 0))
+				DrawTextFilter("" .. TimerText(math.ceil(remainingTime)), 16, textpos.x - 30, textpos.y, ARGB(255, 0, 255, 0))
+				DrawTextFilter("HP: " .. ward.health .. "/" .. ward.maxHealth, 16, textpos.x - 30, textpos.y + 15, ARGB(255, 0, 255, 0))
+				DrawCircle3DFilter(ward.x, ward.y, ward.z, 80, 2, ARGB(255, 0, 255, 0), 15)
 			end
 		end
 		for time, ward in pairs(VisionWards) do
@@ -6341,17 +7269,17 @@ function OnDraw()
 				local textpos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
 				local remainingTime = time - math.ceil(GetGameTimer())
 				if ward.maxHealth == 4 then
-					DrawLine(textpos.x + 8, textpos.y - 20, textpos.x + 8, textpos.y + 35, 80, ARGB(120, 0, 0, 0))
-					DrawText("Vision", 16, textpos.x - 30, textpos.y - 15, ARGB(255, 255, 0, 255))
-					DrawText("No Time", 16, textpos.x - 30, textpos.y, ARGB(255, 255, 0, 255))
-					DrawText("HP: " .. ward.health .. "/" .. ward.maxHealth, 16, textpos.x - 30, textpos.y + 15, ARGB(255, 255, 0, 255))
-					DrawCircle3D(ward.x, ward.y, ward.z, 80, 2, ARGB(255, 255, 0, 255), 15)
+					DrawLineFilter(textpos.x + 8, textpos.y - 20, textpos.x + 8, textpos.y + 35, 80, ARGB(120, 0, 0, 0))
+					DrawTextFilter("Vision", 16, textpos.x - 30, textpos.y - 15, ARGB(255, 255, 0, 255))
+					DrawTextFilter("No Time", 16, textpos.x - 30, textpos.y, ARGB(255, 255, 0, 255))
+					DrawTextFilter("HP: " .. ward.health .. "/" .. ward.maxHealth, 16, textpos.x - 30, textpos.y + 15, ARGB(255, 255, 0, 255))
+					DrawCircle3DFilter(ward.x, ward.y, ward.z, 80, 2, ARGB(255, 255, 0, 255), 15)
 				else
-					DrawLine(textpos.x + 8, textpos.y - 20, textpos.x + 8, textpos.y + 35, 80, ARGB(120, 0, 0, 0))
-					DrawText("Sight Stone", 16, textpos.x - 30, textpos.y - 15, ARGB(255, 255, 255, 0))
-					DrawText("" .. TimerText(math.ceil(remainingTime + 150)), 16, textpos.x - 30, textpos.y, ARGB(255, 255, 255, 0))
-					DrawText("HP: " .. ward.health .. "/" .. ward.maxHealth, 16, textpos.x - 30, textpos.y + 15, ARGB(255, 255, 255, 0))
-					DrawCircle3D(ward.x, ward.y, ward.z, 80, 2, ARGB(255, 255, 255, 0), 15)
+					DrawLineFilter(textpos.x + 8, textpos.y - 20, textpos.x + 8, textpos.y + 35, 80, ARGB(120, 0, 0, 0))
+					DrawTextFilter("Sight Stone", 16, textpos.x - 30, textpos.y - 15, ARGB(255, 255, 255, 0))
+					DrawTextFilter("" .. TimerText(math.ceil(remainingTime + 150)), 16, textpos.x - 30, textpos.y, ARGB(255, 255, 255, 0))
+					DrawTextFilter("HP: " .. ward.health .. "/" .. ward.maxHealth, 16, textpos.x - 30, textpos.y + 15, ARGB(255, 255, 255, 0))
+					DrawCircle3DFilter(ward.x, ward.y, ward.z, 80, 2, ARGB(255, 255, 255, 0), 15)
 				end
 			end
 		end
@@ -6377,13 +7305,42 @@ function OnDraw()
 							else
 								PoroVector = Poro
 							end
-							DrawLine3D(MyVector.x, MyVector.y, MyVector.z, PoroVector.x, Poro.y, PoroVector.z, settings.draws.autoPoro.width, ARGB(table.unpack(settings.draws.autoPoro.colour)))
+							DrawLine3DFilter(MyVector.x, MyVector.y, MyVector.z, PoroVector.x, Poro.y, PoroVector.z, settings.draws.autoPoro.width, ARGB(table.unpack(settings.draws.autoPoro.colour)))
 						end
 						
-						-- Draw Circle to Poro
+						--  Draw Circle to Poro
 						if settings.draws.autoPoro.circle then
-							DrawText("Size: " .. Poro.boundingRadius, 14, PoroWorldToScreen.x, PoroWorldToScreen.y, ARGB(255, 0, 255, 0))
-							DrawCircle2(Poro.x, Poro.y, Poro.z, settings.draws.autoPoro.width, Poro.boundingRadius / 2, settings.draws.autoPoro.snap, ARGB(table.unpack(settings.draws.autoPoro.colour)))
+							DrawCircle2Filter(Poro.x, Poro.y, Poro.z, settings.draws.autoPoro.width, Poro.boundingRadius / 2, settings.draws.autoPoro.snap, ARGB(table.unpack(settings.draws.autoPoro.colour)))
+						end
+						
+						--  Draw Size of Poro's Text
+						if settings.draws.autoPoro.circle then
+							PoroSize = "0"
+							if math.round(Poro.boundingRadius) == 65 then
+								PoroSize = "1"
+							elseif math.round(Poro.boundingRadius) == 75 then
+								PoroSize = "2"
+							elseif math.round(Poro.boundingRadius) == 85 then
+								PoroSize = "3"
+							elseif math.round(Poro.boundingRadius) == 94 then
+								PoroSize = "4"
+							elseif math.round(Poro.boundingRadius) == 104 then
+								PoroSize = "5"
+							elseif math.round(Poro.boundingRadius) == 114 then
+								PoroSize = "6"
+							elseif math.round(Poro.boundingRadius) == 123 then
+								PoroSize = "7"
+							elseif math.round(Poro.boundingRadius) == 133 then
+								PoroSize = "8"
+							elseif math.round(Poro.boundingRadius) == 143 then
+								PoroSize = "9"
+							elseif math.round(Poro.boundingRadius) == 153 then
+								PoroSize = "10"
+							elseif math.round(Poro.boundingRadius) >= 160 then
+								PoroSize = "BOOM"
+							end
+							DrawTextFilter("" .. PoroSize, 20, PoroWorldToScreen.x + 1, PoroWorldToScreen.y - 9, ARGB(255, 0, 0, 0))
+							DrawTextFilter("" .. PoroSize, 20, PoroWorldToScreen.x, PoroWorldToScreen.y - 10, ARGB(table.unpack(settings.draws.autoPoro.colourText)))
 						end
 					end
 				end
@@ -6451,14 +7408,14 @@ function OnDraw()
 				LinePos = WorldToScreen(D3DXVECTOR3(unit.x, unit.y, unit.z))
 				VectorOffset = unit + (Vector(myHero) - unit):normalized() * 46
 				if not UnitValid then
-					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 0, 255, 0))
-					DrawCircle2(unit.x, myHero.y, unit.z, 2, 50, 1, ARGB(255, 0, 255, 0))
-					DrawCircle2(unit.x, myHero.y, unit.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
-					DrawText("Flee Position", 14, LinePos.x - 25, LinePos.y - 60, ARGB(255, 0, 255, 0))
+					DrawLine3DFilter(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 0, 255, 0))
+					DrawCircle2Filter(unit.x, myHero.y, unit.z, 2, 50, 1, ARGB(255, 0, 255, 0))
+					DrawCircle2Filter(unit.x, myHero.y, unit.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
+					DrawTextFilter("Flee Position", 14, LinePos.x - 25, LinePos.y - 60, ARGB(255, 0, 255, 0))
 				else
-					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 255, 255, 0))
-					DrawCircle2(unit.x, myHero.y, unit.z, 2, 50, 1, ARGB(255, 255, 255, 0))
-					DrawText("Location Found", 14, LinePos.x - 26, LinePos.y - 60, ARGB(255, 255, 255, 0))
+					DrawLine3DFilter(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 255, 255, 0))
+					DrawCircle2Filter(unit.x, myHero.y, unit.z, 2, 50, 1, ARGB(255, 255, 255, 0))
+					DrawTextFilter("Location Found", 14, LinePos.x - 26, LinePos.y - 60, ARGB(255, 255, 255, 0))
 				end
 				if GetDistance(mousePos) > 680 then
 					if UnitValid then
@@ -6529,18 +7486,18 @@ function OnDraw()
 					ward = WardValid
 				end
 				LinePos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
-				--DrawLine3D(myHero.x, myHero.y, myHero.z, ward.x, myHero.y, ward.z, 2, ARGB(255, 0, 255, 0))
-				--DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 2, ARGB(255, 0, 255, 0))
+				--DrawLine3DFilter(myHero.x, myHero.y, myHero.z, ward.x, myHero.y, ward.z, 2, ARGB(255, 0, 255, 0))
+				--DrawLineFilter(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 2, ARGB(255, 0, 255, 0))
 				VectorOffset = ward + (Vector(myHero) - ward):normalized() * 46
 				if not WardValid then
-					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 0, 255, 0))
-					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 1, ARGB(255, 0, 255, 0))
-					DrawCircle2(ward.x, myHero.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
-					DrawText("Ward Jump", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 0, 255, 0))
+					DrawLine3DFilter(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 0, 255, 0))
+					DrawCircle2Filter(ward.x, myHero.y, ward.z, 2, 50, 1, ARGB(255, 0, 255, 0))
+					DrawCircle2Filter(ward.x, myHero.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
+					DrawTextFilter("Ward Jump", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 0, 255, 0))
 				else
-					DrawLine3D(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 255, 255, 0))
-					DrawCircle2(ward.x, myHero.y, ward.z, 2, 50, 1, ARGB(255, 255, 255, 0))
-					DrawText("Location Found", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 255, 0))
+					DrawLine3DFilter(myHero.x, myHero.y, myHero.z, VectorOffset.x, myHero.y, VectorOffset.z, 2, ARGB(255, 255, 255, 0))
+					DrawCircle2Filter(ward.x, myHero.y, ward.z, 2, 50, 1, ARGB(255, 255, 255, 0))
+					DrawTextFilter("Location Found", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 255, 0))
 				end
 				if GetDistance(mousePos) < 590 then
 					if WardValid then
@@ -6562,12 +7519,12 @@ function OnDraw()
 						if GetDistance(mousePos) < 590 + settings.misc.FlashLength then
 							Buffer = ward + (Vector(mousePos) - ward)
 							RedLinePos = WorldToScreen(D3DXVECTOR3(Buffer.x, Buffer.y, Buffer.z))
-							DrawLine(LinePos.x, LinePos.y, RedLinePos.x, RedLinePos.y, 2, ARGB(255, 255, 0, 0))
-							DrawText("Minimum Flash Length", 14, RedLinePos.x - 20, RedLinePos.y - 20, ARGB(255, 255, 0, 0))
+							DrawLineFilter(LinePos.x, LinePos.y, RedLinePos.x, RedLinePos.y, 2, ARGB(255, 255, 0, 0))
+							DrawTextFilter("Minimum Flash Length", 14, RedLinePos.x - 20, RedLinePos.y - 20, ARGB(255, 255, 0, 0))
 						else
 							Buffer = ward + (Vector(mousePos) - ward):normalized() * settings.misc.FlashLength
 							RedLinePos = WorldToScreen(D3DXVECTOR3(Buffer.x, Buffer.y, Buffer.z))
-							DrawLine(LinePos.x, LinePos.y, RedLinePos.x, RedLinePos.y, 2, ARGB(255, 255, 0, 0))
+							DrawLineFilter(LinePos.x, LinePos.y, RedLinePos.x, RedLinePos.y, 2, ARGB(255, 255, 0, 0))
 						end
 					end]]
 					if WardValid then
@@ -6590,14 +7547,14 @@ function OnDraw()
 							FlashingPos = Buffer + (Vector(mousePos) - Buffer)
 							DrawCircle(FlashingPos.x, FlashingPos.y, FlashingPos.z, 50, ARGB(255, 255, 255, 0))
 							DrawFlashLinePosVec = WorldToScreen(D3DXVECTOR3(FlashingPos.x, FlashingPos.y, FlashingPos.z))
-							DrawLine(RedLinePos.x, RedLinePos.y, DrawFlashLinePosVec.x, DrawFlashLinePosVec.y, 2, ARGB(255, 255, 255, 0))
+							DrawLineFilter(RedLinePos.x, RedLinePos.y, DrawFlashLinePosVec.x, DrawFlashLinePosVec.y, 2, ARGB(255, 255, 255, 0))
 						else
 							FlashingPos = Buffer + (Vector(mousePos) - Buffer):normalized() * (1200 - settings.misc.FlashLength - 600)
 							DrawCircle(FlashingPos.x, FlashingPos.y, FlashingPos.z, 50, ARGB(255, 255, 255, 0))
 							DrawFlashLinePosVec = WorldToScreen(D3DXVECTOR3(FlashingPos.x, FlashingPos.y, FlashingPos.z))
-							DrawLine(RedLinePos.x, RedLinePos.y, DrawFlashLinePosVec.x, DrawFlashLinePosVec.y, 2, ARGB(255, 255, 255, 0))
+							DrawLineFilter(RedLinePos.x, RedLinePos.y, DrawFlashLinePosVec.x, DrawFlashLinePosVec.y, 2, ARGB(255, 255, 255, 0))
 						end
-						DrawText("Flash", 14, DrawFlashLinePosVec.x - 20, DrawFlashLinePosVec.y - 20, ARGB(255, 255, 255, 0))
+						DrawTextFilter("Flash", 14, DrawFlashLinePosVec.x - 20, DrawFlashLinePosVec.y - 20, ARGB(255, 255, 255, 0))
 					end
 					if WardValid then
 						SpellCast("E", WardValid)
@@ -6607,24 +7564,24 @@ function OnDraw()
 				end
 			elseif settings.misc.FlashJump then
 				if GetDistance(mousePos) < settings.misc.FlashLength then
-					DrawLine(MyHeroPosition.x, MyHeroPosition.y, MyMousePosition.x, MyMousePosition.y, 2, ARGB(255, 255, 0, 0))
-					DrawText("Minimum Flash Length", 14, MyMousePosition.x - 20, MyMousePosition.y - 20, ARGB(255, 255, 0, 0))
+					DrawLineFilter(MyHeroPosition.x, MyHeroPosition.y, MyMousePosition.x, MyMousePosition.y, 2, ARGB(255, 255, 0, 0))
+					DrawTextFilter("Minimum Flash Length", 14, MyMousePosition.x - 20, MyMousePosition.y - 20, ARGB(255, 255, 0, 0))
 				else
 					Buffer = myHero + (Vector(mousePos) - myHero):normalized() * settings.misc.FlashLength
 					RedLinePos = WorldToScreen(D3DXVECTOR3(Buffer.x, Buffer.y, Buffer.z))
-					DrawLine(MyHeroPosition.x, MyHeroPosition.y, RedLinePos.x, RedLinePos.y, 2, ARGB(255, 255, 0, 0))
+					DrawLineFilter(MyHeroPosition.x, MyHeroPosition.y, RedLinePos.x, RedLinePos.y, 2, ARGB(255, 255, 0, 0))
 				end
 				if GetDistance(mousePos) > settings.misc.FlashLength and settings.misc.FlashJump then
 					if GetDistance(mousePos) < 500 then
 						FlashingPos = Buffer + (Vector(mousePos) - Buffer)
 						DrawCircle(FlashingPos.x, FlashingPos.y, FlashingPos.z, 50, ARGB(255, 255, 255, 0))
 						DrawFlashLinePosVec = WorldToScreen(D3DXVECTOR3(FlashingPos.x, FlashingPos.y, FlashingPos.z))
-						DrawLine(RedLinePos.x, RedLinePos.y, DrawFlashLinePosVec.x, DrawFlashLinePosVec.y, 2, ARGB(255, 255, 255, 0))
+						DrawLineFilter(RedLinePos.x, RedLinePos.y, DrawFlashLinePosVec.x, DrawFlashLinePosVec.y, 2, ARGB(255, 255, 255, 0))
 					else
 						FlashingPos = Buffer + (Vector(mousePos) - Buffer):normalized() * (500 - settings.misc.FlashLength)
 						DrawCircle(FlashingPos.x, FlashingPos.y, FlashingPos.z, 50, ARGB(255, 255, 255, 0))
 						DrawFlashLinePosVec = WorldToScreen(D3DXVECTOR3(FlashingPos.x, FlashingPos.y, FlashingPos.z))
-						DrawLine(RedLinePos.x, RedLinePos.y, DrawFlashLinePosVec.x, DrawFlashLinePosVec.y, 2, ARGB(255, 255, 255, 0))
+						DrawLineFilter(RedLinePos.x, RedLinePos.y, DrawFlashLinePosVec.x, DrawFlashLinePosVec.y, 2, ARGB(255, 255, 255, 0))
 					end
 					CastSpellFalshPos = myHero + (Vector(mousePos) - myHero):normalized() * 400
 					CastSpell(self.summonerSpells.flash, CastSpellFalshPos.x, CastSpellFalshPos.z)
@@ -6698,22 +7655,22 @@ function OnDraw()
 				ward = WardValid
 			end
 			if not E_is_Ready and selectedTar then
-				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 1, ARGB(255, 255, 0, 0))
-				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
+				DrawCircle2Filter(ward.x, ward.y, ward.z, 2, 50, 1, ARGB(255, 255, 0, 0))
+				DrawCircle2Filter(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
 				LinePos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
-				DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 1, ARGB(255, 255, 0, 0))
-				DrawText("E not Ready", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 0, 0))
+				DrawLineFilter(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 1, ARGB(255, 255, 0, 0))
+				DrawTextFilter("E not Ready", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 0, 0))
 				if selectedTar and selectedTar.visible and not myHero.dead then
 					if GetDistance(selectedTar, myHero) < 740 then
 						Combo(selectedTar)
 					end
 				end
 			elseif E_is_Ready and selectedTar then
-				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 1, ARGB(255, 0, 255, 0))
-				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
+				DrawCircle2Filter(ward.x, ward.y, ward.z, 2, 50, 1, ARGB(255, 0, 255, 0))
+				DrawCircle2Filter(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
 				LinePos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
-				DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 1, ARGB(255, 0, 255, 0))
-				DrawText("Hit and Run End Location", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 0, 255, 0))
+				DrawLineFilter(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 1, ARGB(255, 0, 255, 0))
+				DrawTextFilter("Hit and Run End Location", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 0, 255, 0))
 				if selectedTar and selectedTar.visible and not myHero.dead then
 					if GetDistance(selectedTar, myHero) < 740 then
 						Combo(selectedTar)
@@ -6721,11 +7678,11 @@ function OnDraw()
 				end
 			end
 			if E_is_Ready and not selectedTar and not myHero.dead then
-				DrawCircle2(ward.x, ward.y, ward.z, 2, 50, 1, ARGB(255, 255, 255, 0))
-				DrawCircle2(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
+				DrawCircle2Filter(ward.x, ward.y, ward.z, 2, 50, 1, ARGB(255, 255, 255, 0))
+				DrawCircle2Filter(ward.x, ward.y, ward.z, 2, settings.misc.foundwarddistance, 2, ARGB(50, 255, 255, 255))
 				LinePos = WorldToScreen(D3DXVECTOR3(ward.x, ward.y, ward.z))
-				DrawLine(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 2, ARGB(255, 255, 255, 0))
-				DrawText("Hit and Run End Location", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 255, 0))
+				DrawLineFilter(MyHeroPosition.x, MyHeroPosition.y, LinePos.x, LinePos.y, 2, ARGB(255, 255, 255, 0))
+				DrawTextFilter("Hit and Run End Location", 14, LinePos.x - 20, LinePos.y - 60, ARGB(255, 255, 255, 0))
 				if GetDistance(mousePos) < 590 then
 					if WardValid then
 						SpellCast("E", WardValid)
@@ -6745,7 +7702,7 @@ function OnDraw()
 		
 		-- Draw Last Ult Pos (Draws Loaded Pos is Last Ult Pos is nil)
 		if settings.draws.rsetting.ultposZone then
-			DrawText("Visible Enemies in R Range: " .. CountHeroInRange(Katarina_R_Range, GetEnemyHeroes()), 20, 200, 180, ARGB(255, 0, 255, 0))
+			DrawTextFilter("Visible Enemies in R Range: " .. CountHeroInRange(Katarina_R_Range, GetEnemyHeroes()), 20, 200, 180, ARGB(255, 0, 255, 0))
 			UltPos = WorldToScreen(D3DXVECTOR3(UltX, UltY, UltZ))
 			if KatUlting then
 				drawUltTimer = true
@@ -6758,24 +7715,24 @@ function OnDraw()
 					UltTime = os.clock() - UltStartTime
 				end
 				TheUltTimer = UltTime
-				DrawText("" .. roundToFirstDecimal(TheUltTimer), 30, UltPos.x, UltPos.y - 25, ARGB(255, 0, 0, 0))
-				DrawText("" .. roundToFirstDecimal(TheUltTimer), 30, UltPos.x, UltPos.y - 27, ARGB(255, 255, 0, 0))
+				DrawTextFilter("" .. roundToFirstDecimal(TheUltTimer), 30, UltPos.x, UltPos.y - 25, ARGB(255, 0, 0, 0))
+				DrawTextFilter("" .. roundToFirstDecimal(TheUltTimer), 30, UltPos.x, UltPos.y - 27, ARGB(255, 255, 0, 0))
 				if TheUltTimer > 2.6 then
 					KatUlting = false
 				end
 			end
-			--DrawText("" .. roundToFirstDecimal(TheUltTimer), 30, UltPos.x + 73, UltPos.y, ARGB(255, 0, 0, 0))
-			--DrawText("" .. roundToFirstDecimal(TheUltTimer), 30, UltPos.x + 70, UltPos.y, ARGB(255, 255, 0, 0))
-		--	DrawText3D("" .. roundToFirstDecimal(TheUltTimer), myHero.x + 203, myHero.y, myHero.z + 97, 30, ARGB(255, 0, 0, 0), true)
-		--	DrawText3D("" .. roundToFirstDecimal(TheUltTimer), myHero.x + 200, myHero.y, myHero.z + 100, 30, ARGB(255, 255, 0, 0), true)
-			DrawText("" .. LastUltPosText, 20, UltPos.x - 45, UltPos.y, ARGB(255, 0, 255, 0))
-			DrawCircle2(UltX, UltY, UltZ, 2, 100, 1, ARGB(255, 0, 255, 0))
+			--DrawTextFilter("" .. roundToFirstDecimal(TheUltTimer), 30, UltPos.x + 73, UltPos.y, ARGB(255, 0, 0, 0))
+			--DrawTextFilter("" .. roundToFirstDecimal(TheUltTimer), 30, UltPos.x + 70, UltPos.y, ARGB(255, 255, 0, 0))
+		--	DrawText3DFilter("" .. roundToFirstDecimal(TheUltTimer), myHero.x + 203, myHero.y, myHero.z + 97, 30, ARGB(255, 0, 0, 0), true)
+		--	DrawText3DFilter("" .. roundToFirstDecimal(TheUltTimer), myHero.x + 200, myHero.y, myHero.z + 100, 30, ARGB(255, 255, 0, 0), true)
+			DrawTextFilter("" .. LastUltPosText, 20, UltPos.x - 45, UltPos.y, ARGB(255, 0, 255, 0))
+			DrawCircle2Filter(UltX, UltY, UltZ, 2, 100, 1, ARGB(255, 0, 255, 0))
 		end
 		
 		-- Draw E Buff Time Circle (When the circle reaches your HitBox the <buff> is gone)
 		if os.clock() < EAt + ETime(1) then
 			if settings.draws.esetting.DrawErecudtion and EBuff then
-				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.Erecudtionwidth, myHero.ms * (EAt + ETime(1) - os.clock()) + myHero.boundingRadius, settings.draws.esetting.Erecudtionsnap, ARGB(table.unpack(settings.draws.esetting.Eredcolor)))
+				DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.esetting.Erecudtionwidth, myHero.ms * (EAt + ETime(1) - os.clock()) + myHero.boundingRadius, settings.draws.esetting.Erecudtionsnap, ARGB(table.unpack(settings.draws.esetting.Eredcolor)))
 			end
 		end
 		
@@ -6786,9 +7743,9 @@ function OnDraw()
 					if GetDistance(myHero, minion) <= 1000 then
 						local DMG = getDmg("Q", minion, myHero)
 						if DMG > minion.health then
-							DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 1, ARGB(255, 0, 255, 0))
+							DrawCircle2Filter(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 1, ARGB(255, 0, 255, 0))
 						elseif DMG + 150 > minion.health then
-							DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 1, ARGB(255, 255, 120, 0))
+							DrawCircle2Filter(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 1, ARGB(255, 255, 120, 0))
 						end
 					end
 				end
@@ -6807,29 +7764,29 @@ function OnDraw()
 										local VectorFromMeToMinion = myHero + (Vector(minion) - myHero):normalized() * 2000
 										if GetDistance(minion, target) <= Katarina_Q_BounceRange then
 											if GetDistance(myHero, minion) <= Katarina_Q_Range then
-												DrawLine3D(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 2, ARGB(255, 255, 255, 0))
-												DrawLine3D(minion.x, minion.y, minion.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
-												DrawCircle2(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 2, ARGB(255, 255, 255, 0))
-												DrawCircle2(target.x, target.y, target.z, 2, minion.boundingRadius, 2, ARGB(255, 0, 255, 0))
+												DrawLine3DFilter(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 2, ARGB(255, 255, 255, 0))
+												DrawLine3DFilter(minion.x, minion.y, minion.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
+												DrawCircle2Filter(minion.x, minion.y, minion.z, 2, minion.boundingRadius, 2, ARGB(255, 255, 255, 0))
+												DrawCircle2Filter(target.x, target.y, target.z, 2, minion.boundingRadius, 2, ARGB(255, 0, 255, 0))
 											elseif GetDistance(myHero, minion) >= Katarina_Q_Range and GetDistance(myHero, minion) <= Katarina_Q_Range + Katarina_Q_BounceRange then
 												if settings.draws.qsetting.DynamicQMinionBounceType == 1 then
-													DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 2, ARGB(100, 255, 255, 0))
+													DrawCircle2Filter(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 2, ARGB(100, 255, 255, 0))
 												elseif settings.draws.qsetting.DynamicQMinionBounceType == 2 then
-													DrawArc2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 77, ARGB(100, 255, 255, 0), minion, VectorFromMeToMinion, 50, 155)
+													DrawArc2Filter(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 77, ARGB(100, 255, 255, 0), minion, VectorFromMeToMinion, 50, 155)
 												end
 											end
 										elseif GetDistance(minion, target) >= Katarina_Q_BounceRange and GetDistance(minion, target) <= 500 then
 											if settings.draws.qsetting.DynamicQMinionBounceType == 1 then
-												DrawCircle2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 2, ARGB(100, 255, 0, 0))
+												DrawCircle2Filter(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 2, ARGB(100, 255, 0, 0))
 											elseif settings.draws.qsetting.DynamicQMinionBounceType == 2 then
-												DrawArc2(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 77, ARGB(100, 255, 0, 0), minion, VectorFromMeToMinion, 50, 155)
+												DrawArc2Filter(minion.x, minion.y, minion.z, 2, Katarina_Q_BounceRange, 77, ARGB(100, 255, 0, 0), minion, VectorFromMeToMinion, 50, 155)
 											end
 										end
 									end
 								end
 							else
-								DrawLine3D(myHero.x, myHero.y, myHero.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
-								DrawCircle2(target.x, target.y, target.z, 2, target.boundingRadius, 2, ARGB(255, 0, 255, 0))
+								DrawLine3DFilter(myHero.x, myHero.y, myHero.z, target.x, target.y, target.z, 2, ARGB(255, 0, 255, 0))
+								DrawCircle2Filter(target.x, target.y, target.z, 2, target.boundingRadius, 2, ARGB(255, 0, 255, 0))
 							end
 						end
 					end
@@ -6839,7 +7796,7 @@ function OnDraw()
 		
 		--  Draw Q Range
 		if Qup and not KatUlting then
-			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Katarina_Q_Range, settings.draws.qsetting.snap, ARGB(table.unpack(settings.draws.qsetting.color)))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Katarina_Q_Range, settings.draws.qsetting.snap, ARGB(table.unpack(settings.draws.qsetting.color)))
 		end
 		
 		--  Draw W Range (and W Pos Calc based off Movement)
@@ -6852,27 +7809,27 @@ function OnDraw()
 						if _W_CALCS then
 							local Vec2 = Vec1 + (Vector(IndexPath) - Vec1):rotated(0, 90 * math.pi / 180, 0):normalized() * 375
 							local Vec3 = Vec1 + (Vector(IndexPath) - Vec1):rotated(0, 270 * math.pi / 180, 0):normalized() * 375
-							DrawLine3D(myHero.x, myHero.y, myHero.z, Vec1.x, Vec1.y, Vec1.z, 1, ARGB(table.unpack(settings.draws.wsetting.color)))
-							DrawLine3D(Vec2.x, Vec2.y, Vec2.z, Vec3.x, Vec3.y, Vec3.z, 1, ARGB(table.unpack(settings.draws.wsetting.color)))
+							DrawLine3DFilter(myHero.x, myHero.y, myHero.z, Vec1.x, Vec1.y, Vec1.z, 1, ARGB(table.unpack(settings.draws.wsetting.color)))
+							DrawLine3DFilter(Vec2.x, Vec2.y, Vec2.z, Vec3.x, Vec3.y, Vec3.z, 1, ARGB(table.unpack(settings.draws.wsetting.color)))
 						end
-						DrawCircle2(Vec1.x, Vec1.y, Vec1.z, settings.draws.wsetting.width, Katarina_W_Range + 10, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
+						DrawCircle2Filter(Vec1.x, Vec1.y, Vec1.z, settings.draws.wsetting.width, Katarina_W_Range + 10, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
 					end
 				else
-					DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, Katarina_W_Range + 10, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
+					DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, Katarina_W_Range + 10, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
 				end
 			else
-				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, Katarina_W_Range + 10, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
+				DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, Katarina_W_Range + 10, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
 			end
 		end
 		
 		--  Draw E Range
 		if Eup and not KatUlting then
-			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Katarina_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Katarina_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
 		end
 		
 		--  Draw R Range
 		if DrawRCircle then
-			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, Katarina_R_Range, settings.draws.rsetting.snap, ARGB(table.unpack(settings.draws.rsetting.color)))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, Katarina_R_Range, settings.draws.rsetting.snap, ARGB(table.unpack(settings.draws.rsetting.color)))
 		end
 		
 		--  Draw Q Obj Mid Air
@@ -6880,16 +7837,16 @@ function OnDraw()
 			if not myHero.dead then
 				if not KatUlting then
 					if settings.draws.qsetting.particles then
-						DrawCircle2(Gobj.x, Gobj.y, Gobj.z, settings.draws.qsetting.particleswidth, settings.draws.qsetting.particlessize, settings.draws.qsetting.particlessnap, ARGB(table.unpack(settings.draws.qsetting.particlescolor)))
+						DrawCircle2Filter(Gobj.x, Gobj.y, Gobj.z, settings.draws.qsetting.particleswidth, settings.draws.qsetting.particlessize, settings.draws.qsetting.particlessnap, ARGB(table.unpack(settings.draws.qsetting.particlescolor)))
 						if settings.draws.qsetting.particlesline then
-							DrawLine3D(myHero.x, myHero.y, myHero.z, Gobj.x, Gobj.y, Gobj.z, settings.draws.qsetting.particleswidth, ARGB(table.unpack(settings.draws.qsetting.particlescolor)))
+							DrawLine3DFilter(myHero.x, myHero.y, myHero.z, Gobj.x, Gobj.y, Gobj.z, settings.draws.qsetting.particleswidth, ARGB(table.unpack(settings.draws.qsetting.particlescolor)))
 						end
 					end
 				elseif KatUlting then
 					if settings.draws.rsetting.particles then
-						DrawCircle2(Gobj.x, Gobj.y, Gobj.z, settings.draws.rsetting.particleswidth, settings.draws.rsetting.particlessize, settings.draws.rsetting.particlessnap, ARGB(table.unpack(settings.draws.rsetting.particlescolor)))
+						DrawCircle2Filter(Gobj.x, Gobj.y, Gobj.z, settings.draws.rsetting.particleswidth, settings.draws.rsetting.particlessize, settings.draws.rsetting.particlessnap, ARGB(table.unpack(settings.draws.rsetting.particlescolor)))
 						if settings.draws.rsetting.particlesline then
-							DrawLine3D(myHero.x, myHero.y, myHero.z, Gobj.x, Gobj.y, Gobj.z, settings.draws.rsetting.particleswidth, ARGB(table.unpack(settings.draws.rsetting.particlescolor)))
+							DrawLine3DFilter(myHero.x, myHero.y, myHero.z, Gobj.x, Gobj.y, Gobj.z, settings.draws.rsetting.particleswidth, ARGB(table.unpack(settings.draws.rsetting.particlescolor)))
 						end
 					end
 				end
@@ -6900,18 +7857,18 @@ function OnDraw()
 		if settings.draws.qsetting.Qcircle then
 			for _, target in pairs(GetEnemyHeroes()) do
 				if target.visible and not target.dead and TargetsWithQ[target.networkID] ~= nil then
-					DrawCircle2(target.x, target.y, target.z, settings.draws.qsetting.targetwidth, settings.draws.qsetting.size, settings.draws.qsetting.targetsnap, ARGB(table.unpack(settings.draws.qsetting.QcircleColor)))
+					DrawCircle2Filter(target.x, target.y, target.z, settings.draws.qsetting.targetwidth, settings.draws.qsetting.size, settings.draws.qsetting.targetsnap, ARGB(table.unpack(settings.draws.qsetting.QcircleColor)))
 				end
 			end
 		end
 		
 		--  E Block % if under HP
 		if EUnderPercentage and not myHero.dead then
-			DrawText("Blocking E Casts on Enemies.", 35, 350, 25, ARGB(255, 255, 255, 0))
-			DrawText("Your HP is below:", 25, 370, 60, ARGB(255, 0, 255, 0))
-			DrawText("" .. settings.misc.EOverRide .. "%", 25, 545, 60, ARGB(255, 255, 255, 255))
-			DrawText("Your HP Currently:", 25, 370, 80, ARGB(255, 0, 255, 0))
-			DrawText("" .. math.ceil(myHero.health / myHero.maxHealth * 100) .. "%", 25, 555, 80, ARGB(255, 255, 0, 0))
+			DrawTextFilter("Blocking E Casts on Enemies.", 35, 350, 25, ARGB(255, 255, 255, 0))
+			DrawTextFilter("Your HP is below:", 25, 370, 60, ARGB(255, 0, 255, 0))
+			DrawTextFilter("" .. settings.misc.EOverRide .. "%", 25, 545, 60, ARGB(255, 255, 255, 255))
+			DrawTextFilter("Your HP Currently:", 25, 370, 80, ARGB(255, 0, 255, 0))
+			DrawTextFilter("" .. math.ceil(myHero.health / myHero.maxHealth * 100) .. "%", 25, 555, 80, ARGB(255, 255, 0, 0))
 		end
 	end
 	
@@ -6925,9 +7882,9 @@ function OnDraw()
 			local VisibleSelfvec = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
 			if not myHero.dead then
 				if not VisibleSelf then
-					DrawText("STEALTH", 30, VisibleSelfvec.x - 55, VisibleSelfvec.y + 35, ARGB(255, 0, 255, 0))
+					DrawTextFilter("STEALTH", 30, VisibleSelfvec.x - 55, VisibleSelfvec.y + 35, ARGB(255, 0, 255, 0))
 				elseif VisibleSelf then
-					DrawText("VISIBLE", 20, VisibleSelfvec.x - 32, VisibleSelfvec.y, ARGB(255, 255, 0, 0))
+					DrawTextFilter("VISIBLE", 20, VisibleSelfvec.x - 32, VisibleSelfvec.y, ARGB(255, 255, 0, 0))
 				end
 			end
 		end
@@ -6935,18 +7892,18 @@ function OnDraw()
 		-- Draw W Buff Time Circle (When the circle reaches your HitBox the <buff> is gone)
 		if os.clock() < WAt + WTime(1) then
 			if settings.draws.wsetting.DrawWSpeed and WBuff then
-				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime(1) - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedcolor)))
+				DrawCircle2Filter(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime(1) - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedcolor)))
 			end
 		end
 		
 		--  Q Range Draw
 		if Qup then
-			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Akali_Q_Range, settings.draws.qsetting.snap, ARGB(table.unpack(settings.draws.qsetting.color)))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Akali_Q_Range, settings.draws.qsetting.snap, ARGB(table.unpack(settings.draws.qsetting.color)))
 		end
 		
 		--  W Range Draw
 		if Wup then
-			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, 715, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, 715, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))
 		end
 		
 		--  W Shourd Radius Draw
@@ -6954,26 +7911,26 @@ function OnDraw()
 			myPosV = Vector(myHero.x, myHero.z)
 			mousePosV = Vector(mousePos.x, mousePos.z)
 			if GetDistance(myPosV, mousePosV) < 715 - 60 then
-				DrawCircle2(mousePos.x, myHero.y, mousePos.z, settings.draws.wsetting.width, 420, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))	
+				DrawCircle2Filter(mousePos.x, myHero.y, mousePos.z, settings.draws.wsetting.width, 420, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.color)))	
 			else
 				finalV = myPosV+(mousePosV-myPosV):normalized()* (715 - 60)
-				DrawCircle2(finalV.x, myHero.y, finalV.y, settings.draws.wsetting.width, 420, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.Wcolor2)))
+				DrawCircle2Filter(finalV.x, myHero.y, finalV.y, settings.draws.wsetting.width, 420, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.Wcolor2)))
 				if settings.draws.wsetting.DrawWtext then
-					DrawText3D("Cast W Here", finalV.x - 150, myHero.y, finalV.y + 50, 45, ARGB(table.unpack(settings.draws.wsetting.Wcolor2)))
+					DrawText3DFilter("Cast W Here", finalV.x - 150, myHero.y, finalV.y + 50, 45, ARGB(table.unpack(settings.draws.wsetting.Wcolor2)))
 				end
 			end
 		end
 		
 		--  E Range Draw
 		if Eup then
-			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Akali_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Akali_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
 		end
 		
 		--  R Range Draw
 		if Rup then
-			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, Akali_R_Range, settings.draws.rsetting.snap, ARGB(table.unpack(settings.draws.rsetting.color)))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, Akali_R_Range, settings.draws.rsetting.snap, ARGB(table.unpack(settings.draws.rsetting.color)))
 			if settings.draws.rsetting.DrawR2 then
-				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, settings.combosettings.rsetting.Rdebuff, settings.draws.rsetting.snap, ARGB( 50, 255, 255, 255))
+				DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.rsetting.width, settings.combosettings.rsetting.Rdebuff, settings.draws.rsetting.snap, ARGB( 50, 255, 255, 255))
 			end
 		end
 		
@@ -6981,9 +7938,9 @@ function OnDraw()
 		if Gobj then
 			if not myHero.dead then
 				if settings.draws.qsetting.particles then
-					DrawCircle2(Gobj.x, Gobj.y, Gobj.z, settings.draws.qsetting.particleswidth, settings.draws.qsetting.particlessize, settings.draws.qsetting.particlessnap, ARGB(table.unpack(settings.draws.qsetting.particlescolor)))
+					DrawCircle2Filter(Gobj.x, Gobj.y, Gobj.z, settings.draws.qsetting.particleswidth, settings.draws.qsetting.particlessize, settings.draws.qsetting.particlessnap, ARGB(table.unpack(settings.draws.qsetting.particlescolor)))
 					if settings.draws.qsetting.particlesline then
-						DrawLine3D(myHero.x, myHero.y, myHero.z, Gobj.x, Gobj.y, Gobj.z, settings.draws.qsetting.particleswidth, ARGB(table.unpack(settings.draws.qsetting.particlescolor)))
+						DrawLine3DFilter(myHero.x, myHero.y, myHero.z, Gobj.x, Gobj.y, Gobj.z, settings.draws.qsetting.particleswidth, ARGB(table.unpack(settings.draws.qsetting.particlescolor)))
 					end
 				end
 			end
@@ -6993,7 +7950,7 @@ function OnDraw()
 		if settings.draws.qsetting.Qcircle then
 			for _, target in pairs(GetEnemyHeroes()) do
 				if target.visible and not target.dead and TargetsWithQ[target.networkID] ~= nil then
-					DrawCircle2(target.x, target.y, target.z, settings.draws.qsetting.targetwidth, settings.draws.qsetting.size, settings.draws.qsetting.targetsnap, ARGB(table.unpack(settings.draws.qsetting.QcircleColor)))
+					DrawCircle2Filter(target.x, target.y, target.z, settings.draws.qsetting.targetwidth, settings.draws.qsetting.size, settings.draws.qsetting.targetsnap, ARGB(table.unpack(settings.draws.qsetting.QcircleColor)))
 				end
 			end
 		end
@@ -7007,11 +7964,11 @@ function OnDraw()
 							return math.ceil(seconds * 10) * 0.1
 						end
 						CurrentWtimer = StartWTime
-						DrawText3D(""..roundToFirstDecimal((CurrentWtimer - os.clock())).."", Wobj.x, Wobj.y, Wobj.z, 30, ARGB(255, 255, 255, 255))
+						DrawText3DFilter(""..roundToFirstDecimal((CurrentWtimer - os.clock())).."", Wobj.x, Wobj.y, Wobj.z, 30, ARGB(255, 255, 255, 255))
 					end
 				end
 				if settings.draws.wsetting.particles then
-					DrawCircle2(Wobj.x, Wobj.y + 40, Wobj.z, 2, 420, 2, ARGB(table.unpack(settings.draws.wsetting.WCirlceColor)))
+					DrawCircle2Filter(Wobj.x, Wobj.y + 40, Wobj.z, 2, 420, 2, ARGB(table.unpack(settings.draws.wsetting.WCirlceColor)))
 				end
 			end
 		end
@@ -7025,29 +7982,29 @@ function OnDraw()
 		--  Q
 		if settings.draws.qsetting.DrawQ then
 			--if StatikShankCharge.RapidFirecannonReady and StatikShankCharge.stacks == 100 then
-			--	DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Draven_Q_Range + 126, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
+			--	DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, Draven_Q_Range + 126, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
 			--else
-				DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, myHero.range + myHero.boundingRadius, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
+				DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.qsetting.width, myHero.range + myHero.boundingRadius, settings.draws.qsetting.snap, ARGB(255, 255, BlinkMultiplier(1), 0))
 			--end
 		end
 
 		-- Draw W Buff Time Circle (When the circle reaches your HitBox the <buff> is gone)
 		if os.clock() < WAt + WTime(1) then
 			if settings.draws.wsetting.DrawWSpeed and WBuff then
-				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime(1) - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedmovecolor)))
+				DrawCircle2Filter(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime(1) - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedmovecolor)))
 			end
 		end
 		if settings.draws.wsetting.DrawWAttack and WAttackBuff then
 			if os.clock() < WAt + WTime(2) then
 				local screen = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
-				DrawText("W Attack Speed Bonus Active!", 25, screen.x - 150, screen.y, ARGB(table.unpack(settings.draws.wsetting.Wspeedattackcolor)))
-				DrawCircle2(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime(2) - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedattackcolor)))
+				DrawTextFilter("W Attack Speed Bonus Active!", 25, screen.x - 150, screen.y, ARGB(table.unpack(settings.draws.wsetting.Wspeedattackcolor)))
+				DrawCircle2Filter(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (WAt + WTime(2) - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.wsetting.Wspeedattackcolor)))
 			end
 		end
 		
 		--  E
 		if Eup then
-			DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Draven_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Draven_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.color)))
 		end
 		
 		--  R
@@ -7057,15 +8014,233 @@ function OnDraw()
 		end
 	end
 	
+	--  Special Twitch Draws
+	if TwitchLoaded then
+		
+		--  Draw AA Range
+		if settings.draws.otherTwitch.DrawAA then
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.otherTwitch.AAwidth, myHero.range + myHero.boundingRadius, settings.draws.otherTwitch.AAsnap, ARGB(255, 255, BlinkMultiplier(1), 0))
+		end
+		--  Stealth Process Q Timer, DrawBar and DrawCircle
+		if os.clock() < (stealthLocation + StealthTime()) then
+			if settings.draws.qsetting.stealthTimer then
+				DrawCooldownLine(myHero, stealthLocation, stealthLocation + StealthTime(), 255, 0, 255, 0, 255, 255, 0, 0, false)
+			end
+			if settings.draws.qsetting.stealthDistance then
+				DrawCircle2Filter(myHero.x, myHero.y, myHero.z, 2, myHero.ms * (stealthLocation + StealthTime() - os.clock()) + myHero.boundingRadius, 2, ARGB(table.unpack(settings.draws.qsetting.stealthDistancecolor)))
+				DelayAction(function ()
+					RemoveCooldownLine(myHero)
+				end, 0.5)
+			end
+		elseif StealthProcess and os.clock() <= StealthProcess.last + 1.5 and settings.draws.qsetting.stealthTimer then
+			DrawCooldownLine(myHero, StealthProcess.last, StealthProcess.last + 1.5 + GetLatency() / 1000, 255, 255, 0, 0, 255, 0, 255, 0, false)
+			DelayAction(function ()
+				RemoveCooldownLine(myHero)
+			end, 0.5)
+		end
+		
+		--  Draws W Range
+		if Wup then
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.wsetting.width, Twitch_W_Range, settings.draws.wsetting.snap, ARGB(table.unpack(settings.draws.wsetting.Wcolor)))
+		end
+		
+		--  Draws W Radius
+		if W2up then
+			if GetDistance(myHero, mousePos) < Twitch_W_Range then
+				DrawCircle2Filter(mousePos.x, myHero.y, mousePos.z, settings.draws.wsetting.widthw2, Twitch_W_Width, settings.draws.wsetting.snapw2, ARGB(table.unpack(settings.draws.wsetting.Wcolor)))	
+			else
+				local finalV = myHero + (Vector(mousePos) - myHero):normalized() * Twitch_W_Range
+				DrawCircle2Filter(finalV.x, myHero.y, finalV.z, settings.draws.wsetting.widthw2, Twitch_W_Width, settings.draws.wsetting.snapw2, ARGB(table.unpack(settings.draws.wsetting.Wcolor2)))
+				if settings.draws.wsetting.DrawWtext then
+					DrawText3DFilter("Cast W Here", finalV.x - 150, myHero.y, finalV.z + 50, 45, ARGB(table.unpack(settings.draws.wsetting.Wcolor2)))
+				end
+			end
+		end
+		
+		--  Draws E range
+		if Eup then
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.esetting.width, Twitch_E_Range, settings.draws.esetting.snap, ARGB(table.unpack(settings.draws.esetting.Ecolor)))
+		end
+		
+		--  Draw Passive Tick Bar on Enemy Heroes
+		for _, target in pairs(GetEnemyHeroes()) do 
+			if target.visible and not target.dead and DeadlyVenom[target.networkID] ~= nil and DeadlyVenom[target.networkID].stacks >= 1 then
+				local feetdraw = WorldToScreen(D3DXVECTOR3(target.x, target.y, target.z))
+				if settings.draws.otherTwitch.poisonBar then
+					DrawCooldownLine(target, DeadlyVenom[target.networkID].time - 6, DeadlyVenom[target.networkID].time, 255, 180, 255, 0, 255, 255, 0, 0, false)
+					DelayAction(function ()
+						RemoveCooldownLine(target)
+					end, 0.5)
+				end
+				if settings.draws.otherTwitch.PassiveStacks then
+					if settings.draws.otherTwitch.PassiveStacksOutline then
+						DrawTextFilter("Stacks:", 25, feetdraw.x + 2, feetdraw.y + 2, ARGB(255, 0, 0, 0))
+						DrawTextFilter("" .. tostring(DeadlyVenom[target.networkID].stacks), 25, feetdraw.x + 82, feetdraw.y + 2, ARGB(255, 0, 0, 0))
+					end
+					DrawTextFilter("Stacks:", 25, feetdraw.x, feetdraw.y, ARGB(255, 255, 255, 255))
+					DrawTextFilter("" .. tostring(DeadlyVenom[target.networkID].stacks), 25, feetdraw.x + 80, feetdraw.y, ARGB(table.unpack(settings.draws.otherTwitch.PassiveStackscolor)))
+				end
+				if settings.draws.otherTwitch.poisonTimer then
+					local function roundToFirstDecimal(seconds)
+						return math.ceil(seconds * 10) * 0.1
+					end
+					if settings.draws.otherTwitch.PassiveStacksOutline then
+						DrawTextFilter("Time:", 25, feetdraw.x + 2, feetdraw.y + 22, ARGB(255, 0, 0, 0))
+						DrawTextFilter("" .. roundToFirstDecimal(DeadlyVenom[target.networkID].time - os.clock()), 25, feetdraw.x + 62, feetdraw.y + 22, ARGB(255, 0, 0, 0))
+					end
+					DrawTextFilter("Time:", 25, feetdraw.x, feetdraw.y + 20, ARGB(255, 255, 255, 255))
+					DrawTextFilter("" .. roundToFirstDecimal(DeadlyVenom[target.networkID].time - os.clock()), 25, feetdraw.x + 60, feetdraw.y + 20, ARGB(table.unpack(settings.draws.otherTwitch.PassiveStacksCountdowncolor)))
+				end
+			end
+		end
+		
+		--  Draw Passive Tick Bar on Enemy Minions
+		if settings.draws.otherTwitch.enemyminions then
+			for _, target in pairs(minionManager(MINION_ENEMY, 99999).objects) do
+				if target ~= nil and target.valid and not target.dead and target.visible then     
+					DrawMinionEStackHPandTIME(target)
+				end
+			end
+		end
+		
+		--  Draw Passive Tick Bar on Jungle Minions
+		if settings.draws.otherTwitch.jungleminions then
+			for _, target in pairs(minionManager(MINION_JUNGLE, 99999).objects) do
+				if target ~= nil and target.valid and not target.dead and target.visible then
+					if target.charName ~= "HA_AP_Poro" then
+						if target.charName ~= "S5Test_WardCorpse" then
+							if target.charName ~= "S5Test_WardCorpse" then
+								if target.charName ~= "SRU_CampRespawnMarker" then
+									--PrintSpecialText("name: " .. target.charName)
+									DrawMinionEStackHPandTIME(target)
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+		
+		--  Draws Twitch Particles (Auto Attacks and W)
+		if settings.draws.otherTwitch.particles and not myHero.dead then
+			if Gobj then
+				if ValidR and settings.draws.rsetting.Beta then
+					for _, target in pairs(GetEnemyHeroes()) do
+						if ValidTarget(target, 1100) then
+							local dst = math.sqrt(((myHero.x - target.x) ^ 2) + ((myHero.y - target.y) ^ 2) + ((myHero.z - target.z) ^ 2))
+							DrawText3DFilter(tostring(dst), target.x, target.y, target.z, 18, ARGB(255,255,255,255))
+							local X = target.x - myHero.x
+							local Y = target.y - myHero.y
+							local Z = target.z - myHero.z
+							local nvec = Vector(X,Y,Z)
+							nvec = nvec:normalized()
+							local lenght = 1100
+							local dvec = nvec * lenght
+							DrawLineBorder3D(Gobj.x, Gobj.y, Gobj.z, Gobj.x + dvec.x, Gobj.y + dvec.y, Gobj.z + dvec.z, 60, ARGB(255,255,255,255), 1)
+						end
+					end
+				elseif not ValidR then
+					--DrawLine3DFilter(myHero.x, myHero.y, myHero.z, Gobj.x, Gobj.y, Gobj.z, 5, ARGB(table.unpack(settings.draws.otherTwitch.particlescolor)))
+					DrawCircle2Filter(Gobj.x, Gobj.y, Gobj.z, 2, 20, 0.5, ARGB(table.unpack(settings.draws.otherTwitch.particlescolor)))
+				end
+			end
+		end
+		
+		--  Draws Visibilty Text
+		if settings.draws.qsetting.DrawVisi then
+			local VisibleSelfvec = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
+			if not myHero.dead then
+				if not VisibleSelf then
+					DrawTextFilter("STEALTH", 30, VisibleSelfvec.x - 55, VisibleSelfvec.y + 35, ARGB(255, 0, 255, 0))
+				elseif VisibleSelf then
+					DrawTextFilter("VISIBLE", 20, VisibleSelfvec.x - 32, VisibleSelfvec.y, ARGB(255, 255, 0, 0))
+				end
+			end
+		end
+		
+		--  Put Bar Data inside a table
+		for _, bar in pairs(DrawBars) do
+			local starttime = 0
+			local endtime = 0
+			local target = nil
+			local inc = false
+			local alpha, red, green, blue, alphafade, redfade, greenfade, bluefade = 255
+			for v,k in pairs(bar) do
+				if v == 1 then 
+					target = objManager:GetObjectByNetworkId(k)
+				elseif v == 2 then
+					starttime = k
+				elseif v == 3 then
+					endtime = k
+				elseif v == 4 then
+					alpha = k
+				elseif v == 5 then
+					red = k
+				elseif v == 6 then
+					green = k
+				elseif v == 7 then
+					blue = k
+				elseif v == 8 then
+					alphafade = k
+				elseif v == 9 then
+					redfade = k
+				elseif v == 10 then
+					greenfade = k
+				elseif v == 11 then
+					bluefade = k
+				elseif v == 12 then
+					inc = k
+				end
+			end
+			if starttime < endtime and starttime < os.clock() and endtime > os.clock() then
+				local lenght = 130
+				local deltat = endtime - starttime
+				local mult = endtime - os.clock()
+				local multiplier = mult/deltat
+				multiplier = multiplier
+				if not inc then
+					lenght = lenght * multiplier
+				else
+					lenght = 130 - lenght * multiplier
+				end
+				alphaN = (alpha * multiplier) + (alphafade - (alphafade * multiplier))
+				redN = (red * multiplier) + (redfade - (redfade * multiplier))
+				greenN = (green * multiplier) + (greenfade - (greenfade * multiplier))
+				blueN = (blue * multiplier) + (bluefade - (bluefade * multiplier))
+				if multiplier >= 0 then
+					local barPos = GetUnitHPBarPos(target)
+					local barOffset = GetUnitHPBarOffset(target)
+					local baseX = barPos.x - 69 + barOffset.x * 150
+					local baseY = barPos.y + barOffset.y * 50 + 12.5
+					local yoffset = 0
+					if settings.draws.otherTwitch.lineoffset == 1 then
+						yoffset = 10
+					elseif settings.draws.otherTwitch.lineoffset == 2 then
+						yoffset = 30
+					elseif settings.draws.otherTwitch.lineoffset == 3 then
+						yoffset = - 30
+					elseif settings.draws.otherTwitch.lineoffset == 4 then
+						yoffset = - 60
+					end
+					local px = baseX
+					local py = baseY + yoffset
+					local cx = baseX + lenght
+					local cy = baseY + yoffset
+					DrawLineFilter(px, py, cx, cy, 10, ARGB(alphaN, redN, greenN, blueN))
+				end
+			end
+		end
+	end
+	
 	--  Draw Mouse Pos (in World [3D])
 	if settings.draws.drawMouse then
-		DrawCircle2(mousePos.x, mousePos.y, mousePos.z, 2, 20, 0.5, ARGB(255, 0, 255, 255))
+		DrawCircle2Filter(mousePos.x, mousePos.y, mousePos.z, 2, 20, 0.5, ARGB(255, 0, 255, 255))
 	end
 	
 	
 	--  Draw Mouse Pos (in World [3D])
 	if settings.draws.drawEXP then
-		DrawCircle2(myHero.x, myHero.y, myHero.z, 6, 1400, 4, ARGB(75, 0, 155, 100))
+		DrawCircle2Filter(myHero.x, myHero.y, myHero.z, 6, 1400, 4, ARGB(75, 0, 155, 100))
 	end
 	
 	-- Draw DMG indicator (On Bar Pos)
@@ -7086,9 +8261,9 @@ function OnDraw()
 			if ValidTarget(target) then
 				if settings.draws.drawkillable then
 					local pos = WorldToScreen(D3DXVECTOR3(target.x, target.y, target.z))
-					local target_Text, color = GetDrawText(target)
+					local target_Text, color = GetDrawTextFilter(target)
 					if target_Text ~= nil then
-						DrawText(target_Text, 18, pos.x - 40, pos.y - 10, color)
+						DrawTextFilter(target_Text, 18, pos.x - 40, pos.y - 10, color)
 						--DrawCircle(target.x, target.y, target.z, target.boundingRadius, ARGB(255, 255, 255, 255))
 					end
 				end
@@ -7102,28 +8277,28 @@ function OnDraw()
 			return math.ceil(seconds * 10) * 0.1
 		end
 		if GetDistance(selectedTar, myHero) > 740 then
-			DrawCircle2(selectedTar.x, selectedTar.y, selectedTar.z, 2, selectedTar.boundingRadius + 40, 2, ARGB(255, 255, 0, 0))
-			DrawCircle2(selectedTar.x, selectedTar.y, selectedTar.z, 2, selectedTar.boundingRadius, 2, ARGB(255, 255, 0, 255))
-			DrawCircle2(myHero.x, myHero.y, myHero.z, 2, 20, 1, ARGB(255, 255, 0, 255))
-			DrawLine3D(myHero.x, myHero.y, myHero.z, selectedTar.x, selectedTar.y, selectedTar.z, 6, ARGB(120, 255, 0, 0))
-			--DrawLine3D(selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 255, 0, 0))
-			--DrawLine3D(selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 255, 0, 0))
-			DrawText3D(""..selectedTar.name.." Health - [".. roundToFirstDecimal((selectedTar.health / selectedTar.maxHealth)*100).."%]", selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius*1.6, 15, ARGB(255, 0, 255, 255), true)
-			DrawText3D(""..selectedTar.charName.." Distance - [".. math.ceil(GetDistance(selectedTar, myHero)).."]", selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius*2, 15, ARGB(255, 255, 255, 255), true)
+			DrawCircle2Filter(selectedTar.x, selectedTar.y, selectedTar.z, 2, selectedTar.boundingRadius + 40, 2, ARGB(255, 255, 0, 0))
+			DrawCircle2Filter(selectedTar.x, selectedTar.y, selectedTar.z, 2, selectedTar.boundingRadius, 2, ARGB(255, 255, 0, 255))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, 2, 20, 1, ARGB(255, 255, 0, 255))
+			DrawLine3DFilter(myHero.x, myHero.y, myHero.z, selectedTar.x, selectedTar.y, selectedTar.z, 6, ARGB(120, 255, 0, 0))
+			--DrawLine3DFilter(selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 255, 0, 0))
+			--DrawLine3DFilter(selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 255, 0, 0))
+			DrawText3DFilter(""..selectedTar.name.." Health - [".. roundToFirstDecimal((selectedTar.health / selectedTar.maxHealth)*100).."%]", selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius*1.6, 15, ARGB(255, 0, 255, 255), true)
+			DrawText3DFilter(""..selectedTar.charName.." Distance - [".. math.ceil(GetDistance(selectedTar, myHero)).."]", selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius*2, 15, ARGB(255, 255, 255, 255), true)
 		else
-			DrawCircle2(selectedTar.x, selectedTar.y, selectedTar.z, 2, selectedTar.boundingRadius + 40, 2, ARGB(255, 0, 255, 0))
-			DrawCircle2(myHero.x, myHero.y, myHero.z, 2, 20, 1, ARGB(255, 0, 255, 0))
-			DrawLine3D(myHero.x, myHero.y, myHero.z, selectedTar.x, selectedTar.y, selectedTar.z, 10, ARGB(210, 0, 255, 0))
-			--DrawLine3D(selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 0, 255, 0))
-			--DrawLine3D(selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 0, 255, 0))
-			DrawText3D(""..selectedTar.name.." Health - [".. roundToFirstDecimal((selectedTar.health / selectedTar.maxHealth)*100).."%]", selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius*1.6, 15, ARGB(255, 0, 255, 0), true)
+			DrawCircle2Filter(selectedTar.x, selectedTar.y, selectedTar.z, 2, selectedTar.boundingRadius + 40, 2, ARGB(255, 0, 255, 0))
+			DrawCircle2Filter(myHero.x, myHero.y, myHero.z, 2, 20, 1, ARGB(255, 0, 255, 0))
+			DrawLine3DFilter(myHero.x, myHero.y, myHero.z, selectedTar.x, selectedTar.y, selectedTar.z, 10, ARGB(210, 0, 255, 0))
+			--DrawLine3DFilter(selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 0, 255, 0))
+			--DrawLine3DFilter(selectedTar.x + selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius/2, selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z + selectedTar.boundingRadius/2, 2, ARGB(255, 0, 255, 0))
+			DrawText3DFilter(""..selectedTar.name.." Health - [".. roundToFirstDecimal((selectedTar.health / selectedTar.maxHealth)*100).."%]", selectedTar.x - selectedTar.boundingRadius/2, selectedTar.y, selectedTar.z - selectedTar.boundingRadius*1.6, 15, ARGB(255, 0, 255, 0), true)
 		end
 		DrawTriangle(selectedTar, ARGB(255, 255, 255, 0), 2, selectedTar.boundingRadius, 20, 3, 0, 80)
 	end
 	
 	--  Draw HitBox Range
 	if settings.draws.hitbox.DrawHitBox and not myHero.dead then
-		DrawCircle2(myHero.x, myHero.y, myHero.z, settings.draws.hitbox.width, myHero.boundingRadius, settings.draws.hitbox.snap, ARGB(table.unpack(settings.draws.hitbox.color)))
+		DrawCircle2Filter(myHero.x, myHero.y, myHero.z, settings.draws.hitbox.width, myHero.boundingRadius, settings.draws.hitbox.snap, ARGB(table.unpack(settings.draws.hitbox.color)))
 	end
 	
 	--  Draw Awareness Settings
@@ -7156,26 +8331,26 @@ function OnDraw()
 					if GetDistance(myHero, myHero.endPath) > 30 then
 						if myHero.endPath then
 							if settings.draws.pcs.names then
-								DrawText3D("".. MyChampion .."", myHero.endPath.x, myHero.endPath.y, myHero.endPath.z - 42, 15, ARGB(table.unpack(settings.draws.pcs.MyColor)), true)
+								DrawText3DFilter("".. MyChampion .."", myHero.endPath.x, myHero.endPath.y, myHero.endPath.z - 42, 15, ARGB(table.unpack(settings.draws.pcs.MyColor)), true)
 							end
 							DrawEndPos(myHero, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
 						end
 					end
 					if settings.draws.pcs.outlines then
-						DrawLine3D(myHero.x, myHero.y, myHero.z, IndexPath.x, IndexPath.y, IndexPath.z, settings.draws.pcs.MyThick + 2, ARGB(255, 0, 0, 0))
+						DrawLine3DFilter(myHero.x, myHero.y, myHero.z, IndexPath.x, IndexPath.y, IndexPath.z, settings.draws.pcs.MyThick + 2, ARGB(255, 0, 0, 0))
 					end
-					DrawLine3D(myHero.x, myHero.y, myHero.z, IndexPath.x, IndexPath.y, IndexPath.z, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
+					DrawLine3DFilter(myHero.x, myHero.y, myHero.z, IndexPath.x, IndexPath.y, IndexPath.z, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
 				end
 				for i=myHero.pathIndex, myHero.pathCount-1 do
 					local Path = myHero:GetPath(i)
 					local Path2 = myHero:GetPath(i + 1)
 					if settings.draws.pcs.outlines then
-						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick + 2, ARGB(255, 0, 0, 0))
+						DrawLine3DFilter(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick + 2, ARGB(255, 0, 0, 0))
 					end
 					if not settings.draws.pcs.over1 then
-						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick, ARGB(255, 255, 0, 0))
+						DrawLine3DFilter(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick, ARGB(255, 255, 0, 0))
 					else
-						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
+						DrawLine3DFilter(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, settings.draws.pcs.MyThick, ARGB(table.unpack(settings.draws.pcs.MyColor)))
 					end
 				end
 			end
@@ -7220,8 +8395,8 @@ function OnDraw()
 	--  Draw First Launch Pop Up / instructions.
 	if PopUp then
 		local w, h1, h2 = (WINDOW_W*0.50), (WINDOW_H*.15), (WINDOW_H*.9)
-		DrawLine(w, h1/1.05, w, h2/1.97, w/1.75, ARGB(120,205,0,0))
-		DrawLine(w, h1, w, h2/2, w/1.8, ARGB(120,50,0,0))
+		DrawLineFilter(w, h1/1.05, w, h2/1.97, w/1.75, ARGB(120,205,0,0))
+		DrawLineFilter(w, h1, w, h2/2, w/1.8, ARGB(120,50,0,0))
 		DrawTextA(tostring("Welcome to One Reborn!"), WINDOW_H*.028, (WINDOW_W/2), (WINDOW_H*.18), ARGB(255, 0 , 255, 255),"center","center")
 		DrawTextA(tostring("Hold Spacebar to cast standard combos"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.210), ARGB(255, 255, 255, 255))
 		DrawTextA(tostring("Hold C (mixed mode) to Harass enemy and get CS!"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.225), ARGB(255, 255, 255, 255))
@@ -7236,8 +8411,8 @@ function OnDraw()
 		DrawTextA(tostring("Open to Suggestions!"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.360), ARGB(255, 255, 255, 255))
 		DrawTextA(tostring("                           By: Farplane"), WINDOW_H*.015, (WINDOW_W/2.65), (WINDOW_H*.375), ARGB(255, 255, 255, 255))
 		local w, h1, h2 = (WINDOW_W*0.49), (WINDOW_H*.70), (WINDOW_H*.75)
-		DrawLine(w, h1/1.775, w, h2/1.68, w*.11, ARGB(122, 255, 0, 255))
-		--DrawLine(w*.98, h1*.98, w*.98, h2*.98, w*.1*.98, ARGB(205,255,255,255))
+		DrawLineFilter(w, h1/1.775, w, h2/1.68, w*.11, ARGB(122, 255, 0, 255))
+		--DrawLineFilter(w*.98, h1*.98, w*.98, h2*.98, w*.1*.98, ARGB(205,255,255,255))
 		DrawRectangleButton(WINDOW_W*0.467, WINDOW_H/2.375, WINDOW_W*.047, WINDOW_H*.041, ARGB(255,0,255,255))
 		DrawTextA(tostring("OK"), WINDOW_H*.02, (WINDOW_W/2)*.98, (WINDOW_H/2.375), ARGB(255,0, 0, 0),"center","center")
 	end
@@ -7247,18 +8422,18 @@ function OnDraw()
 	
 	--  Auto Level Disable while in Spawn Text (Under Champion)
 	if settings.autolvl.Disablelvl and Inside_Spawn then
-		DrawText("Auto Level Disabled while in Spawn!", 20, ScreenDrawMyHeroFrom3D.x - 136, ScreenDrawMyHeroFrom3D.y + 51, ARGB(BlinkMultiplier(1), 0, 0, 0))
-		DrawText("Auto Level Disabled while in Spawn!", 20, ScreenDrawMyHeroFrom3D.x - 137, ScreenDrawMyHeroFrom3D.y + 50, ARGB(BlinkMultiplier(1), 255, 255, 255))
-		--DrawText3D("Auto Level Disabled while in Spawn!", myHero.x + 2, myHero.y, myHero.z - 82, 20, ARGB(BlinkMultiplier(1), 0, 0, 0), true)
-		--DrawText3D("Auto Level Disabled while in Spawn!", myHero.x, myHero.y, myHero.z - 80, 20, ARGB(BlinkMultiplier(1), 255, 255, 255), true)
+		DrawTextFilter("Auto Level Disabled while in Spawn!", 20, ScreenDrawMyHeroFrom3D.x - 136, ScreenDrawMyHeroFrom3D.y + 51, ARGB(BlinkMultiplier(1), 0, 0, 0))
+		DrawTextFilter("Auto Level Disabled while in Spawn!", 20, ScreenDrawMyHeroFrom3D.x - 137, ScreenDrawMyHeroFrom3D.y + 50, ARGB(BlinkMultiplier(1), 255, 255, 255))
+		--DrawText3DFilter("Auto Level Disabled while in Spawn!", myHero.x + 2, myHero.y, myHero.z - 82, 20, ARGB(BlinkMultiplier(1), 0, 0, 0), true)
+		--DrawText3DFilter("Auto Level Disabled while in Spawn!", myHero.x, myHero.y, myHero.z - 80, 20, ARGB(BlinkMultiplier(1), 255, 255, 255), true)
 	end
 
 	--  Draw Text On Level Up (Under Champion)
 	if settings.autolvl.DrawText and SpellText ~= nil and DrawLevelUp then
-		DrawText("Leveled:", 20, ScreenDrawMyHeroFrom3D.x - 30, ScreenDrawMyHeroFrom3D.y + 50, ARGB(255, 255, 255, 255))
-		DrawText("" .. SpellText .. "", 20, ScreenDrawMyHeroFrom3D.x - 10, ScreenDrawMyHeroFrom3D.y + 65, ARGB(255, 0, 255, 0))
-		--DrawText3D("Leveled2:", myHero.x, myHero.y, myHero.z - 50, 20, ARGB(255, 255, 0, 0), true)
-		--DrawText3D("" .. SpellText .. "", myHero.x, myHero.y, myHero.z - 75, 20, ARGB(255, 255, 0, 0), true)
+		DrawTextFilter("Leveled:", 20, ScreenDrawMyHeroFrom3D.x - 30, ScreenDrawMyHeroFrom3D.y + 50, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. SpellText .. "", 20, ScreenDrawMyHeroFrom3D.x - 10, ScreenDrawMyHeroFrom3D.y + 65, ARGB(255, 0, 255, 0))
+		--DrawText3DFilter("Leveled2:", myHero.x, myHero.y, myHero.z - 50, 20, ARGB(255, 255, 0, 0), true)
+		--DrawText3DFilter("" .. SpellText .. "", myHero.x, myHero.y, myHero.z - 75, 20, ARGB(255, 255, 0, 0), true)
 	end
 	
 	--  Debugger Switch (it's too clunky and messy to put here aylmao)
@@ -7291,7 +8466,7 @@ end
 
 function DrawLineAfterScreen(StartX, StartY, EndX, EndY, width, color)
 	if (StartX > 0 and StartX < WINDOW_W) and (StartY > 0 and StartY < WINDOW_H) and (EndX > 0 and EndX < WINDOW_W) and (EndY > 0 and EndY < WINDOW_H) then
-		DrawLine(StartX, StartY, EndX, EndY, width, color)
+		DrawLineFilter(StartX, StartY, EndX, EndY, width, color)
 	end
 end
 
@@ -7391,6 +8566,24 @@ function GetHPBarPos(enemy)
 	local barPosPercentageOffset = { x = enemy.barData.PercentageOffset.x, y = enemy.barData.PercentageOffset.y }
 	local BarPosOffsetX = -50
 	local BarPosOffsetY = 46
+	if enemy.charName == "Annie" then
+		BarPosOffsetX = BarPosOffsetX + 20
+		BarPosOffsetY = BarPosOffsetY + 12
+	elseif enemy.charName == "AniviaEgg" then
+		BarPosOffsetX = BarPosOffsetX + 28
+	elseif enemy.charName == "Darius" then
+		BarPosOffsetX = BarPosOffsetX + 14
+	elseif enemy.charName == "Renekton" then
+		BarPosOffsetX = BarPosOffsetX + 14
+	elseif enemy.charName == "Sion" then
+		BarPosOffsetX = BarPosOffsetX + 14
+	elseif enemy.charName == "Jax" then
+		BarPosOffsetY = BarPosOffsetY + 2
+	elseif enemy.charName == "Thresh" then
+		BarPosOffsetX = BarPosOffsetX + 8
+	elseif enemy.charName == "Thresh" then
+		BarPosOffsetX = BarPosOffsetX + 8
+	end
 	local CorrectionY = 39
 	local StartHpPos = 31
 	barPos.x = math.floor(barPos.x + (barPosOffset.x - 0.5 + barPosPercentageOffset.x) * BarPosOffsetX + StartHpPos)
@@ -7408,28 +8601,30 @@ function DrawLineHPBar(damage, line, text, unit)
 		thedmg=damage
 	end
 	local StartPos, EndPos = GetHPBarPos(unit)
-	local Real_X = StartPos.x+24
+	local Real_X = StartPos.x + 24
 	local Offs_X = (Real_X + ((unit.health-thedmg)/unit.maxHealth) * (EndPos.x - StartPos.x - 2))
-	if Offs_X < Real_X then Offs_X = Real_X end	
+	if Offs_X < Real_X then
+		Offs_X = Real_X
+	end	
 	local mytrans = 350 - math.round(255*((unit.health-thedmg)/unit.maxHealth))
 	if mytrans >= 255 then mytrans=254 end
 	local my_redpart = math.round(400*((unit.health-thedmg)/unit.maxHealth))
 	if my_redpart >= 255 then my_redpart=254 end
 	if settings.draws.NamesEnabled then
-		DrawLine(Offs_X-150, StartPos.y-(42+(line*15)), Offs_X-150, StartPos.y-2, 2, ARGB(mytrans, my_redpart,255,0))
-		DrawText(tostring(text),15,Offs_X-148,StartPos.y-(42+(line*15)), ARGB(mytrans, my_redpart,255,0))
+		DrawLineFilter(Offs_X-150, StartPos.y-(42+(line*15)), Offs_X-150, StartPos.y-2, 2, ARGB(mytrans, my_redpart,255,0))
+		DrawTextFilter(tostring(text),15,Offs_X-148,StartPos.y-(42+(line*15)), ARGB(mytrans, my_redpart,255,0))
 	else
-		DrawLine(Offs_X-150, StartPos.y-(30+(line*15)), Offs_X-150, StartPos.y-2, 2, ARGB(mytrans, my_redpart,255,0))
-		DrawText(tostring(text),15,Offs_X-148,StartPos.y-(30+(line*15)), ARGB(mytrans, my_redpart,255,0))
+		DrawLineFilter(Offs_X-150, StartPos.y-(30+(line*15)), Offs_X-150, StartPos.y-2, 2, ARGB(mytrans, my_redpart,255,0))
+		DrawTextFilter(tostring(text),15,Offs_X-148,StartPos.y-(30+(line*15)), ARGB(mytrans, my_redpart,255,0))
 	end
 end
 
 function DrawLineHPBar2(damage, line, text, unit)
 	local thedmg = 0
 	if damage >= unit.maxHealth then
-		thedmg = unit.maxHealth-1
+		thedmg = unit.maxHealth - 1
 	else
-		thedmg=damage
+		thedmg = damage
 	end
 	local StartPos, EndPos = GetHPBarPos(unit)
 	local Real_X = StartPos.x+24
@@ -7437,7 +8632,7 @@ function DrawLineHPBar2(damage, line, text, unit)
 	if Offs_X < Real_X then
 		Offs_X = Real_X
 	end
-	DrawLine(Offs_X-150, StartPos.y-(line*15), StartPos.x-20, StartPos.y-(line*15), 10, ARGB(140, 0, 0, 0))
+	DrawLineFilter(Offs_X-150, StartPos.y-(line*15), StartPos.x-20, StartPos.y-(line*15), 10, ARGB(140, 0, 0, 0))
 end
 
 function DrawUltimateAwareness(startx, starty, startz, endx, endy, endz, thickness, color, entity)
@@ -7463,18 +8658,18 @@ function DrawUltimateAwareness(startx, starty, startz, endx, endy, endz, thickne
 	LeftPosVec = VectorLineStructure + (Vector(startLinePos) - VectorLineStructure):rotated(0, 45 * math.pi / 180, 0):normalized() * 40
 	RightPosVec = VectorLineStructure + (Vector(startLinePos) - VectorLineStructure):rotated(0, 315 * math.pi / 180, 0):normalized() * 40
 	if settings.draws.aws.outlines then
-		DrawLine3D(startLinePosStructure.x, startLinePosStructure.y, startLinePosStructure.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness + 2, ARGB(255, 0, 0, 0))
-		DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, LeftPosVec.x, LeftPosVec.y, LeftPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
-		DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, RightPosVec.x, RightPosVec.y, RightPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
+		DrawLine3DFilter(startLinePosStructure.x, startLinePosStructure.y, startLinePosStructure.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness + 2, ARGB(255, 0, 0, 0))
+		DrawLine3DFilter(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, LeftPosVec.x, LeftPosVec.y, LeftPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
+		DrawLine3DFilter(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, RightPosVec.x, RightPosVec.y, RightPosVec.z, thickness + 2, ARGB(255, 0, 0, 0))
 	end
-	DrawLine3D(startLinePosStructure.x, startLinePosStructure.y, startLinePosStructure.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness, color)
-	DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, LeftPosVec.x, LeftPosVec.y, LeftPosVec.z, thickness, color)
-	DrawLine3D(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, RightPosVec.x, RightPosVec.y, RightPosVec.z, thickness, color)
+	DrawLine3DFilter(startLinePosStructure.x, startLinePosStructure.y, startLinePosStructure.z, VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, thickness, color)
+	DrawLine3DFilter(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, LeftPosVec.x, LeftPosVec.y, LeftPosVec.z, thickness, color)
+	DrawLine3DFilter(VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z, RightPosVec.x, RightPosVec.y, RightPosVec.z, thickness, color)
 	if settings.draws.aws.drawname then
-		DrawText3D(""..entity.charName.."", VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z - 42, settings.draws.aws.TSize, color)
+		DrawText3DFilter(""..entity.charName.."", VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z - 42, settings.draws.aws.TSize, color)
 	end
 	if settings.draws.aws.drawdistance then
-		DrawText3D("               -    [".. math.ceil(GetDistance(myHero, entity)).."]", VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z - 42, settings.draws.aws.TSize, ARGB(255, 0, 255, 255))
+		DrawText3DFilter("               -    [".. math.ceil(GetDistance(myHero, entity)).."]", VectorLineStructure.x, VectorLineStructure.y, VectorLineStructure.z - 42, settings.draws.aws.TSize, ARGB(255, 0, 255, 255))
 	end
 end
 
@@ -7490,26 +8685,26 @@ function DrawOtherPathing(HeroType, Thickness, Color)
 					if GetDistance(hero, hero.endPath) > 30 then
 						if hero.endPath then
 							if settings.draws.pcs.names then
-								DrawText3D(""..hero.charName.."", hero.endPath.x, hero.endPath.y, hero.endPath.z - 42, 15, Color, true)
+								DrawText3DFilter(""..hero.charName.."", hero.endPath.x, hero.endPath.y, hero.endPath.z - 42, 15, Color, true)
 							end
 							DrawEndPos(hero, Thickness, Color)
 						end
 					end
 					if settings.draws.pcs.outlines then
-						DrawLine3D(hero.x, hero.y, hero.z, IndexPath.x, IndexPath.y, IndexPath.z, Thickness + 2, ARGB(255, 0, 0, 0))
+						DrawLine3DFilter(hero.x, hero.y, hero.z, IndexPath.x, IndexPath.y, IndexPath.z, Thickness + 2, ARGB(255, 0, 0, 0))
 					end
-					DrawLine3D(hero.x, hero.y, hero.z, IndexPath.x, IndexPath.y, IndexPath.z, Thickness, Color)
+					DrawLine3DFilter(hero.x, hero.y, hero.z, IndexPath.x, IndexPath.y, IndexPath.z, Thickness, Color)
 				end
 				for i = hero.pathIndex, hero.pathCount - 1 do
 					local Path = hero:GetPath(i)
 					local Path2 = hero:GetPath(i + 1)
 					if settings.draws.pcs.outlines then
-						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness + 2, ARGB(255, 0, 0, 0))
+						DrawLine3DFilter(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness + 2, ARGB(255, 0, 0, 0))
 					end
 					if not settings.draws.pcs.over1 then
-						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness, ARGB(255, 255, 255, 255))
+						DrawLine3DFilter(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness, ARGB(255, 255, 255, 255))
 					else
-						DrawLine3D(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness, Color)
+						DrawLine3DFilter(Path.x, Path.y, Path.z, Path2.x, Path2.y, Path2.z, Thickness, Color)
 					end
 				end
 			end
@@ -7526,9 +8721,9 @@ function DrawEndPos(unit, Thickness, Color)
 	end
 	if settings.draws.pcs.mode == 3 then
 		if settings.draws.pcs.outlines then 
-			DrawCircle2(unit.endPath.x, unit.endPath.y, unit.endPath.z, 3, 1, settings.draws.pcs.snap, ARGB(255, 0, 0, 0))
+			DrawCircle2Filter(unit.endPath.x, unit.endPath.y, unit.endPath.z, 3, 1, settings.draws.pcs.snap, ARGB(255, 0, 0, 0))
 		end
-		DrawCircle2(unit.endPath.x, unit.endPath.y, unit.endPath.z, Thickness, 1, settings.draws.pcs.snap, Color)
+		DrawCircle2Filter(unit.endPath.x, unit.endPath.y, unit.endPath.z, Thickness, 1, settings.draws.pcs.snap, Color)
 	end
 	if settings.draws.pcs.mode == 4 then
 		local LocationEnd = unit.endPath
@@ -7537,11 +8732,11 @@ function DrawEndPos(unit, Thickness, Color)
 		local Left = LocationEnd.z - 35
 		local Right = LocationEnd.z + 35
 		if settings.draws.pcs.outlines then 
-			DrawLine3D(Top + 1, LocationEnd.y, Left - 1, Bottom - 1, LocationEnd.y, Right + 1, Thickness + 2, ARGB(255, 0, 0, 0))
-			DrawLine3D(Top + 1, LocationEnd.y, Right + 1, Bottom - 1, LocationEnd.y, Left - 1, Thickness + 2, ARGB(255, 0, 0, 0))
+			DrawLine3DFilter(Top + 1, LocationEnd.y, Left - 1, Bottom - 1, LocationEnd.y, Right + 1, Thickness + 2, ARGB(255, 0, 0, 0))
+			DrawLine3DFilter(Top + 1, LocationEnd.y, Right + 1, Bottom - 1, LocationEnd.y, Left - 1, Thickness + 2, ARGB(255, 0, 0, 0))
 		end
-		DrawLine3D(Top, LocationEnd.y, Left, Bottom, LocationEnd.y, Right, Thickness, Color)
-		DrawLine3D(Top, LocationEnd.y, Right, Bottom, LocationEnd.y, Left, Thickness, Color)
+		DrawLine3DFilter(Top, LocationEnd.y, Left, Bottom, LocationEnd.y, Right, Thickness, Color)
+		DrawLine3DFilter(Top, LocationEnd.y, Right, Bottom, LocationEnd.y, Left, Thickness, Color)
 	end
 end
 
@@ -7557,12 +8752,12 @@ function DrawHDArrow3DVector(startPos, endPos, thickness, color, outline_color, 
 	end
 	VECTORLeftPos = VECTORendPos + (Vector(startPos) - VECTORendPos):rotated(0, 45 * math.pi / 180, 0):normalized() * 35
 	VECTORRightPos = VECTORendPos + (Vector(startPos) - VECTORendPos):rotated(0, 315 * math.pi / 180, 0):normalized() * 35
-	DrawLine3D(startPos.x, startPos.y, startPos.z, VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, thickness + 2, outline_color)
-	DrawLine3D(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORLeftPos.x, VECTORLeftPos.y, VECTORLeftPos.z, thickness + 2, outline_color)
-	DrawLine3D(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORRightPos.x, VECTORRightPos.y, VECTORRightPos.z, thickness + 2, outline_color)
-	DrawLine3D(startPos.x, startPos.y, startPos.z, VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, thickness, color)
-	DrawLine3D(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORLeftPos.x, VECTORLeftPos.y, VECTORLeftPos.z, thickness, color)
-	DrawLine3D(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORRightPos.x, VECTORRightPos.y, VECTORRightPos.z, thickness, color)
+	DrawLine3DFilter(startPos.x, startPos.y, startPos.z, VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, thickness + 2, outline_color)
+	DrawLine3DFilter(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORLeftPos.x, VECTORLeftPos.y, VECTORLeftPos.z, thickness + 2, outline_color)
+	DrawLine3DFilter(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORRightPos.x, VECTORRightPos.y, VECTORRightPos.z, thickness + 2, outline_color)
+	DrawLine3DFilter(startPos.x, startPos.y, startPos.z, VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, thickness, color)
+	DrawLine3DFilter(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORLeftPos.x, VECTORLeftPos.y, VECTORLeftPos.z, thickness, color)
+	DrawLine3DFilter(VECTORendPos.x, VECTORendPos.y, VECTORendPos.z, VECTORRightPos.x, VECTORRightPos.y, VECTORRightPos.z, thickness, color)
 end
 
 function DrawESP(entity, boxcolor)
@@ -7581,16 +8776,16 @@ function DrawESP(entity, boxcolor)
 			DrawCircle(entity.x, entity.y, entity.z, entity.boundingRadius, ARGB(table.unpack(boxcolor)))
 		elseif settings.draws.esp.cubetype == 4 then
 			if settings.draws.esp.outlines then
-				DrawCircle2(entity.x, entity.y, entity.z, settings.draws.esp.boxthickness + 2, entity.boundingRadius, 1, ARGB(255, 0, 0, 0))
+				DrawCircle2Filter(entity.x, entity.y, entity.z, settings.draws.esp.boxthickness + 2, entity.boundingRadius, 1, ARGB(255, 0, 0, 0))
 			end
-			DrawCircle2(entity.x, entity.y, entity.z, settings.draws.esp.boxthickness, entity.boundingRadius, 1, ARGB(table.unpack(boxcolor)))
+			DrawCircle2Filter(entity.x, entity.y, entity.z, settings.draws.esp.boxthickness, entity.boundingRadius, 1, ARGB(table.unpack(boxcolor)))
 		end
 	end
 end
 
 function DrawNormalESP(entity, width, colour)
-	--DrawCircle2(entity.x, entity.y, entity.z, 2, entity.boundingRadius, 1, ARGB(255, 0, 255, 0))
-	--DrawCircle2(entity.x, entity.y + (entity.boundingRadius * 3.5), entity.z, 2, entity.boundingRadius, 1, ARGB(255, 0, 255, 0))
+	--DrawCircle2Filter(entity.x, entity.y, entity.z, 2, entity.boundingRadius, 1, ARGB(255, 0, 255, 0))
+	--DrawCircle2Filter(entity.x, entity.y + (entity.boundingRadius * 3.5), entity.z, 2, entity.boundingRadius, 1, ARGB(255, 0, 255, 0))
 	local ScreenVectorFeet = WorldToScreen(D3DXVECTOR3(entity.x, entity.y, entity.z))
 	local ScreenVectorHead = WorldToScreen(D3DXVECTOR3(entity.x, (entity.y + (entity.boundingRadius * 3.5)), entity.z))
 	local Offset = entity.boundingRadius / 2
@@ -7598,10 +8793,10 @@ function DrawNormalESP(entity, width, colour)
 	local Right = (ScreenVectorFeet.x + (entity.boundingRadius / 1.5))
 	local Top = (ScreenVectorHead.y)
 	local Bottom = (ScreenVectorFeet.y - Offset + entity.boundingRadius)
-	DrawLine(Left, Top, Left, Bottom, width, colour)
-	DrawLine(Right, Top, Right, Bottom, width, colour)
-	DrawLine(Left, Bottom, Right, Bottom, width, colour)
-	DrawLine(Left, Top, Right, Top, width, colour)
+	DrawLineFilter(Left, Top, Left, Bottom, width, colour)
+	DrawLineFilter(Right, Top, Right, Bottom, width, colour)
+	DrawLineFilter(Left, Bottom, Right, Bottom, width, colour)
+	DrawLineFilter(Left, Top, Right, Top, width, colour)
 end
 
 function DrawVectorESP(entity, width, colour)
@@ -7629,8 +8824,8 @@ function DrawNewIndexLine3D(x_start, y_start, x_end, y_end, width, colour)
 	}
 	local StopLeftVectorPos = StartLeftVectorPos + (Vector(StartRightVectorPos) - StartLeftVectorPos):normalized() * (myHero.boundingRadius / 2)
 	local StopRightVectorPos = StartRightVectorPos + (Vector(StartLeftVectorPos) - StartRightVectorPos):normalized() * (myHero.boundingRadius / 2)
-	DrawLine(StartLeftVectorPos.x, StartLeftVectorPos.y, StopLeftVectorPos.x, StopLeftVectorPos.y, width, colour)
-	DrawLine(StartRightVectorPos.x, StartRightVectorPos.y, StopRightVectorPos.x, StopRightVectorPos.y, width, colour)
+	DrawLineFilter(StartLeftVectorPos.x, StartLeftVectorPos.y, StopLeftVectorPos.x, StopLeftVectorPos.y, width, colour)
+	DrawLineFilter(StartRightVectorPos.x, StartRightVectorPos.y, StopRightVectorPos.x, StopRightVectorPos.y, width, colour)
 end
 
 function DrawMyCooldown()
@@ -7693,31 +8888,31 @@ function DrawMyCooldown()
 				spellColorR = ARGB(255, 255, 255, 255)
 				RSpellNotReady = false
 			end
-			DrawRectangle(barPos.x + 43, barPos.y - 7, 85, 20, 0xFF000000)
+			DrawRectangleFilter(barPos.x + 43, barPos.y - 7, 85, 20, 0xFF000000)
 			if CoolDownQ and not QSpellNotReady then
-				DrawRectangle(barPos.x - 4 + 49, barPos.y - 5, 17, 16, 0x8033CC00)
+				DrawRectangleFilter(barPos.x - 4 + 49, barPos.y - 5, 17, 16, 0x8033CC00)
 			elseif not CoolDownQ then
-				DrawRectangle(barPos.x - 4 + 49, barPos.y - 5, 17, 16, 0x80FF0000)
+				DrawRectangleFilter(barPos.x - 4 + 49, barPos.y - 5, 17, 16, 0x80FF0000)
 			end
 			if CoolDownW and not WSpellNotReady then
-				DrawRectangle(barPos.x + 17 + 49, barPos.y - 5, 17, 16, 0x8033CC00)
+				DrawRectangleFilter(barPos.x + 17 + 49, barPos.y - 5, 17, 16, 0x8033CC00)
 			elseif not CoolDownW then
-				DrawRectangle(barPos.x + 17 + 49, barPos.y - 5, 17, 16, 0x80FF0000)
+				DrawRectangleFilter(barPos.x + 17 + 49, barPos.y - 5, 17, 16, 0x80FF0000)
 			end
 			if CoolDownE and not ESpellNotReady then
-				DrawRectangle(barPos.x + 38 + 49, barPos.y - 5, 17, 16, 0x8033CC00)
+				DrawRectangleFilter(barPos.x + 38 + 49, barPos.y - 5, 17, 16, 0x8033CC00)
 			elseif not CoolDownE then
-				DrawRectangle(barPos.x + 38 + 49, barPos.y - 5, 17, 16, 0x80FF0000)
+				DrawRectangleFilter(barPos.x + 38 + 49, barPos.y - 5, 17, 16, 0x80FF0000)
 			end
 			if CoolDownR and not RSpellNotReady then
-				DrawRectangle(barPos.x + 59 + 49, barPos.y - 5, 17, 16, 0x8033CC00)
+				DrawRectangleFilter(barPos.x + 59 + 49, barPos.y - 5, 17, 16, 0x8033CC00)
 			elseif not CoolDownR then
-				DrawRectangle(barPos.x + 59 + 49, barPos.y - 5, 17, 16, 0x80FF0000)
+				DrawRectangleFilter(barPos.x + 59 + 49, barPos.y - 5, 17, 16, 0x80FF0000)
 			end
-			DrawText(" " .. CoolDownTrackerQ, 15, barPos.x - 5 + 51, barPos.y - 5, spellColorQ)
-			DrawText(" " .. CoolDownTrackerW, 15, barPos.x + 15 + 51, barPos.y - 5, spellColorW)
-			DrawText("  " .. CoolDownTrackerE, 15, barPos.x + 35 + 51, barPos.y - 5, spellColorE)
-			DrawText("  " .. CoolDownTrackerR, 15, barPos.x + 54 + 51, barPos.y - 5, spellColorR)
+			DrawTextFilter(" " .. CoolDownTrackerQ, 15, barPos.x - 5 + 51, barPos.y - 5, spellColorQ)
+			DrawTextFilter(" " .. CoolDownTrackerW, 15, barPos.x + 15 + 51, barPos.y - 5, spellColorW)
+			DrawTextFilter("  " .. CoolDownTrackerE, 15, barPos.x + 35 + 51, barPos.y - 5, spellColorE)
+			DrawTextFilter("  " .. CoolDownTrackerR, 15, barPos.x + 54 + 51, barPos.y - 5, spellColorR)
 		end
 	end
 end
@@ -7783,31 +8978,31 @@ function DrawEntityCooldown(entity)
 					spellColorR = ARGB(255, 255, 255, 255)
 					RSpellNotReady = false
 				end
-				DrawRectangle(barPos.x - 6, barPos.y, 85, 20, 0xFF000000)
+				DrawRectangleFilter(barPos.x - 6, barPos.y, 85, 20, 0xFF000000)
 				if CoolDownQ and not QSpellNotReady then
-					DrawRectangle(barPos.x - 4, barPos.y + 2, 17, 16, 0x8033CC00)
+					DrawRectangleFilter(barPos.x - 4, barPos.y + 2, 17, 16, 0x8033CC00)
 				elseif not CoolDownQ then
-					DrawRectangle(barPos.x - 4, barPos.y + 2, 17, 16, 0x80FF0000)
+					DrawRectangleFilter(barPos.x - 4, barPos.y + 2, 17, 16, 0x80FF0000)
 				end
 				if CoolDownW and not WSpellNotReady then
-					DrawRectangle(barPos.x + 17, barPos.y + 2, 17, 16, 0x8033CC00)
+					DrawRectangleFilter(barPos.x + 17, barPos.y + 2, 17, 16, 0x8033CC00)
 				elseif not CoolDownW then
-					DrawRectangle(barPos.x + 17, barPos.y + 2, 17, 16, 0x80FF0000)
+					DrawRectangleFilter(barPos.x + 17, barPos.y + 2, 17, 16, 0x80FF0000)
 				end
 				if CoolDownE and not ESpellNotReady then
-					DrawRectangle(barPos.x + 38, barPos.y + 2, 17, 16, 0x8033CC00)
+					DrawRectangleFilter(barPos.x + 38, barPos.y + 2, 17, 16, 0x8033CC00)
 				elseif not CoolDownE then
-					DrawRectangle(barPos.x + 38, barPos.y + 2, 17, 16, 0x80FF0000)
+					DrawRectangleFilter(barPos.x + 38, barPos.y + 2, 17, 16, 0x80FF0000)
 				end
 				if CoolDownR and not RSpellNotReady then
-					DrawRectangle(barPos.x + 59, barPos.y + 2, 17, 16, 0x8033CC00)
+					DrawRectangleFilter(barPos.x + 59, barPos.y + 2, 17, 16, 0x8033CC00)
 				elseif not CoolDownR then
-					DrawRectangle(barPos.x + 59, barPos.y + 2, 17, 16, 0x80FF0000)
+					DrawRectangleFilter(barPos.x + 59, barPos.y + 2, 17, 16, 0x80FF0000)
 				end
-				DrawText(" " .. CoolDownTrackerQ, 15, barPos.x-5+2, barPos.y + 2, spellColorQ)
-				DrawText(" " .. CoolDownTrackerW, 15, barPos.x+15+2, barPos.y + 2, spellColorW)
-				DrawText("  " .. CoolDownTrackerE, 15, barPos.x+35+2, barPos.y + 2, spellColorE)
-				DrawText("  " .. CoolDownTrackerR, 15, barPos.x+54+2, barPos.y + 2, spellColorR)
+				DrawTextFilter(" " .. CoolDownTrackerQ, 15, barPos.x-5+2, barPos.y + 2, spellColorQ)
+				DrawTextFilter(" " .. CoolDownTrackerW, 15, barPos.x+15+2, barPos.y + 2, spellColorW)
+				DrawTextFilter("  " .. CoolDownTrackerE, 15, barPos.x+35+2, barPos.y + 2, spellColorE)
+				DrawTextFilter("  " .. CoolDownTrackerR, 15, barPos.x+54+2, barPos.y + 2, spellColorR)
 			end
 		end
 	end
@@ -7823,13 +9018,13 @@ function DrawPingHP()
 				if settings.draws.NamesEnabled then
 					barPosoff = barPosoff + 60
 				end
-				DrawRectangle(barPos.x, barPosoff - 45, 60, 18, 0xFF000000)
+				DrawRectangleFilter(barPos.x, barPosoff - 45, 60, 18, 0xFF000000)
 				if GetLatency() > 50 then
-					DrawRectangle(barPos.x + 2, barPosoff - 43, 56, 14, 0xCCFF0000)
+					DrawRectangleFilter(barPos.x + 2, barPosoff - 43, 56, 14, 0xCCFF0000)
 				else
-					DrawRectangle(barPos.x + 2, barPosoff - 43, 56, 14, 0x8033CC00)
+					DrawRectangleFilter(barPos.x + 2, barPosoff - 43, 56, 14, 0x8033CC00)
 				end
-				DrawText("Ping: " .. GetLatency(), 14, barPos.x + 4, barPosoff - 43, 0xFFFFFFFF)
+				DrawTextFilter("Ping: " .. GetLatency(), 14, barPos.x + 4, barPosoff - 43, 0xFFFFFFFF)
 			end
 		end
 	end
@@ -7845,13 +9040,13 @@ function DrawFPSHP()
 				if settings.draws.NamesEnabled then
 					barPosoff = barPosoff + 60
 				end
-				DrawRectangle(barPos.x + 67, barPosoff - 45, 60, 18, 0xFF000000)
+				DrawRectangleFilter(barPos.x + 67, barPosoff - 45, 60, 18, 0xFF000000)
 				if GetFPS() < 30 then
-					DrawRectangle(barPos.x + 69, barPosoff - 43, 56, 14, 0xCCFF0000)
+					DrawRectangleFilter(barPos.x + 69, barPosoff - 43, 56, 14, 0xCCFF0000)
 				else
-					DrawRectangle(barPos.x + 69, barPosoff - 43, 56, 14, 0x8033CC00)
+					DrawRectangleFilter(barPos.x + 69, barPosoff - 43, 56, 14, 0x8033CC00)
 				end
-				DrawText("FPS: " .. GetFPS(), 14, barPos.x + 71, barPosoff - 43, 0xFFFFFFFF)
+				DrawTextFilter("FPS: " .. GetFPS(), 14, barPos.x + 71, barPosoff - 43, 0xFFFFFFFF)
 			end
 		end
 	end
@@ -7872,6 +9067,190 @@ function GetHPBarPosCooldown(enemy)
 	local StartPos = Vector(barPos.x , barPos.y, 0)
 	local EndPos = Vector(barPos.x + 108 , barPos.y , 0)
 	return Vector(StartPos.x, StartPos.y, 0), Vector(EndPos.x, EndPos.y, 0)
+end
+
+function DrawMinionEStackHPandTIME(target)
+	local position, width, height, offset1, offset2, thickness = GetMinionHPBarPos(target)
+	local EDamage = GetEDmg_Twitch(target)
+	local aaDamage = myHero:CalcDamage(target, myHero.totalDamage)
+	local aaWidth = (aaDamage / target.maxHealth) * width
+	local eWidth = (EDamage / target.maxHealth) * width
+	local mobHealthWidth = (target.health / target.maxHealth) * width
+	if target.health <= EDamage then
+		DrawLineFilter(position.x - 22, position.y - 4, position.x + 70, position.y - 4, 25, ARGB(120, 0, 255, 0))
+	else
+		DrawLineFilter(position.x - 22, position.y - 4, position.x + 70, position.y - 4, 25, ARGB(120, 0, 0, 0))
+	end
+	--DrawTextFilter("Name: " .. target.charName, 13, position.x - 35, position.y - 25, ARGB(255, 255, 255, 255))
+	DrawTextFilter("Stacks:", 13, position.x - 21, position.y - 15, ARGB(255, 255, 255, 255))
+	DrawTextFilter("Time:", 13, position.x + 27, position.y - 15, ARGB(255, 255, 255, 255))
+	local function roundToFirstDecimal(seconds)
+		return math.ceil(seconds * 10) * 0.1
+	end
+	if DeadlyVenomMinions[target.networkID] ~= nil then
+		if DeadlyVenomMinions[target.networkID].time > 0 then
+			DrawTextFilter(tostring(DeadlyVenomMinions[target.networkID].stacks), 13, position.x + 18, position.y - 15, ARGB(255, 130, 255, 0))
+			--DrawTextFilter(tostring(DeadlyVenomMinions[target.networkID].time), 13, position.x + 55, position.y - 15, ARGB(255, 0, 255, 255))
+			DrawTextFilter("" .. roundToFirstDecimal(DeadlyVenomMinions[target.networkID].time - os.clock()), 13, position.x + 55, position.y - 15, ARGB(255, 0, 255, 255))
+		else
+			DrawTextFilter("0", 13, position.x + 18, position.y - 15, ARGB(255, 255, 0, 0))
+			DrawTextFilter("0", 13, position.x + 55, position.y - 15, ARGB(255, 0, 255, 255))
+		end
+	elseif DeadlyVenomJungle[target.networkID] ~= nil then
+		if DeadlyVenomJungle[target.networkID].time > 0 then
+			DrawTextFilter(tostring(DeadlyVenomJungle[target.networkID].stacks), 13, position.x + 18, position.y - 15, ARGB(255, 130, 255, 0))
+			--DrawTextFilter(tostring(DeadlyVenomJungle[target.networkID].time), 13, position.x + 55, position.y - 15, ARGB(255, 0, 255, 255))
+			DrawTextFilter("" .. roundToFirstDecimal(DeadlyVenomJungle[target.networkID].time - os.clock()), 13, position.x + 55, position.y - 15, ARGB(255, 0, 255, 255))
+		else
+			DrawTextFilter("0", 13, position.x + 18, position.y - 15, ARGB(255, 255, 0, 0))
+			DrawTextFilter("0", 13, position.x + 55, position.y - 15, ARGB(255, 0, 255, 255))
+		end
+	else
+		DrawTextFilter("0", 13, position.x + 18, position.y - 15, ARGB(255, 255, 0, 0))
+		DrawTextFilter("0", 13, position.x + 55, position.y - 15, ARGB(255, 0, 255, 255))
+	end
+	DrawTextFilter("HP:", 13, position.x - 19, position.y - 5, ARGB(255, 255, 255, 255))
+	DrawLineFilter(position.x, position.y + offset1, position.x + width, position.y + height + offset2, thickness, ARGB(255, 0, 0, 0))
+	DrawLineFilter(position.x, position.y + offset1, position.x + 1 + mobHealthWidth, position.y + height + offset2, thickness, ARGB(255, 255, 180, 0))
+	if eWidth < mobHealthWidth then
+		DrawLineFilter((((position.x) + mobHealthWidth) - eWidth), position.y + offset1, position.x + 1 + mobHealthWidth, position.y + height + offset2, thickness, ARGB(180, 0, 255, 255))
+	else
+		DrawLineFilter(position.x, position.y + offset1, position.x + 1 + mobHealthWidth, position.y + height + offset2, thickness, ARGB(255, 0, 255, 0))
+	end
+	if settings.draws.otherTwitch.aabreaks then
+		if mobHealthWidth > 1 then
+			local bars = math.ceil(mobHealthWidth / aaWidth)
+			local barmulti = 1
+			while (barmulti <= bars) do
+				local barX = position.x + (barmulti * aaWidth)
+				if (barX < position.x + mobHealthWidth) then
+					DrawLineFilter(barX, position.y, barX, position.y + height, 1, ARGB(255, 0, 0, 0))
+				end
+				barmulti = barmulti + 1
+			end
+		end
+	end
+	if target.health <= EDamage then
+		DrawOutlineRectangle(position.x, position.y - 1, width, height + 1, ARGB(255, 0, 255, 0))
+	else
+		DrawOutlineRectangle(position.x, position.y - 1, width, height + 1, ARGB(255, 255, 0, 0))
+	end
+end
+
+function GetMinionHPBarPos(entity)
+	local barPos = GetUnitHPBarPos(entity)
+	local width = 62
+	local height = 4  
+	barPos.x = barPos.x - 31
+	barPos.y = barPos.y - 2
+	offset1 = 1
+	offset2 = -3
+	thickness = 5
+	if entity.charName == "SRU_ChaosMinionSuper" then
+		barPos.x = barPos.x - 16
+		barPos.y = barPos.y + 3
+		width = 93
+		height = 2
+		offset1 = 1
+		offset2 = -1
+		thickness = 4
+	end
+	if entity.charName == "SRU_Razorbeak" then
+		barPos.x = barPos.x - 16
+		barPos.y = barPos.y + 3
+		width = 93
+		height = 2
+		offset1 = 1
+		offset2 = -1
+		thickness = 4
+	end
+	if entity.charName == "SRU_Murkwolf" then
+		barPos.x = barPos.x - 16
+		barPos.y = barPos.y + 3
+		width = 93
+		height = 2
+		offset1 = 1
+		offset2 = -1
+		thickness = 4
+	end
+	if entity.charName == "SRU_Krug" then
+		barPos.x = barPos.x - 16
+		barPos.y = barPos.y + 3
+		width = 93
+		height = 2
+		offset1 = 1
+		offset2 = -1
+		thickness = 4
+	end
+	if entity.charName == "SRU_Gromp" then
+		barPos.x = barPos.x - 16
+		barPos.y = barPos.y + 3
+		width = 93
+		height = 2
+		offset1 = 1
+		offset2 = -1
+		thickness = 4
+	end
+	if entity.charName == "Sru_Crab" then
+		barPos.y = barPos.y - 7
+	end
+	if entity.charName == "SRU_Red" then
+		barPos.x = barPos.x - 39
+		barPos.y = barPos.y - 1
+		width = 140
+		height = 7
+		offset1 = 3
+		offset2 = -4	
+		thickness = 8
+	end
+	if entity.charName == "SRU_Blue" then
+		barPos.x = barPos.x - 39
+		barPos.y = barPos.y - 1
+		width = 140
+		height = 7
+		offset1 = 3
+		offset2 = -4	
+		thickness = 8
+	end
+	if entity.charName == "SRU_RiftHerald" then
+		barPos.x = barPos.x - 39
+		barPos.y = barPos.y - 1
+		width = 140
+		height = 7
+		offset1 = 3
+		offset2 = -4	
+		thickness = 8
+	end
+	if entity.charName == "SRU_Dragon_Fire" or entity.charName == "SRU_Dragon_Water" or entity.charName == "SRU_Dragon_Air" or entity.charName == "SRU_Dragon_Earth" or entity.charName == "SRU_Dragon_Elder" then
+		barPos.x = barPos.x - 39
+		barPos.y = barPos.y + 2
+		width = 140
+		height = 6
+		offset1 = 2
+		offset2 = -4	
+		thickness = 8
+	end
+	if entity.charName == "SRU_Baron" then
+		barPos.x = barPos.x - 39
+		barPos.y = barPos.y + 2
+		width = 140
+		height = 6
+		offset1 = 2
+		offset2 = -4	
+		thickness = 8
+	end
+	return barPos, width, height, offset1, offset2, thickness
+end
+
+function DrawOutlineRectangle(x, y, width, height, color)  
+	local lX = x - 1
+	local rX = x + width
+	local tY = y - 1 
+	local bY = y + height
+	DrawLineFilter(lX, tY, rX, tY, 1, color)
+	DrawLineFilter(lX, tY, lX, bY, 1, color)
+	DrawLineFilter(rX, tY, rX, bY + 1, 1, color)
+	DrawLineFilter(lX, bY, rX, bY, 1, color)
 end
 
 --[[
@@ -7911,9 +9290,9 @@ function DrawTriangle(object, color, thickness, size, speed, yshift, ylevel)
 	local PXT3 = X-(PX3-X)
 	local PZT3 = Z-(PZ3-Z)
 
-	DrawLine3D(PXT1, Y, PZT1, PXT3, Y, PZT3, thickness, color)
-	DrawLine3D(PXT3, Y, PZT3, PX2, Y, PZ2, thickness, color)
-	DrawLine3D(PX2, Y, PZ2, PXT1, Y, PZT1, thickness, color)
+	DrawLine3DFilter(PXT1, Y, PZT1, PXT3, Y, PZT3, thickness, color)
+	DrawLine3DFilter(PXT3, Y, PZT3, PX2, Y, PZ2, thickness, color)
+	DrawLine3DFilter(PX2, Y, PZ2, PXT1, Y, PZT1, thickness, color)
 end
 
 function a2v (a, m)
@@ -7921,6 +9300,137 @@ function a2v (a, m)
 	local x = math.cos (a) * m
 	local y = math.sin (a) * m
 	return x, y
+end
+
+function DrawCooldownLine(target, starttime, endtime, alpha, red, green, blue, alphafade, redfade, greenfade, bluefade, inc)
+	if not target then
+		target = myHero
+	end
+	if not starttime then
+		error("starttime required")
+	end
+	if not endtime then
+		error("endtime required")
+	end
+	if not alpha then
+		alpha = 255
+	end
+	if not red then
+		red = 255 end
+	if not green then
+		green = 255
+	end
+	if not blue then
+		blue = 255
+	end
+	if not inc then
+		inc = false
+	end
+	if not alphafade then
+		alphafade = alpha
+	end
+	if not redfade then
+		redfade = red
+	end
+	if not greenfade then
+		greenfade = green
+	end
+	if not bluefade then
+		bluefade = blue
+	end
+	local nb = {}
+	table.insert(nb,target.networkID)
+	table.insert(nb,starttime)
+	table.insert(nb,endtime)
+	table.insert(nb,alpha)
+	table.insert(nb,red)
+	table.insert(nb,green)
+	table.insert(nb,blue)
+	table.insert(nb,alphafade)
+	table.insert(nb,redfade)
+	table.insert(nb,greenfade)
+	table.insert(nb,bluefade)
+	table.insert(nb,inc)
+	table.insert(DrawBars, nb)
+end
+
+function RemoveCooldownLine(target)
+	for _, bar in pairs(DrawBars) do
+		local delete = false
+		for k, v in pairs(bar) do
+			if k == 1 then
+				if v == target.networkID then
+					delete = true
+				end
+			end
+		end
+		if delete == true then
+			table.clear(bar)
+		end
+	end
+end
+
+function DrawCircle2Filter(x, y, z, width, size, snap, colour)
+	if settings.draws.DisableDraws then
+		return
+	end
+	DrawCircle2(x, y, z, width, size, snap, colour)
+end
+
+function DrawCircle3DFilter(x, y, z, size, width, colour, snap)
+	if settings.draws.DisableDraws then
+		return
+	end
+	DrawCircle3D(x, y, z, size, width, colour, snap)
+end
+
+function DrawLineFilter(x1, y1, x2, y2, width, colour)
+	if settings.draws.DisableDraws then
+		return
+	end
+	DrawLine(x1, y1, x2, y2, width, colour)
+end
+
+function DrawLine3DFilter(x1, y1, z1, x2, y2, z2, width, colour)
+	if settings.draws.DisableDraws then
+		return
+	end
+	DrawLine3D(x1, y1, z1, x2, y2, z2, width, colour)
+end
+
+function DrawTextFilter(text, size, x, y, colour)
+	if settings.draws.DisableDraws then
+		return
+	end
+	DrawText(text, size, x, y, colour)
+end
+
+function DrawText3DFilter(text, x, y, z, size, colour, var)
+	if settings.draws.DisableDraws then
+		return
+	end
+	DrawText3D(text, x, y, z, size, colour, var)
+end
+
+function DrawRectangleFilter(x, y, size, width, colour)
+	if settings.draws.DisableDraws then
+		return
+	end
+	DrawRectangle(x, y, size, width, colour)
+end
+
+function DrawCircleMinimapFilter(x, y, z, size, width, colour, snap)
+	if settings.draws.DisableDraws then
+		return
+	end
+	DrawCircleMinimap(x, y, z, size, width, colour, snap)
+end
+
+function DrawArc2Filter(x, y, z, radius, width, colour, chordlength, unit, endPos, arcWidth, thetaPos)
+	if settings.draws.DisableDraws then
+		return
+	end
+	DrawArc2(x, y, z, radius, width, colour, chordlength, unit, endPos, arcWidth, thetaPos)
 end
 
 --		 ▄▄▄       █    ██ ▄▄▄█████▓ ▒█████         ██▓    ▓█████ ██▒   █▓▓█████  ██▓    ▓█████  ██▀███  
@@ -8093,7 +9603,7 @@ function Sequence()
 		2,3,1,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 6 and settings.autolvl.sequenceSpells1 == 5 then AbilitySequence = {
-		3,2,2,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
+		3,2,1,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
 	}
 	elseif settings.autolvl.sequenceSpells2 == 6 and settings.autolvl.sequenceSpells1 == 6 then AbilitySequence = {
 		3,1,2,3,3,4,3,1,3,1,4,1,1,2,2,4,2,2
@@ -8125,275 +9635,275 @@ function DrawDebugger()
 		local rightline = 340
 		local bottomline = 725
 		if readytextQ then
-			DrawLine(leftline, 490, rightline, 490, 70, ARGB(80, 0, 255, 0))
+			DrawLineFilter(leftline, 490, rightline, 490, 70, ARGB(80, 0, 255, 0))
 		else
-			DrawLine(leftline, 490, rightline, 490, 70, ARGB(80, 255, 0, 0))
+			DrawLineFilter(leftline, 490, rightline, 490, 70, ARGB(80, 255, 0, 0))
 		end
 		if readytextW then
-			DrawLine(leftline, 557, rightline, 557, 65, ARGB(80, 0, 255, 0))
+			DrawLineFilter(leftline, 557, rightline, 557, 65, ARGB(80, 0, 255, 0))
 		else
-			DrawLine(leftline, 557, rightline, 557, 65, ARGB(80, 255, 0, 0))
+			DrawLineFilter(leftline, 557, rightline, 557, 65, ARGB(80, 255, 0, 0))
 		end
 		if readytextE then
-			DrawLine(leftline, 622, rightline, 622, 65, ARGB(80, 0, 255, 0))
+			DrawLineFilter(leftline, 622, rightline, 622, 65, ARGB(80, 0, 255, 0))
 		else
-			DrawLine(leftline, 622, rightline, 622, 65, ARGB(80, 255, 0, 0))
+			DrawLineFilter(leftline, 622, rightline, 622, 65, ARGB(80, 255, 0, 0))
 		end
 		if readytextR then
-			DrawLine(leftline, 690, rightline, 690, 70, ARGB(80, 0, 255, 0))
+			DrawLineFilter(leftline, 690, rightline, 690, 70, ARGB(80, 0, 255, 0))
 		else
-			DrawLine(leftline, 690, rightline, 690, 70, ARGB(80, 255, 0, 0))
+			DrawLineFilter(leftline, 690, rightline, 690, 70, ARGB(80, 255, 0, 0))
 		end
 		if myHero:GetSpellData(_Q).level + myHero:GetSpellData(_W).level + myHero:GetSpellData(_E).level + myHero:GetSpellData(_R).level > myHero.level then
-			DrawLine(185, topline, 185, 63, 310, ARGB(100, 0, 255, 0))
+			DrawLineFilter(185, topline, 185, 63, 310, ARGB(100, 0, 255, 0))
 		else
-			DrawLine(185, topline, 185, 63, 310, ARGB(100, 255, 0, 0))
+			DrawLineFilter(185, topline, 185, 63, 310, ARGB(100, 255, 0, 0))
 		end
-		DrawLine(185, 63, 185, bottomline-270, 310, ARGB(100, 0, 0, 0))
-		DrawLine(185, 63, 185, 130, 2, ARGB(255, 255, 0, 0))
-		DrawLine(leftline, 130, rightline, 130, 2, ARGB(255, 255, 0, 0))
-		DrawLine(leftline, 195, rightline, 195, 2, ARGB(255, 255, 0, 0))
-		DrawLine(leftline, 295, rightline, 295, 2, ARGB(255, 255, 0, 0))
-		DrawLine(leftline, 455, rightline, 455, 2, ARGB(255, 255, 0, 0))
-		DrawLine(leftline, 525, rightline, 525, 2, ARGB(255, 255, 0, 0))
-		DrawLine(leftline, 590, rightline, 590, 2, ARGB(255, 255, 0, 0))
-		DrawLine(leftline, 655, rightline, 655, 2, ARGB(255, 255, 0, 0))
+		DrawLineFilter(185, 63, 185, bottomline-270, 310, ARGB(100, 0, 0, 0))
+		DrawLineFilter(185, 63, 185, 130, 2, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline, 130, rightline, 130, 2, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline, 195, rightline, 195, 2, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline, 295, rightline, 295, 2, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline, 455, rightline, 455, 2, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline, 525, rightline, 525, 2, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline, 590, rightline, 590, 2, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline, 655, rightline, 655, 2, ARGB(255, 255, 0, 0))
 		
-		DrawLine(leftline, topline, leftline, bottomline, 5, ARGB(255, 255, 0, 0))
-		DrawLine(leftline-2, topline, rightline+3, topline, 5, ARGB(255, 255, 0, 0))
-		DrawLine(rightline, topline, rightline, bottomline, 5, ARGB(255, 255, 0, 0))
-		DrawLine(leftline-2, bottomline, rightline+3, bottomline, 5, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline, topline, leftline, bottomline, 5, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline-2, topline, rightline+3, topline, 5, ARGB(255, 255, 0, 0))
+		DrawLineFilter(rightline, topline, rightline, bottomline, 5, ARGB(255, 255, 0, 0))
+		DrawLineFilter(leftline-2, bottomline, rightline+3, bottomline, 5, ARGB(255, 255, 0, 0))
 		
-		DrawLine(leftline, topline-1, leftline, bottomline+2, 3, ARGB(255, 50, 0, 255))
-		DrawLine(leftline, topline, rightline, topline, 3, ARGB(255, 50, 0, 255))
-		DrawLine(rightline, topline-1, rightline, bottomline+2, 3, ARGB(255, 50, 0, 255))
-		DrawLine(leftline, bottomline, rightline, bottomline, 3, ARGB(255, 50, 0, 255))
+		DrawLineFilter(leftline, topline-1, leftline, bottomline+2, 3, ARGB(255, 50, 0, 255))
+		DrawLineFilter(leftline, topline, rightline, topline, 3, ARGB(255, 50, 0, 255))
+		DrawLineFilter(rightline, topline-1, rightline, bottomline+2, 3, ARGB(255, 50, 0, 255))
+		DrawLineFilter(leftline, bottomline, rightline, bottomline, 3, ARGB(255, 50, 0, 255))
 
-		DrawText("Level:", 35, World_x1 - 550, World_y1 - 30, ARGB(255, 255, 255, 255))
-		DrawText("" .. myHero.level, 35, World_x1 - 450, World_y1 - 30, ARGB(255, 0, 255, 0))
+		DrawTextFilter("Level:", 35, World_x1 - 550, World_y1 - 30, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. myHero.level, 35, World_x1 - 450, World_y1 - 30, ARGB(255, 0, 255, 0))
 
-		DrawText("Mouse Position:", 15, World_x1 - 620, World_y1 + 5, ARGB(255, 0, 255, 255))
-		DrawText("X:", 15, World_x1 - 610, World_y1 + 20, ARGB(255, 0, 255, 0))
-		DrawText("" .. mousePos.x, 15, World_x1 - 595, World_y1 + 20, ARGB(255, 255, 255, 255))
-		DrawText("Y:", 15, World_x1 - 610, World_y1 + 35, ARGB(255, 0, 255, 0))
-		DrawText("" .. mousePos.y, 15, World_x1 - 595, World_y1 + 35, ARGB(255, 255, 255, 255))
-		DrawText("Z:", 15, World_x1 - 610, World_y1 + 50, ARGB(255, 0, 255, 0))
-		DrawText("" .. mousePos.z, 15, World_x1 - 595, World_y1 + 50, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Mouse Position:", 15, World_x1 - 620, World_y1 + 5, ARGB(255, 0, 255, 255))
+		DrawTextFilter("X:", 15, World_x1 - 610, World_y1 + 20, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. mousePos.x, 15, World_x1 - 595, World_y1 + 20, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Y:", 15, World_x1 - 610, World_y1 + 35, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. mousePos.y, 15, World_x1 - 595, World_y1 + 35, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Z:", 15, World_x1 - 610, World_y1 + 50, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. mousePos.z, 15, World_x1 - 595, World_y1 + 50, ARGB(255, 255, 255, 255))
 
-		DrawText(MyChampion .. " Position:", 15, World_x1 - 470, World_y1 + 5, ARGB(255, 0, 255, 255))
-		DrawText("X:", 15, World_x1 - 460, World_y1 + 20, ARGB(255, 0, 255, 0))
-		DrawText("" .. myHero.x, 15, World_x1 - 445, World_y1 + 20, ARGB(255, 255, 255, 255))
-		DrawText("Y:", 15, World_x1 - 460, World_y1 + 35, ARGB(255, 0, 255, 0))
-		DrawText("" .. myHero.y, 15, World_x1 - 445, World_y1 + 35, ARGB(255, 255, 255, 255))
-		DrawText("Z:", 15, World_x1 - 460, World_y1 + 50, ARGB(255, 0, 255, 0))
-		DrawText("" .. myHero.z, 15, World_x1 - 445, World_y1 + 50, ARGB(255, 255, 255, 255))
+		DrawTextFilter(MyChampion .. " Position:", 15, World_x1 - 470, World_y1 + 5, ARGB(255, 0, 255, 255))
+		DrawTextFilter("X:", 15, World_x1 - 460, World_y1 + 20, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. myHero.x, 15, World_x1 - 445, World_y1 + 20, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Y:", 15, World_x1 - 460, World_y1 + 35, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. myHero.y, 15, World_x1 - 445, World_y1 + 35, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Z:", 15, World_x1 - 460, World_y1 + 50, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. myHero.z, 15, World_x1 - 445, World_y1 + 50, ARGB(255, 255, 255, 255))
 
-		DrawText("Clocks:", 15, World_x1 - 510, World_y1 + 70, ARGB(255, 0, 255, 255))
-		DrawText("Time:", 15, World_x1 - 560, World_y1 + 85, ARGB(255, 0, 255, 0))
-		DrawText("" .. os.date(), 15, World_x1 - 525, World_y1 + 85, ARGB(255, 255, 255, 255))
-		DrawText("OS clock:", 15, World_x1 - 620, World_y1 + 100, ARGB(255, 0, 255, 0))
-		DrawText("" .. roundToFirstDecimal(os.clock()), 15, World_x1 - 564, World_y1 + 100, ARGB(255, 255, 255, 255))
-		DrawText("Tick Count:", 15, World_x1 - 620, World_y1 + 115, ARGB(255, 0, 255, 0))
-		DrawText("" .. roundToFirstDecimal(GetTickCount()), 15, World_x1 - 553, World_y1 + 115, ARGB(255, 255, 255, 255))
-		DrawText("In Game Timer:", 15, World_x1 - 485, World_y1 + 100, ARGB(255, 0, 255, 0))
-		DrawText("" .. roundToFirstDecimal(GetInGameTimer()), 15, World_x1 - 396, World_y1 + 100, ARGB(255, 255, 255, 255))
-		DrawText("Game Timer:", 15, World_x1 - 485, World_y1 + 115, ARGB(255, 0, 255, 0))
-		DrawText("" .. roundToFirstDecimal(GetGameTimer()), 15, World_x1 - 409, World_y1 + 115, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Clocks:", 15, World_x1 - 510, World_y1 + 70, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Time:", 15, World_x1 - 560, World_y1 + 85, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. os.date(), 15, World_x1 - 525, World_y1 + 85, ARGB(255, 255, 255, 255))
+		DrawTextFilter("OS clock:", 15, World_x1 - 620, World_y1 + 100, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. roundToFirstDecimal(os.clock()), 15, World_x1 - 564, World_y1 + 100, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Tick Count:", 15, World_x1 - 620, World_y1 + 115, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. roundToFirstDecimal(GetTickCount()), 15, World_x1 - 553, World_y1 + 115, ARGB(255, 255, 255, 255))
+		DrawTextFilter("In Game Timer:", 15, World_x1 - 485, World_y1 + 100, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. roundToFirstDecimal(GetInGameTimer()), 15, World_x1 - 396, World_y1 + 100, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Game Timer:", 15, World_x1 - 485, World_y1 + 115, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. roundToFirstDecimal(GetGameTimer()), 15, World_x1 - 409, World_y1 + 115, ARGB(255, 255, 255, 255))
 		
-		DrawText("Champion Name:", 15, World_x1 - 620, World_y1 + 140, ARGB(255, 0, 255, 255))
-		DrawText("" .. MyChampion, 15, World_x1 - 480, World_y1 + 140, ARGB(255, 255, 255, 255))
-		DrawText("Health:", 15, World_x1 - 620, World_y1 + 155, ARGB(255, 0, 255, 255))
-		DrawText("".. math.ceil(myHero.health) .. "/" .. math.ceil(myHero.maxHealth), 15, World_x1 - 565, World_y1 + 155, ARGB(255, 255, 255, 255))
-		DrawLine(190, 222, 290, 222, 16, ARGB(255, 0, 0, 0))
+		DrawTextFilter("Champion Name:", 15, World_x1 - 620, World_y1 + 140, ARGB(255, 0, 255, 255))
+		DrawTextFilter("" .. MyChampion, 15, World_x1 - 480, World_y1 + 140, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Health:", 15, World_x1 - 620, World_y1 + 155, ARGB(255, 0, 255, 255))
+		DrawTextFilter("".. math.ceil(myHero.health) .. "/" .. math.ceil(myHero.maxHealth), 15, World_x1 - 565, World_y1 + 155, ARGB(255, 255, 255, 255))
+		DrawLineFilter(190, 222, 290, 222, 16, ARGB(255, 0, 0, 0))
 		if not myHero.dead then
-			DrawLine(192, 222, 188 + ((myHero.health / myHero.maxHealth) * 100), 222, 10, ARGB(255, 0, 255, 0))
+			DrawLineFilter(192, 222, 188 + ((myHero.health / myHero.maxHealth) * 100), 222, 10, ARGB(255, 0, 255, 0))
 		end
-		DrawText(math.ceil((myHero.health / myHero.maxHealth) * 100) .. "%", 15, World_x1 - 370, World_y1 + 155, ARGB(255, 255, 255, 255))
+		DrawTextFilter(math.ceil((myHero.health / myHero.maxHealth) * 100) .. "%", 15, World_x1 - 370, World_y1 + 155, ARGB(255, 255, 255, 255))
 		if MyChampion == "Akali" then
-			DrawText("Energy:", 15, World_x1 - 620, World_y1 + 170, ARGB(255, 0, 255, 255))
+			DrawTextFilter("Energy:", 15, World_x1 - 620, World_y1 + 170, ARGB(255, 0, 255, 255))
 			if myHero.dead then
 				myMana = 0
 			else
 				myMana = myHero.mana
 			end
 		else
-			DrawText("Mana:", 15, World_x1 - 620, World_y1 + 170, ARGB(255, 0, 255, 255))
+			DrawTextFilter("Mana:", 15, World_x1 - 620, World_y1 + 170, ARGB(255, 0, 255, 255))
 			if myHero.dead then
 				myMana = 0
 			else
 				myMana = myHero.mana
 			end
 		end
-		DrawText("" .. math.ceil(myMana) .. "/" .. math.ceil(myHero.maxMana), 15, World_x1 - 565, World_y1 + 170, ARGB(255, 255, 255, 255))
-		DrawLine(190, 237, 290, 237, 16, ARGB(255, 0, 0, 0))
+		DrawTextFilter("" .. math.ceil(myMana) .. "/" .. math.ceil(myHero.maxMana), 15, World_x1 - 565, World_y1 + 170, ARGB(255, 255, 255, 255))
+		DrawLineFilter(190, 237, 290, 237, 16, ARGB(255, 0, 0, 0))
 		if MyChampion == "Akali" then
 			if not myHero.dead then
-				DrawLine(192, 237, 188+((myMana / myHero.maxMana) * 100), 237, 10, ARGB(255, 255, 255, 0))
+				DrawLineFilter(192, 237, 188+((myMana / myHero.maxMana) * 100), 237, 10, ARGB(255, 255, 255, 0))
 			end
-			DrawText(math.ceil((myMana / myHero.maxMana) * 100) .. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
+			DrawTextFilter(math.ceil((myMana / myHero.maxMana) * 100) .. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
 		else
 			if not MyChampion == "Katarina" then
 				if not myHero.dead then
-					DrawLine(192, 237, 188+((myMana / myHero.maxMana) * 100), 237, 10, ARGB(255, 0, 180, 255))
+					DrawLineFilter(192, 237, 188+((myMana / myHero.maxMana) * 100), 237, 10, ARGB(255, 0, 180, 255))
 				end
-				DrawText(math.ceil((myMana / myHero.maxMana) * 100) .. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
+				DrawTextFilter(math.ceil((myMana / myHero.maxMana) * 100) .. "%", 15, World_x1 - 370, World_y1 + 170, ARGB(255, 255, 255, 255))
 			end
 		end
-		DrawText("Current Gold:", 15, World_x1 - 620, World_y1 + 185, ARGB(255, 0, 255, 255))
-		DrawText("" .. math.ceil(myHero.gold), 15, World_x1 - 480, World_y1 + 185, ARGB(255, 255, 213, 0))
-		DrawText("Team:", 15, World_x1 - 620, World_y1 + 200, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Current Gold:", 15, World_x1 - 620, World_y1 + 185, ARGB(255, 0, 255, 255))
+		DrawTextFilter("" .. math.ceil(myHero.gold), 15, World_x1 - 480, World_y1 + 185, ARGB(255, 255, 213, 0))
+		DrawTextFilter("Team:", 15, World_x1 - 620, World_y1 + 200, ARGB(255, 0, 255, 255))
 		if myHero.team == 100 then
-			DrawText("Blue", 15, World_x1 - 480, World_y1 + 200, ARGB(255, 0, 180, 255))
+			DrawTextFilter("Blue", 15, World_x1 - 480, World_y1 + 200, ARGB(255, 0, 180, 255))
 		elseif myHero.team == 200 then
-			DrawText("Purple", 15, World_x1 - 480, World_y1 + 200, ARGB(255, 0, 255, 255))
+			DrawTextFilter("Purple", 15, World_x1 - 480, World_y1 + 200, ARGB(255, 0, 255, 255))
 		end
-		DrawText("Dead:", 15, World_x1 - 620, World_y1 + 215, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Dead:", 15, World_x1 - 620, World_y1 + 215, ARGB(255, 0, 255, 255))
 		if myHero.dead then
-			DrawText("true", 15, World_x1 - 480, World_y1 + 215, ARGB(255, 0, 255, 0))
+			DrawTextFilter("true", 15, World_x1 - 480, World_y1 + 215, ARGB(255, 0, 255, 0))
 		else
-			DrawText("false", 15, World_x1 - 480, World_y1 + 215, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, World_x1 - 480, World_y1 + 215, ARGB(255, 255, 0, 0))
 		end
-		DrawText("Attack Damage:                 (       +       ) = ", 15, World_x1 - 620, World_y1 + 240, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(myHero.damage), 15, World_x1 - 523 + 48, World_y1 + 240, ARGB(255, 0,255, 255))
-		DrawText("" .. math.ceil(myHero.addDamage), 15, World_x1 - 492 + 48, World_y1 + 240, ARGB(255, 0, 255, 0))
-		DrawText("" .. math.ceil(myHero.totalDamage), 15, World_x1 - 456 + 48, World_y1 + 240, ARGB(255, 255, 255, 0))
-		DrawText("Ability Power:                     (   +       ) = ", 15, World_x1 - 620, World_y1 + 255, ARGB(255, 255, 255, 255))
-		DrawText("0", 15, World_x1 - 535 + 60, World_y1 + 255, ARGB(255, 0,255, 255))
-		DrawText("" .. math.ceil(TotalAP), 15, World_x1 - 518 + 60, World_y1 + 255, ARGB(255, 0, 255, 0))
-		DrawText("" .. math.ceil(TotalAP), 15, World_x1 - 482 + 60, World_y1 + 255, ARGB(255, 255, 255, 0))
-		DrawText("Armor:", 15, World_x1 - 620, World_y1 + 270, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(myHero.armor), 15, World_x1 - 480, World_y1 + 270, ARGB(255, 255, 255, 0))
-		DrawText("Magic Resist:", 15, World_x1 - 620, World_y1 + 285, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(myHero.magicArmor), 15, World_x1 - 480, World_y1 + 285, ARGB(255, 255, 255, 0))
-		DrawText("Move Speed:", 15, World_x1 - 620, World_y1 + 300, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(myHero.ms), 15, World_x1 - 480, World_y1 + 300, ARGB(255, 255, 255, 0))
-		DrawText("Life Steal:", 15, World_x1 - 620, World_y1 + 315, ARGB(255, 255, 255, 255))
-		DrawText(math.ceil((myHero.lifeSteal) * 100) .. "%", 15, World_x1 - 480, World_y1 + 315, ARGB(255, 255, 255, 0))
-		DrawText("Spell Vamp:", 15, World_x1 - 620, World_y1 + 330, ARGB(255, 255, 255, 255))
-		DrawText(math.ceil((myHero.spellVamp) * 100) .. "%", 15, World_x1 - 480, World_y1 + 330, ARGB(255, 255, 255, 0))
-		DrawText("Attack Speed:", 15, World_x1 - 620, World_y1 + 345, ARGB(255, 255, 255, 255))
-		DrawText(math.ceil(myHero.attackSpeed) .. "%", 15, World_x1 - 480, World_y1 + 345, ARGB(255, 255, 255, 0))
-		DrawText("Critical Hit Chance:", 15, World_x1 - 620, World_y1 + 360, ARGB(255, 255, 255, 255))
-		DrawText(math.ceil(myHero.critChance) .. "%", 15, World_x1 - 480, World_y1 + 360, ARGB(255, 255, 255, 0))
-		DrawText("Critical Hit Damage:", 15, World_x1 - 620, World_y1 + 375, ARGB(255, 255, 255, 255))
-		DrawText(math.ceil(myHero.critDmg) .. "%", 15, World_x1 - 480, World_y1 + 375, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Attack Damage:                 (       +       ) = ", 15, World_x1 - 620, World_y1 + 240, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(myHero.damage), 15, World_x1 - 523 + 48, World_y1 + 240, ARGB(255, 0,255, 255))
+		DrawTextFilter("" .. math.ceil(myHero.addDamage), 15, World_x1 - 492 + 48, World_y1 + 240, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. math.ceil(myHero.totalDamage), 15, World_x1 - 456 + 48, World_y1 + 240, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Ability Power:                     (   +       ) = ", 15, World_x1 - 620, World_y1 + 255, ARGB(255, 255, 255, 255))
+		DrawTextFilter("0", 15, World_x1 - 535 + 60, World_y1 + 255, ARGB(255, 0,255, 255))
+		DrawTextFilter("" .. math.ceil(TotalAP), 15, World_x1 - 518 + 60, World_y1 + 255, ARGB(255, 0, 255, 0))
+		DrawTextFilter("" .. math.ceil(TotalAP), 15, World_x1 - 482 + 60, World_y1 + 255, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Armor:", 15, World_x1 - 620, World_y1 + 270, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(myHero.armor), 15, World_x1 - 480, World_y1 + 270, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Magic Resist:", 15, World_x1 - 620, World_y1 + 285, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(myHero.magicArmor), 15, World_x1 - 480, World_y1 + 285, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Move Speed:", 15, World_x1 - 620, World_y1 + 300, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(myHero.ms), 15, World_x1 - 480, World_y1 + 300, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Life Steal:", 15, World_x1 - 620, World_y1 + 315, ARGB(255, 255, 255, 255))
+		DrawTextFilter(math.ceil((myHero.lifeSteal) * 100) .. "%", 15, World_x1 - 480, World_y1 + 315, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Spell Vamp:", 15, World_x1 - 620, World_y1 + 330, ARGB(255, 255, 255, 255))
+		DrawTextFilter(math.ceil((myHero.spellVamp) * 100) .. "%", 15, World_x1 - 480, World_y1 + 330, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Attack Speed:", 15, World_x1 - 620, World_y1 + 345, ARGB(255, 255, 255, 255))
+		DrawTextFilter(math.ceil(myHero.attackSpeed) .. "%", 15, World_x1 - 480, World_y1 + 345, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Critical Hit Chance:", 15, World_x1 - 620, World_y1 + 360, ARGB(255, 255, 255, 255))
+		DrawTextFilter(math.ceil(myHero.critChance) .. "%", 15, World_x1 - 480, World_y1 + 360, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Critical Hit Damage:", 15, World_x1 - 620, World_y1 + 375, ARGB(255, 255, 255, 255))
+		DrawTextFilter(math.ceil(myHero.critDmg) .. "%", 15, World_x1 - 480, World_y1 + 375, ARGB(255, 255, 255, 0))
 
 
-		DrawLine(33, 470, 63, 470, 28, ARGB(255, 0, 0, 0))
-		DrawText("Q", 22, World_x1 - 630, World_y1 + 400, ARGB(255, 0, 255, 255))
-		DrawText("Name:", 15, World_x1 - 600, World_y1 + 405, ARGB(255, 255, 255, 255))
-		DrawText("".. myHero:GetSpellData(_Q).name, 15, World_x1 - 560, World_y1 + 405, ARGB(255, 255, 255, 0))
-		DrawText("Ready:", 15, World_x1 - 480, World_y1 + 435, ARGB(255, 255, 255, 255))
+		DrawLineFilter(33, 470, 63, 470, 28, ARGB(255, 0, 0, 0))
+		DrawTextFilter("Q", 22, World_x1 - 630, World_y1 + 400, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Name:", 15, World_x1 - 600, World_y1 + 405, ARGB(255, 255, 255, 255))
+		DrawTextFilter("".. myHero:GetSpellData(_Q).name, 15, World_x1 - 560, World_y1 + 405, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Ready:", 15, World_x1 - 480, World_y1 + 435, ARGB(255, 255, 255, 255))
 		if readytextQ then
-			DrawText("true", 15, World_x1 - 438, World_y1 + 435, ARGB(255, 0, 255, 0))
+			DrawTextFilter("true", 15, World_x1 - 438, World_y1 + 435, ARGB(255, 0, 255, 0))
 		elseif readytextQ == false and myHero:GetSpellData(_Q).level >= 1 and not myHero.dead then
-			DrawText("" .. roundToFirstDecimal(myHero:GetSpellData(_Q).currentCd), 15, World_x1 - 438, World_y1 + 435, ARGB(255, 0, 255, 255))
+			DrawTextFilter("" .. roundToFirstDecimal(myHero:GetSpellData(_Q).currentCd), 15, World_x1 - 438, World_y1 + 435, ARGB(255, 0, 255, 255))
 		else
-			DrawText("false", 15, World_x1 - 438, World_y1 + 435, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, World_x1 - 438, World_y1 + 435, ARGB(255, 255, 0, 0))
 		end			
-		DrawText("Level:", 15, World_x1 - 395, World_y1 + 405, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Level:", 15, World_x1 - 395, World_y1 + 405, ARGB(255, 255, 255, 255))
 		if myHero:GetSpellData(_Q).level < 5 then
-			DrawText("" .. myHero:GetSpellData(_Q).level, 15, World_x1 - 360, World_y1 + 405, ARGB(255, 255, 175, 0))
+			DrawTextFilter("" .. myHero:GetSpellData(_Q).level, 15, World_x1 - 360, World_y1 + 405, ARGB(255, 255, 175, 0))
 		elseif myHero:GetSpellData(_Q).level >= 5 then
-			DrawText("MAX", 15, World_x1 - 360, World_y1 + 405, ARGB(255, 0, 255, 0))
+			DrawTextFilter("MAX", 15, World_x1 - 360, World_y1 + 405, ARGB(255, 0, 255, 0))
 		end
-		DrawText("Delay:", 15, World_x1 - 600, World_y1 + 420, ARGB(255, 255, 255, 255))
-		DrawText("" .. Qwind, 15, World_x1 - 560, World_y1 + 420, ARGB(255, 255, 175, 0))
-		DrawText("Width:", 15, World_x1 - 600, World_y1 + 435, ARGB(255, 255, 255, 255))
-		DrawText("" .. myHero:GetSpellData(_Q).lineWidth, 15, World_x1 - 560, World_y1 + 435, ARGB(255, 255, 175, 0))
-		DrawText("Bonus AP:", 15, World_x1 - 520, World_y1 + 450, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(TotalAP * 0.45), 15, World_x1 - 460, World_y1 + 450, ARGB(255, 0, 255, 0))
-		DrawText("Bonus AP Proc:", 15, World_x1 - 440, World_y1 + 450, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(TotalAP * 0.15), 15, World_x1 - 350, World_y1 + 450, ARGB(255, 0, 255, 0))
+		DrawTextFilter("Delay:", 15, World_x1 - 600, World_y1 + 420, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. Qwind, 15, World_x1 - 560, World_y1 + 420, ARGB(255, 255, 175, 0))
+		DrawTextFilter("Width:", 15, World_x1 - 600, World_y1 + 435, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. myHero:GetSpellData(_Q).lineWidth, 15, World_x1 - 560, World_y1 + 435, ARGB(255, 255, 175, 0))
+		DrawTextFilter("Bonus AP:", 15, World_x1 - 520, World_y1 + 450, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(TotalAP * 0.45), 15, World_x1 - 460, World_y1 + 450, ARGB(255, 0, 255, 0))
+		DrawTextFilter("Bonus AP Proc:", 15, World_x1 - 440, World_y1 + 450, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(TotalAP * 0.15), 15, World_x1 - 350, World_y1 + 450, ARGB(255, 0, 255, 0))
 
 
-		DrawLine(33, 540, 63, 540, 28, ARGB(255, 0, 0, 0))
-		DrawText("W", 22, World_x1 - 630, World_y1 + 470, ARGB(255, 0, 255, 255))
-		DrawText("Name:", 15, World_x1 - 600, World_y1 + 470, ARGB(255, 255, 255, 255))
-		DrawText("" .. myHero:GetSpellData(_W).name, 15, World_x1 - 560, World_y1 + 470, ARGB(255, 255, 255, 0))
-		DrawText("Ready:", 15, World_x1 - 480, World_y1 + 500, ARGB(255, 255, 255, 255))
+		DrawLineFilter(33, 540, 63, 540, 28, ARGB(255, 0, 0, 0))
+		DrawTextFilter("W", 22, World_x1 - 630, World_y1 + 470, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Name:", 15, World_x1 - 600, World_y1 + 470, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. myHero:GetSpellData(_W).name, 15, World_x1 - 560, World_y1 + 470, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Ready:", 15, World_x1 - 480, World_y1 + 500, ARGB(255, 255, 255, 255))
 		if readytextW then
-			DrawText("true", 15, World_x1 - 438, World_y1 + 500, ARGB(255, 0, 255, 0))
+			DrawTextFilter("true", 15, World_x1 - 438, World_y1 + 500, ARGB(255, 0, 255, 0))
 		elseif readytextW == false and myHero:GetSpellData(_W).level >= 1 and not myHero.dead then
-			DrawText("" .. roundToFirstDecimal(myHero:GetSpellData(_W).currentCd), 15, World_x1 - 438, World_y1 + 500, ARGB(255, 0, 255, 255))
+			DrawTextFilter("" .. roundToFirstDecimal(myHero:GetSpellData(_W).currentCd), 15, World_x1 - 438, World_y1 + 500, ARGB(255, 0, 255, 255))
 		else
-			DrawText("false", 15, World_x1 - 438, World_y1 + 500, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, World_x1 - 438, World_y1 + 500, ARGB(255, 255, 0, 0))
 		end
-		DrawText("Level:", 15, World_x1 - 395, World_y1 + 470, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Level:", 15, World_x1 - 395, World_y1 + 470, ARGB(255, 255, 255, 255))
 		if myHero:GetSpellData(_W).level < 5 then
-			DrawText("" .. myHero:GetSpellData(_W).level, 15, World_x1 - 360, World_y1 + 470, ARGB(255, 255, 175, 0))
+			DrawTextFilter("" .. myHero:GetSpellData(_W).level, 15, World_x1 - 360, World_y1 + 470, ARGB(255, 255, 175, 0))
 		elseif myHero:GetSpellData(_W).level >= 5 then
-			DrawText("MAX", 15, World_x1 - 360, World_y1 + 470, ARGB(255, 0, 255, 0))
+			DrawTextFilter("MAX", 15, World_x1 - 360, World_y1 + 470, ARGB(255, 0, 255, 0))
 		end
-		DrawText("Delay:", 15, World_x1 - 600, World_y1 + 485, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(Wwind), 15, World_x1 - 560, World_y1 + 485, ARGB(255, 255, 175, 0))
-		DrawText("Width:", 15, World_x1 - 600, World_y1 + 500, ARGB(255, 255, 255, 255))
-		DrawText("" .. myHero:GetSpellData(_W).lineWidth, 15, World_x1 - 560, World_y1 + 500, ARGB(255, 255, 175, 0))
-		DrawText("Bonus AD:", 15, World_x1 - 600, World_y1 + 515, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(myHero.addDamage * 0.6), 15, World_x1 - 540, World_y1 + 515, ARGB(255, 0, 255, 0))
-		DrawText("Bonus AP:", 15, World_x1 - 520, World_y1 + 515, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(TotalAP * 0.25), 15, World_x1 - 460, World_y1 + 515, ARGB(255, 0, 255, 0))
+		DrawTextFilter("Delay:", 15, World_x1 - 600, World_y1 + 485, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(Wwind), 15, World_x1 - 560, World_y1 + 485, ARGB(255, 255, 175, 0))
+		DrawTextFilter("Width:", 15, World_x1 - 600, World_y1 + 500, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. myHero:GetSpellData(_W).lineWidth, 15, World_x1 - 560, World_y1 + 500, ARGB(255, 255, 175, 0))
+		DrawTextFilter("Bonus AD:", 15, World_x1 - 600, World_y1 + 515, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(myHero.addDamage * 0.6), 15, World_x1 - 540, World_y1 + 515, ARGB(255, 0, 255, 0))
+		DrawTextFilter("Bonus AP:", 15, World_x1 - 520, World_y1 + 515, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(TotalAP * 0.25), 15, World_x1 - 460, World_y1 + 515, ARGB(255, 0, 255, 0))
 
 
-		DrawLine(33, 605, 63, 605, 28, ARGB(255, 0, 0, 0))
-		DrawText("E", 22, World_x1 - 630, World_y1 + 535, ARGB(255, 0, 255, 255))
-		DrawText("Name:", 15, World_x1 - 600, World_y1 + 535, ARGB(255, 255, 255, 255))
-		DrawText("" .. myHero:GetSpellData(_E).name, 15, World_x1 - 560, World_y1 + 535, ARGB(255, 255, 255, 0))
-		DrawText("Ready:", 15, World_x1 - 480, World_y1 + 565, ARGB(255, 255, 255, 255))
+		DrawLineFilter(33, 605, 63, 605, 28, ARGB(255, 0, 0, 0))
+		DrawTextFilter("E", 22, World_x1 - 630, World_y1 + 535, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Name:", 15, World_x1 - 600, World_y1 + 535, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. myHero:GetSpellData(_E).name, 15, World_x1 - 560, World_y1 + 535, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Ready:", 15, World_x1 - 480, World_y1 + 565, ARGB(255, 255, 255, 255))
 		if readytextE then
-			DrawText("true", 15, World_x1 - 438, World_y1 + 565, ARGB(255, 0, 255, 0))
+			DrawTextFilter("true", 15, World_x1 - 438, World_y1 + 565, ARGB(255, 0, 255, 0))
 		elseif readytextE == false and myHero:GetSpellData(_W).level >= 1 and not myHero.dead then
-			DrawText("" .. roundToFirstDecimal(myHero:GetSpellData(_E).currentCd), 15, World_x1 - 438, World_y1 + 565, ARGB(255, 0, 255, 255))
+			DrawTextFilter("" .. roundToFirstDecimal(myHero:GetSpellData(_E).currentCd), 15, World_x1 - 438, World_y1 + 565, ARGB(255, 0, 255, 255))
 		else
-			DrawText("false", 15, World_x1 - 438, World_y1 + 565, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, World_x1 - 438, World_y1 + 565, ARGB(255, 255, 0, 0))
 		end
-		DrawText("Level:", 15, World_x1 - 395, World_y1 + 535, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Level:", 15, World_x1 - 395, World_y1 + 535, ARGB(255, 255, 255, 255))
 		if myHero:GetSpellData(_E).level < 5 then
-			DrawText("" .. myHero:GetSpellData(_E).level, 15, World_x1 - 360, World_y1 + 535, ARGB(255, 255, 175, 0))
+			DrawTextFilter("" .. myHero:GetSpellData(_E).level, 15, World_x1 - 360, World_y1 + 535, ARGB(255, 255, 175, 0))
 		elseif myHero:GetSpellData(_E).level >= 5 then
-			DrawText("MAX", 15, World_x1 - 360, World_y1 + 535, ARGB(255, 0, 255, 0))
+			DrawTextFilter("MAX", 15, World_x1 - 360, World_y1 + 535, ARGB(255, 0, 255, 0))
 		end
-		DrawText("Delay:", 15, World_x1 - 600, World_y1 + 550, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(Wwind), 15, World_x1 - 560, World_y1 + 550, ARGB(255, 255, 175, 0))
-		DrawText("Width:", 15, World_x1 - 600, World_y1 + 565, ARGB(255, 255, 255, 255))
-		DrawText("" .. myHero:GetSpellData(_E).lineWidth, 15, World_x1 - 560, World_y1 + 565, ARGB(255, 255, 175, 0))
-		DrawText("Bonus AP:", 15, World_x1 - 520, World_y1 + 580, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(TotalAP * 0.25), 15, World_x1 - 460, World_y1 + 580, ARGB(255, 0, 255, 0))
+		DrawTextFilter("Delay:", 15, World_x1 - 600, World_y1 + 550, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(Wwind), 15, World_x1 - 560, World_y1 + 550, ARGB(255, 255, 175, 0))
+		DrawTextFilter("Width:", 15, World_x1 - 600, World_y1 + 565, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. myHero:GetSpellData(_E).lineWidth, 15, World_x1 - 560, World_y1 + 565, ARGB(255, 255, 175, 0))
+		DrawTextFilter("Bonus AP:", 15, World_x1 - 520, World_y1 + 580, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(TotalAP * 0.25), 15, World_x1 - 460, World_y1 + 580, ARGB(255, 0, 255, 0))
 
 
-		DrawLine(33, 670, 63, 670, 28, ARGB(255, 0, 0, 0))
-		DrawText("R", 22, World_x1 - 630, World_y1 + 600, ARGB(255, 0, 255, 255))
-		DrawText("Name:", 15, World_x1 - 600, World_y1 + 600, ARGB(255, 255, 255, 255))
-		DrawText("" .. myHero:GetSpellData(_R).name, 15, World_x1 - 560, World_y1 + 600, ARGB(255, 255, 255, 0))
-		DrawText("Ready:", 15, World_x1 - 480, World_y1 + 630, ARGB(255, 255, 255, 255))
+		DrawLineFilter(33, 670, 63, 670, 28, ARGB(255, 0, 0, 0))
+		DrawTextFilter("R", 22, World_x1 - 630, World_y1 + 600, ARGB(255, 0, 255, 255))
+		DrawTextFilter("Name:", 15, World_x1 - 600, World_y1 + 600, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. myHero:GetSpellData(_R).name, 15, World_x1 - 560, World_y1 + 600, ARGB(255, 255, 255, 0))
+		DrawTextFilter("Ready:", 15, World_x1 - 480, World_y1 + 630, ARGB(255, 255, 255, 255))
 		if readytextR then
-			DrawText("true", 15, World_x1 - 438, World_y1 + 630, ARGB(255, 0, 255, 0))
+			DrawTextFilter("true", 15, World_x1 - 438, World_y1 + 630, ARGB(255, 0, 255, 0))
 		elseif KatUlting then
-			DrawText("Ultimate Enabled!", 15, World_x1 - 438, World_y1 + 630, ARGB(255, 0, 255, 255))
+			DrawTextFilter("Ultimate Enabled!", 15, World_x1 - 438, World_y1 + 630, ARGB(255, 0, 255, 255))
 		elseif KatRCD and not myHero.dead then
-			DrawText("" .. roundToFirstDecimal(myHero:GetSpellData(_R).currentCd), 15, World_x1 - 438, World_y1 + 630, ARGB(255, 0, 255, 255))
+			DrawTextFilter("" .. roundToFirstDecimal(myHero:GetSpellData(_R).currentCd), 15, World_x1 - 438, World_y1 + 630, ARGB(255, 0, 255, 255))
 			DelayAction(function()
 				KatRCD = false
 			end, myHero:GetSpellData(_R).currentCd)
 		elseif readytextR == false and myHero:GetSpellData(_R).level >= 1 then
-			DrawText("false", 15, World_x1 - 438, World_y1 + 630, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, World_x1 - 438, World_y1 + 630, ARGB(255, 255, 0, 0))
 		else
-			DrawText("false", 15, World_x1 - 438, World_y1 + 630, ARGB(255, 255, 0, 0))
+			DrawTextFilter("false", 15, World_x1 - 438, World_y1 + 630, ARGB(255, 255, 0, 0))
 		end
-		DrawText("Level:", 15, World_x1 - 395, World_y1 + 600, ARGB(255, 255, 255, 255))
+		DrawTextFilter("Level:", 15, World_x1 - 395, World_y1 + 600, ARGB(255, 255, 255, 255))
 		if myHero:GetSpellData(_R).level < 5 then
-			DrawText("" .. myHero:GetSpellData(_R).level, 15, World_x1 - 360, World_y1 + 600, ARGB(255, 255, 175, 0))
+			DrawTextFilter("" .. myHero:GetSpellData(_R).level, 15, World_x1 - 360, World_y1 + 600, ARGB(255, 255, 175, 0))
 		elseif myHero:GetSpellData(_R).level >= 5 then
-			DrawText("MAX", 15, World_x1 - 360, World_y1 + 600, ARGB(255, 0, 255, 0))
+			DrawTextFilter("MAX", 15, World_x1 - 360, World_y1 + 600, ARGB(255, 0, 255, 0))
 		end
-		DrawText("Delay:", 15, World_x1 - 600, World_y1 + 615, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(Wwind), 15, World_x1 - 560, World_y1 + 615, ARGB(255, 255, 175, 0))
-		DrawText("Width:", 15, World_x1 - 600, World_y1 + 630, ARGB(255, 255, 255, 255))
-		DrawText("" .. myHero:GetSpellData(_R).lineWidth, 15, World_x1 - 560, World_y1 + 630, ARGB(255, 255, 175, 0))
-		DrawText("Bonus AD:", 15, World_x1 - 600, World_y1 + 645, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(myHero.addDamage * 3.75), 15,  World_x1 - 540, World_y1 + 645, ARGB(255, 0, 255, 0))
-		DrawText("Bonus AP:", 15, World_x1 - 520, World_y1 + 645, ARGB(255, 255, 255, 255))
-		DrawText("" .. math.ceil(TotalAP * 2.5), 15, World_x1 - 460, World_y1 + 645, ARGB(255, 0, 255, 0))
+		DrawTextFilter("Delay:", 15, World_x1 - 600, World_y1 + 615, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(Wwind), 15, World_x1 - 560, World_y1 + 615, ARGB(255, 255, 175, 0))
+		DrawTextFilter("Width:", 15, World_x1 - 600, World_y1 + 630, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. myHero:GetSpellData(_R).lineWidth, 15, World_x1 - 560, World_y1 + 630, ARGB(255, 255, 175, 0))
+		DrawTextFilter("Bonus AD:", 15, World_x1 - 600, World_y1 + 645, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(myHero.addDamage * 3.75), 15,  World_x1 - 540, World_y1 + 645, ARGB(255, 0, 255, 0))
+		DrawTextFilter("Bonus AP:", 15, World_x1 - 520, World_y1 + 645, ARGB(255, 255, 255, 255))
+		DrawTextFilter("" .. math.ceil(TotalAP * 2.5), 15, World_x1 - 460, World_y1 + 645, ARGB(255, 0, 255, 0))
 	end
 end
 -- Copy Line XDDDD get it?
