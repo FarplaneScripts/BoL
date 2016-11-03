@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 2.6
+-- > > > Version 2.7
 
 --_______________________________________________________________________________
 
@@ -25,7 +25,7 @@ Set to turn OFF = " false "
 ]]--
 
 _AUTO_UPDATE = false						-- Automatic Updates Switch
-_AUTO_CLOSE_LOL_AFTER_GAME = false			-- false = Always is OFF by Default, true = Always is ON by Default. | Script does not save this data per champion.
+_AUTO_CLOSE_LOL_AFTER_GAME = true			-- false = Always is OFF by Default, true = Always is ON by Default. | Script does not save this data per champion.
 _W_CALCS = false							-- More W Calculation -> Draws (Katarina ONLY!)
 _SKIN_CHANGER = true						-- Skin Changer Switch
 _IMMUNE_PRINTS = false						-- Print when Skills are being blocks due to immunities
@@ -278,6 +278,13 @@ Twitch_Switch = true			-- Disable this to prevent Twitch portion of the script f
 [x] Added E Draws to Enemy Minions and Jungle Minions for Twitch [E/Passive]
 [x] A LOT more that I did not mention here.  Enjoy  ~Thanks to all the testers! (there were none .. :c )
 
+		03/11/2016 | 6:21PM
+[x] Reset saved data.
+[x] Fixed Draven DMGTable chat spam
+[x] Added filter for minions [Twitch]
+
+pm me via skype of there are any issues.
+
 
 
 
@@ -499,8 +506,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 2.6
-local _SCRIPT_VERSION_MENU = "2.6"
+local _SCRIPT_VERSION = 2.7
+local _SCRIPT_VERSION_MENU = "2.7"
 local _PATCH = "6.21"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -2648,7 +2655,7 @@ end
 ]]
 
 function OnLoad()
-	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_020")
+	settings = scriptConfig("              > > > " .. MyChampion .. " Reborn < < <", "" .. MyChampion .. "_Reborn_LIVE_version_021")
 			if ((AkaliLoaded) or (KatarinaLoaded)) then
 				theDmgarangement = DAMAGE_MAGIC
 			elseif ((DravenLoaded) or (TwitchLoaded)) then
@@ -4020,6 +4027,7 @@ function OnLoad()
 				settings.draws.otherTwitch:addParam("info2", "Jungle Minions:", SCRIPT_PARAM_INFO, "")
 				settings.draws.otherTwitch:addParam("jungleminions", "Draw Stacks, Time and Damage", SCRIPT_PARAM_ONOFF, true)
 				settings.draws.otherTwitch:addParam("space", "", SCRIPT_PARAM_INFO, "")
+				settings.draws.otherTwitch:addParam("rangePassive", "Range to consider minions: ", SCRIPT_PARAM_SLICE, 1500, 100, 15000, 0)
 				settings.draws.otherTwitch:addParam("aabreaks", "Draw Breaks in HP Bar (Auto Attack DMG)", SCRIPT_PARAM_ONOFF, false)
 				settings.draws.otherTwitch:addParam("SEP0", "____________________________________________", SCRIPT_PARAM_INFO, "")
 				settings.draws.otherTwitch:addParam("particles", "Draw Particles", SCRIPT_PARAM_ONOFF, true)
@@ -4104,7 +4112,7 @@ function OnLoad()
 					[2] = "VPrediction",
 					[3] = "HPrediction"
 				})
-				settings.pred:addParam("predRchance", "                                   Hit Chance:", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
+				settings.pred:addParam("predRchance", "                                   Hit Chance:", SCRIPT_PARAM_SLICE, 3, 1, 5, 0)
 				settings.pred:addParam("space", "", SCRIPT_PARAM_INFO, "")
 				settings.pred:addParam("info0", "            1 = High   |   5 = Low", SCRIPT_PARAM_INFO, "")
 				settings.pred:addParam("space", "", SCRIPT_PARAM_INFO, "")
@@ -4668,26 +4676,26 @@ function KillSteal()
 							end
 						end
 					end
-				end
-				if DravenLoaded then
-					--print("ok")
-					if DmgTable.R + DmgTable.E > target.health and E_is_Ready and R_is_Ready then
-						if GetDistance(myHero, target) < Draven_E_Range - 100 then
-							--PrintSpecialText("KS R + E")
-							if not RHasCast then
+					if DravenLoaded then
+						--print("ok")
+						if DmgTable.R + DmgTable.E > target.health and E_is_Ready and R_is_Ready then
+							if GetDistance(myHero, target) < Draven_E_Range - 100 then
+								--PrintSpecialText("KS R + E")
+								if not RHasCast then
+									CastSpell(_R, target.x, target.z)
+								end
+								CastSpell(_E, target.x, target.z)
+							end
+						elseif DmgTable.R > target.health and R_is_Ready then
+							if GetDistance(myHero, target) < 2150 then
+								--PrintSpecialText("KS R")
 								CastSpell(_R, target.x, target.z)
 							end
-							CastSpell(_E, target.x, target.z)
-						end
-					elseif DmgTable.R > target.health and R_is_Ready then
-						if GetDistance(myHero, target) < 2150 then
-							--PrintSpecialText("KS R")
-							CastSpell(_R, target.x, target.z)
-						end
-					elseif DmgTable.E > target.health and E_is_Ready then
-						if GetDistance(myHero, target) < Draven_E_Range - 100 then
-							--PrintSpecialText("KS E")
-							CastSpell(_E, target.x, target.z)
+						elseif DmgTable.E > target.health and E_is_Ready then
+							if GetDistance(myHero, target) < Draven_E_Range - 100 then
+								--PrintSpecialText("KS E")
+								CastSpell(_E, target.x, target.z)
+							end
 						end
 					end
 				end
@@ -8096,7 +8104,7 @@ function OnDraw()
 		
 		--  Draw Passive Tick Bar on Enemy Minions
 		if settings.draws.otherTwitch.enemyminions then
-			for _, target in pairs(minionManager(MINION_ENEMY, 99999).objects) do
+			for _, target in pairs(minionManager(MINION_ENEMY, (settings.draws.otherTwitch.rangePassive)).objects) do
 				if target ~= nil and target.valid and not target.dead and target.visible then     
 					DrawMinionEStackHPandTIME(target)
 				end
@@ -8105,7 +8113,7 @@ function OnDraw()
 		
 		--  Draw Passive Tick Bar on Jungle Minions
 		if settings.draws.otherTwitch.jungleminions then
-			for _, target in pairs(minionManager(MINION_JUNGLE, 99999).objects) do
+			for _, target in pairs(minionManager(MINION_JUNGLE, (settings.draws.otherTwitch.rangePassive)).objects) do
 				if target ~= nil and target.valid and not target.dead and target.visible then
 					if target.charName ~= "HA_AP_Poro" then
 						if target.charName ~= "S5Test_WardCorpse" then
