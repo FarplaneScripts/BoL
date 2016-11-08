@@ -9,7 +9,7 @@
 		░ ░ ░ ▒     ░   ░ ░    ░        ░░   ░    ░    ░    ░ ░ ░ ░ ▒    ░░   ░    ░   ░ ░ 
 ]]
 -- > > > All in One Reborn by Farplane
--- > > > Version 2.7
+-- > > > Version 2.8
 
 --_______________________________________________________________________________
 
@@ -283,8 +283,8 @@ Twitch_Switch = true			-- Disable this to prevent Twitch portion of the script f
 [x] Fixed Draven DMGTable chat spam
 [x] Added filter for minions [Twitch]
 
-pm me via skype of there are any issues.
-
+		09/11/2016 | 12:51PM
+[x] Found issue with Draven and should HOPEFULLY be all fixed now :)
 
 
 
@@ -506,8 +506,8 @@ end, 13)
 --[[
 	Miscellaneous Vars
 ]]
-local _SCRIPT_VERSION = 2.7
-local _SCRIPT_VERSION_MENU = "2.7"
+local _SCRIPT_VERSION = 2.8
+local _SCRIPT_VERSION_MENU = "2.8"
 local _PATCH = "6.21"
 local _BUG_SPLAT_PATH = LIB_PATH.."Saves\\One_Reborn_BugSplat.report"
 local _FILE_PATH = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
@@ -4677,6 +4677,10 @@ function KillSteal()
 						end
 					end
 					if DravenLoaded then
+						DmgTable = {
+							E = E_is_Ready and getDmg("E", target, myHero) or 0,
+							R = R_is_Ready and getDmg("R", target, myHero) or 0
+						}
 						--print("ok")
 						if DmgTable.R + DmgTable.E > target.health and E_is_Ready and R_is_Ready then
 							if GetDistance(myHero, target) < Draven_E_Range - 100 then
